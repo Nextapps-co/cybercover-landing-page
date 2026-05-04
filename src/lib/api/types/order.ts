@@ -1,0 +1,256 @@
+// checkout-flow.md §9.1 — Sales Order DTOs.
+
+import type { BillingCycle } from './money';
+
+export type OrderStatus =
+  | 'DRAFT'
+  | 'CONFIRMED'
+  | 'PENDING_ALLOCATION'
+  | 'PROCESSING'
+  | 'FULFILLED'
+  | 'CLOSED'
+  | 'CANCELLED';
+
+export type PaymentMethod = 'STRIPE_CHECKOUT' | 'BANK_TRANSFER';
+
+export type CheckoutStep = 'COMPANY_DATA' | 'PERSONAL_DATA' | 'OPERATIONAL_STANDARDS' | 'PAYMENT_METHOD';
+
+// §9.1.1 request/response
+export interface StartOrderDto {
+  catalogEntryId: string;
+  billingCycle: BillingCycle;
+  partnerCode?: string;
+}
+
+export interface StartOrderResponseDto {
+  orderId: string;
+}
+
+// §9.1.6 checkout state
+export interface CheckoutProgressDto {
+  hasCompanyData: boolean;
+  hasPersonalData: boolean;
+  hasOperationalStandards: boolean;
+  hasPaymentMethod: boolean;
+}
+
+export interface CheckoutStateResponseDto {
+  orderId: string;
+  progress: CheckoutProgressDto;
+  isComplete: boolean;
+  nextRequiredStep: CheckoutStep | null;
+}
+
+// §9.1.14 order response (fields used in F1; F2-F4 will expand)
+export interface OrderLineResponseDto {
+  lineId: string;
+  catalogEntryId: string;
+  planName: string;
+  priceNet: number | null;
+}
+
+export interface OrderDiscountDto {
+  code: string;
+  kind: 'CODE_FLAT' | 'PARTNER_FLAT' | 'PARTNER_COMPOSITE' | 'PARTNER_TIMEBOUND';
+  originalAmount: number;       // grosze, before discount
+  priceAfterDiscount: number;   // grosze, after discount (== totalPriceNet)
+  discountAmount: number;       // grosze, savings
+  currency: string;
+}
+
+export interface OrderResponseDto {
+  orderId: string;
+  status: OrderStatus;
+  billingCycle: BillingCycle;
+  paymentMethod: PaymentMethod | null;
+  checkoutProgress: CheckoutProgressDto;
+  companyData: CompanyDataResponseDto | null;
+  personalData: PersonalDataResponseDto | null;
+  lines: OrderLineResponseDto[];
+  totalPriceNet: number | null;
+  currency: string;
+  discount: OrderDiscountDto | null;
+  eligibilityResult: EligibilityResultResponseDto | null;
+  createdAt: string;
+}
+
+// §9.1.5 submit company-data request/response
+export interface SubmitCompanyDataDto {
+  nip: string;
+  name: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  industry: string;
+}
+
+// Full shape of companyData on OrderResponseDto (replacing Record<string, unknown>)
+export interface CompanyDataResponseDto {
+  nip: string;
+  name: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  industry: string;
+}
+
+// §9.1.2 company-lookup response
+export interface CompanyLookupDataDto {
+  nip: string;
+  name: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  industry: string | null;
+  source: 'CEIDG' | 'KRS';
+}
+
+export interface CompanyLookupResponseDto {
+  found: boolean;
+  company?: CompanyLookupDataDto;
+  nip?: string;
+}
+
+// §9.1.3 consent definitions
+export interface ExpandedDetailsDto {
+  title: string;
+  items: string[];
+}
+
+export interface ConsentDefinitionDto {
+  id: string;
+  code: string;
+  name: string; // may contain HTML (e.g. <a href=...>)
+  description: string;
+  type: 'USER' | 'COMPANY';
+  isRequired: boolean;
+  version: number;
+  expandedDetails: ExpandedDetailsDto | null;
+}
+
+export interface GetConsentDefinitionsResponseDto {
+  consentDefinitions: ConsentDefinitionDto[];
+}
+
+// §9.1.7 submit personal-data
+export interface ConsentInputDto {
+  consentDefinitionId: string;
+  accepted: boolean;
+  consentVersion: number;
+}
+
+export interface SubmitPersonalDataDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string; // E.164, e.g. +48123456789
+  consents: ConsentInputDto[];
+}
+
+export interface PersonalDataResponseDto {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
+// §9.1.8 operational-standards schema
+export interface StandardQuestionDto {
+  key: string;
+  label: string;
+  description?: string;
+}
+
+export interface OperationalStandardsSchemaResponseDto {
+  orderId: string;
+  insurerName: string;
+  questions: StandardQuestionDto[];
+  answerOptions: string[];
+}
+
+// §9.1.9 submit operational-standards
+export interface SubmitOperationalStandardsDto {
+  answers: Record<string, string>;
+}
+
+export interface EligibilityContributionDto {
+  key: string;
+  met: boolean;
+  label: string;
+}
+
+export interface EligibilityResultResponseDto {
+  eligible: boolean;
+  missingRequirements: string[];
+  contributions: EligibilityContributionDto[];
+}
+
+export interface SubmitOperationalStandardsResponseDto extends EligibilityResultResponseDto {
+  orderId: string;
+  checkoutProgress: CheckoutProgressDto;
+}
+
+// §9.1.10 evaluate-eligibility (mock-only in F2c, but type for future use)
+export interface EvaluateEligibilityRequestDto {
+  answers: Record<string, string>;
+}
+
+// §9.1.11 validate-discount
+export interface ValidateDiscountDto {
+  discountCode: string;
+}
+
+export interface DiscountValidationResponseDto {
+  valid: boolean;
+  discountType: string | null;       // 'PERCENTAGE' | 'FIXED'
+  discountValue: string | null;      // procent or grosze
+  originalPriceNet: number | null;   // grosze
+  discountedPriceNet: number | null; // grosze
+  currency: string | null;
+  message: string | null;            // error msg gdy valid=false
+}
+
+// §9.1.12 select payment-method
+export interface SelectPaymentMethodDto {
+  paymentMethod: PaymentMethod;
+  discountCode?: string;
+}
+
+// §9.1.13 confirm order
+export interface ConfirmOrderResponseDto {
+  orderId: string;
+  status: OrderStatus; // 'CONFIRMED'
+  paymentMethod: PaymentMethod;
+  confirmationToken: string | null; // only for BANK_TRANSFER
+}
+
+// §9.2.1 create stripe checkout session
+export interface CreateCheckoutSessionResponseDto {
+  sessionId: string;
+  url: string;
+  paymentId: string;
+}
+
+// §9.1.15 confirmation (BANK_TRANSFER)
+export interface BankTransferProformaDto {
+  invoiceNumber: string;
+  pdfUrl: string;
+  dueDate: string; // YYYY-MM-DD
+}
+
+export interface BankTransferPaymentDto {
+  bankAccount: string;
+  transferTitle: string;
+  grossAmountMinorUnits: number;
+  netAmountMinorUnits: number;
+  vatAmountMinorUnits: number;
+  currency: 'PLN';
+}
+
+export interface OrderConfirmationResponseDto {
+  type: 'BANK_TRANSFER';
+  orderId: string;
+  proforma: BankTransferProformaDto;
+  payment: BankTransferPaymentDto;
+  customerEmail: string;
+}

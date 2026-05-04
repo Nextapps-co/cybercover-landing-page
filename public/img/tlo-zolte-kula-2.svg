@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1900" height="505" viewBox="0 0 1900 505">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.309" y1="0.489" x2="2.965" y2="0.343" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-opacity="0"/>
+      <stop offset="1" stop-color="#a7a7a7" stop-opacity="0.251"/>
+    </linearGradient>
+    <clipPath id="clip-tlo-zolte-kula-2">
+      <rect width="1900" height="505"/>
+    </clipPath>
+  </defs>
+  <g id="tlo-zolte-kula-2" clip-path="url(#clip-tlo-zolte-kula-2)">
+    <rect width="1900" height="505" fill="#feffe0"/>
+    <g id="CC_logotyp_pr9-09_11-1" data-name="CC_logotyp_pr9-09 11-1" transform="translate(763 53)">
+      <path id="Path_354" data-name="Path 354" d="M172.57,0C284.13,0,374.58,89.55,374.58,200S284.14,400,172.57,400V0Z" fill="url(#linear-gradient)"/>
+      <path id="Path_355" data-name="Path 355" d="M0,0C111.56,0,202.01,89.55,202.01,200S111.56,400,0,400Z" fill="url(#linear-gradient)"/>
+    </g>
+  </g>
+</svg>

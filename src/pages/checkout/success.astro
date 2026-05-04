@@ -1,0 +1,11 @@
+---
+import CheckoutLayout from '../../layouts/CheckoutLayout.astro';
+import { SuccessStatus } from '../../components/checkout/SuccessStatus';
+---
+<CheckoutLayout
+  title="Zamówienie złożone — CyberCover"
+  description="Dziękujemy za zakup"
+  showBackButton={false}
+>
+  <SuccessStatus client:load />
+</CheckoutLayout>

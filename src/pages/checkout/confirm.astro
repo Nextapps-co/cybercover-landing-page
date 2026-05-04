@@ -1,0 +1,12 @@
+---
+import CheckoutLayout from '../../layouts/CheckoutLayout.astro';
+import { ConfirmStep } from '../../components/checkout/ConfirmStep';
+---
+<CheckoutLayout
+  title="Potwierdź zamówienie — CyberCover"
+  description="Sprawdź podsumowanie i potwierdź zakup"
+  showBackButton={true}
+  backHref="/checkout/payment-method"
+>
+  <ConfirmStep client:load />
+</CheckoutLayout>

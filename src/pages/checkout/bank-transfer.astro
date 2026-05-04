@@ -1,0 +1,11 @@
+---
+import CheckoutLayout from '../../layouts/CheckoutLayout.astro';
+import { BankTransferConfirmation } from '../../components/checkout/BankTransferConfirmation';
+---
+<CheckoutLayout
+  title="Przelew bankowy — Zamówienie złożone — CyberCover"
+  description="Dane do przelewu i instrukcje"
+  showBackButton={false}
+>
+  <BankTransferConfirmation client:load />
+</CheckoutLayout>

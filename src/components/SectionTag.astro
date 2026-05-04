@@ -1,0 +1,16 @@
+---
+interface Props {
+  label: string
+  variant?: 'blue' | 'yellow'
+}
+
+const { label, variant = 'yellow' } = Astro.props
+const bgClass = variant === 'blue' ? 'bg-brand-tag-blue' : 'bg-brand-tag-yellow'
+---
+
+<p class="text-center font-medium uppercase text-sm tracking-wide">
+  <span class:list={["inline-flex items-center gap-1.5 px-4 py-1 rounded-full border", bgClass, variant === 'blue' ? 'border-brand-tag-blue' : 'border-brand-tag-yellow']}>
+    <img src="/img/mini-sygnet.svg" alt="" width="19" height="20" class="w-[19px]" />
+    {label}
+  </span>
+</p>

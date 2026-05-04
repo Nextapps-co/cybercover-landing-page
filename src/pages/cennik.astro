@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { PricingCards } from '../components/pricing/PricingCards';
+---
+
+<BaseLayout
+  title="Cennik — CyberCover"
+  description="Wybierz plan ochrony dostosowany do potrzeb Twojej firmy: Standard, Optimum, Profesjonalny lub Ekspert."
+>
+  <main class="min-h-screen bg-[#F8F7F4] pt-32 pb-20">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="text-center mb-12">
+        <h1 class="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-4xl md:text-5xl text-[#0D0D0D] mb-4 tracking-tight">
+          Cennik
+        </h1>
+        <p class="font-['Plus_Jakarta_Sans',sans-serif] font-normal text-lg text-[#6B6965]">
+          Wybierz plan ochrony dostosowany do potrzeb Twojej firmy
+        </p>
+      </div>
+
+      <PricingCards client:load />
+    </div>
+  </main>
+</BaseLayout>

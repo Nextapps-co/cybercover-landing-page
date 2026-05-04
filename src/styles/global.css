@@ -1,0 +1,46 @@
+@import "tailwindcss" source(none);
+@source '../**/*.{astro,js,ts,jsx,tsx}';
+
+@import 'tw-animate-css';
+@import './fonts.css';
+@import './theme.css';
+
+@plugin "@tailwindcss/typography";
+
+@theme {
+  /* Landing page tokens */
+  --color-brand-yellow: #FFCD20;
+  --color-brand-yellow-hover: #fac000;
+  --color-brand-navy: #061856;
+  --color-brand-dark: #2D2D33;
+  --color-brand-text: #413F3B;
+  --color-brand-border: #C9C5BB;
+  --color-brand-border-light: #E1E1E8;
+  --color-brand-bg: #F8F7F4;
+  --color-brand-blue-light: #EDF8FF;
+  --color-brand-tag-yellow: #FEFFE0;
+  --color-brand-tag-blue: #DDEEF8;
+
+  /* Fonty */
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* Rozmiary kontenerów */
+  --spacing-container: 1410px;
+
+  /* Typografia */
+  --text-section-title: 50px;
+  --text-body-lg: 17px;
+  --text-footer-title: 19px;
+
+  /* Border radius */
+  --radius-card: 10px;
+}
+
+/* Scroll offset for fixed header */
+html {
+  scroll-behavior: smooth;
+}
+
+[id] {
+  scroll-margin-top: 120px;
+}

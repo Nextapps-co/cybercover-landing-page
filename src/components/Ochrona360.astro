@@ -1,0 +1,299 @@
+---
+import { Image } from 'astro:assets'
+import pictureImg from '../assets/img/picture.png'
+// Ochrona 360 — circular diagram
+// CSS ported 1:1 from original cc-ochrona360.css
+// JS replaces WordPress/Paula animation system (adds .animated on scroll)
+---
+
+<div class="ochrona360">
+  <figure class="main-picture">
+    <Image src={pictureImg} alt="Ochrona 360" width={297} />
+  </figure>
+
+  <div class="arrow-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 380 380">
+    <g stroke="#5d5a54">
+      <path fill="#5d5a54" d="M124.13 352.68c-.4.65-.88 1.3-1.4 1.9a8.47 8.47 0 0 1-3.07 2.36l-.45.18.16.46c.67 1.86.4 4.13-.16 6.21-.95-3.06-2.27-6.1-4.38-8.59 3.26-.13 6.42-1.1 9.3-2.52zM377.26 173.59c-2.27 2.27-4.36 4.85-5.58 7.87a23.27 23.27 0 0 0-6.54-7.07c.76.06 1.56.18 2.33.37 1.39.33 2.66.87 3.51 1.62l.46.4.28-.49c1.34-1.42 3.45-2.24 5.54-2.7z" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M80.5 45.24C23.43 88.54-4.87 163.54 14.8 237.02a180.93 180.93 0 0 0 75.57 104.67m281.04-165.01a182.41 182.41 0 0 0-5.72-33.69C339.73 46.1 240.14-11.4 143.25 14.56a182.23 182.23 0 0 0-35 13.35m10.96 329.24a180.82 180.82 0 0 0 118.06 8.29c74.6-19.99 125.83-83.61 133.62-156.05" />
+      <path fill="#5d5a54" d="M84.37 42.41a23.28 23.28 0 0 0-2.45 9.32c-.36-.67-.7-1.42-.95-2.18a8.4 8.4 0 0 1-.52-3.83l-.48-.16.07-.4c-1.94-.35-3.78-1.7-5.3-3.23 3.13.7 6.43 1.08 9.63.48z" />
+    </g>
+  </svg></div>
+
+  <div class="item item1">
+    <svg class="item-icon" width="48" height="58" viewBox="0 0 48 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 11.4354C0 5.5781 4.77276 0.832031 10.663 0.832031H37.337C43.2272 0.832031 48 5.5781 48 11.4354V33.1419C48 36.2278 46.6543 38.9916 44.5581 40.9255L30.0674 55.3351C26.7195 58.6643 21.2805 58.6643 17.9326 55.3351L3.4433 40.9269C1.32652 38.9894 0 36.2236 0 33.1419V11.4354Z" fill="black" />
+      <path d="M35.7992 25.5876C36.3199 22.8256 35.8203 19.9716 34.3904 17.5394C32.9604 15.1072 30.6941 13.2565 27.9992 12.3203V21.1651L35.7992 25.5876Z" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M23.9963 23.4853V11.6406C21.8938 11.6409 19.8284 12.1841 18.0067 13.2157C16.1851 14.2473 14.6712 15.7311 13.6167 17.5186C12.5621 19.3061 12.004 21.3345 11.9981 23.4007C11.9922 25.4669 12.5388 27.4983 13.5831 29.2916C14.6274 31.0849 16.1329 32.577 17.9486 33.6186C19.7643 34.6602 21.8267 35.2148 23.9291 35.2266C26.0315 35.2385 28.1001 34.7073 29.9279 33.6863C31.7557 32.6653 33.2785 31.1902 34.3438 29.4089L23.9963 23.4853Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+    <p>Ocena bezpieczeństwa i zalecenia</p>
+  </div>
+
+  <div class="item item2">
+    <svg class="item-icon" width="48" height="59" viewBox="0 0 48 59" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 11.1214C0 5.16137 4.77276 0.332031 10.663 0.332031H37.337C43.2272 0.332031 48 5.16137 48 11.1214V33.2087C48 36.3487 46.6543 39.1611 44.5581 41.1289L30.0674 55.7913C26.7195 59.1789 21.2805 59.1789 17.9326 55.7913L3.4433 41.1303C1.32652 39.1589 0 36.3446 0 33.2087V11.1214Z" fill="black" />
+      <path d="M26.8606 24.982C23.7106 24.982 21.1406 22.422 21.1406 19.262V18.052C21.1406 14.902 23.7006 12.332 26.8606 12.332C30.0206 12.332 32.5806 14.892 32.5806 18.052V19.262C32.5806 22.412 30.0206 24.982 26.8606 24.982Z" stroke="white" stroke-width="2.2" />
+      <path d="M18.8578 24.2233C17.1478 23.2333 16.0078 21.3833 16.0078 19.2733V18.0633C16.0078 15.9533 17.1578 14.1033 18.8678 13.1133" stroke="white" stroke-width="2.2" />
+      <path d="M17.4297 34.3245C17.4297 30.7745 20.3097 27.8945 23.8597 27.8945H29.8797C33.4297 27.8945 36.3097 30.7745 36.3097 34.3245" stroke="white" stroke-width="2.2" />
+      <path d="M11 34.3245C11 30.7745 13.88 27.8945 17.43 27.8945" stroke="white" stroke-width="2.2" />
+    </svg>
+    <p>Konsultacje z naszymi ekspertami</p>
+  </div>
+
+  <div class="item item3">
+    <svg class="item-icon" width="48" height="59" viewBox="0 0 48 59" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 11.1214C0 5.16137 4.77276 0.332031 10.663 0.332031H37.337C43.2272 0.332031 48 5.16137 48 11.1214V33.2087C48 36.3487 46.6543 39.1611 44.5581 41.1289L30.0674 55.7913C26.7195 59.1789 21.2805 59.1789 17.9326 55.7913L3.4433 41.1303C1.32652 39.1589 0 36.3446 0 33.2087V11.1214Z" fill="black" />
+      <path d="M15.3485 12.332H23.2136C23.2136 12.332 29.7136 26.5606 29.7031 26.8021C29.7031 27.0122 29.5771 27.2117 29.3881 27.3482C29.1676 27.4952 28.7685 27.4952 27.9705 27.4952H18.8978L22.4996 38.332L11.6942 24.9855C11.2322 24.3975 10.9907 24.1034 11.0012 23.8514C11.0012 23.6414 11.1272 23.4419 11.3162 23.3054C11.5367 23.1584 11.9357 23.1584 12.7338 23.1584H21.0609L15.3485 12.332Z" stroke="white" stroke-width="2.2" />
+      <path d="M33.5119 25.207H35.6016" stroke="white" stroke-width="2.2" />
+      <path d="M25.8222 31.4141H32.5742" stroke="white" stroke-width="2.2" />
+      <path d="M30.1537 36.9023H35.1836" stroke="white" stroke-width="2.2" />
+    </svg>
+    <p>Stały monitoring zagrożeń</p>
+  </div>
+
+  <div class="item item4">
+    <svg class="item-icon" width="48" height="59" viewBox="0 0 48 59" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 11.1214C0 5.16137 4.77276 0.332031 10.663 0.332031H37.337C43.2272 0.332031 48 5.16137 48 11.1214V33.2087C48 36.3487 46.6543 39.1611 44.5581 41.1289L30.0674 55.7913C26.7195 59.1789 21.2805 59.1789 17.9326 55.7913L3.4433 41.1303C1.32652 39.1589 0 36.3446 0 33.2087V11.1214Z" fill="black" />
+      <circle cx="24" cy="23.332" r="13.9" stroke="white" stroke-width="2.2" />
+      <circle cx="24" cy="23.332" r="7.9" stroke="white" stroke-width="2.2" />
+      <rect x="21" y="9.33203" width="6" height="6" fill="white" />
+      <rect x="16.2422" y="26.332" width="6" height="6" transform="rotate(45 16.2422 26.332)" fill="white" />
+      <rect x="31.2422" y="26.332" width="6" height="6" transform="rotate(45 31.2422 26.332)" fill="white" />
+    </svg>
+    <p>Natychmiastowa pomoc 24/7</p>
+  </div>
+
+  <div class="item item5">
+    <svg class="item-icon" width="48" height="59" viewBox="0 0 48 59" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 11.1214C0 5.16137 4.77276 0.332031 10.663 0.332031H37.337C43.2272 0.332031 48 5.16137 48 11.1214V33.2087C48 36.3487 46.6543 39.1611 44.5581 41.1289L30.0674 55.7913C26.7195 59.1789 21.2805 59.1789 17.9326 55.7913L3.4433 41.1303C1.32652 39.1589 0 36.3446 0 33.2087V11.1214Z" fill="black" />
+      <path d="M23.5932 38.072C35.5632 31.852 34.1332 16.592 34.1332 16.592C26.9332 17.662 23.5932 13.332 23.5932 13.332V13.352C23.5932 13.352 20.2532 17.672 13.0532 16.612C13.0532 16.612 11.6232 31.872 23.5932 38.092V38.072Z" stroke="white" stroke-width="2.2" />
+      <path d="M28.9294 21.5625L22.1794 28.3125L19.1094 25.2425" stroke="white" stroke-width="2.2" />
+    </svg>
+    <p>Ubezpieczenie od kar, roszczeń i strat</p>
+  </div>
+
+  <svg class="bg bg-l" width="547" height="471" viewBox="0 0 547 471" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g opacity="0.8">
+      <path d="M308.608 470.156C439.894 470.156 546.328 365.023 546.328 235.341C546.328 105.66 439.894 0.526022 308.608 0.526011L308.608 470.156Z" fill="url(#pl0)" style="mix-blend-mode:multiply" />
+      <path d="M99.2251 470.156C230.511 470.156 336.945 365.023 336.945 235.341C336.945 105.66 230.511 0.526022 99.2251 0.526011L99.2251 470.156Z" fill="url(#pl1)" style="mix-blend-mode:multiply" />
+      <rect width="469.992" height="469.15" rx="234.575" transform="matrix(1 8.74228e-08 8.74228e-08 -1 -319.324 470.605)" fill="url(#pl2)" style="mix-blend-mode:multiply" />
+    </g>
+    <defs>
+      <linearGradient id="pl0" x1="308.608" y1="235.341" x2="546.328" y2="235.341" gradientUnits="userSpaceOnUse"><stop offset="0.198235" stop-color="#C9C5BB" stop-opacity="0" /><stop offset="1" stop-color="#5D5A54" stop-opacity="0.2" /></linearGradient>
+      <linearGradient id="pl1" x1="99.2251" y1="235.341" x2="336.945" y2="235.341" gradientUnits="userSpaceOnUse"><stop offset="0.198235" stop-color="#C9C5BB" stop-opacity="0" /><stop offset="1" stop-color="#5D5A54" stop-opacity="0.2" /></linearGradient>
+      <linearGradient id="pl2" x1="562.128" y1="3.91027e-05" x2="-21.9187" y2="425.491" gradientUnits="userSpaceOnUse"><stop offset="0.2" stop-color="#C9C5BB" stop-opacity="0" /><stop offset="1" stop-color="#C9C5BB" stop-opacity="0.5" /></linearGradient>
+    </defs>
+  </svg>
+  <svg class="bg bg-r" width="547" height="471" viewBox="0 0 547 471" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g opacity="0.8">
+      <path d="M238.396 0.976563C107.11 0.976563 0.675781 106.11 0.675781 235.792C0.675781 365.473 107.11 470.607 238.396 470.607L238.396 0.976563Z" fill="url(#pr0)" style="mix-blend-mode:multiply" />
+      <path d="M447.775 0.976563C316.489 0.976563 210.055 106.11 210.055 235.792C210.055 365.473 316.489 470.607 447.775 470.607L447.775 0.976563Z" fill="url(#pr1)" style="mix-blend-mode:multiply" />
+      <rect width="469.992" height="469.15" rx="234.575" transform="matrix(-1 0 0 1 866.324 0.527344)" fill="url(#pr2)" style="mix-blend-mode:multiply" />
+    </g>
+    <defs>
+      <linearGradient id="pr0" x1="238.396" y1="235.792" x2="0.675789" y2="235.792" gradientUnits="userSpaceOnUse"><stop offset="0.198235" stop-color="#C9C5BB" stop-opacity="0" /><stop offset="1" stop-color="#5D5A54" stop-opacity="0.2" /></linearGradient>
+      <linearGradient id="pr1" x1="447.775" y1="235.792" x2="210.055" y2="235.792" gradientUnits="userSpaceOnUse"><stop offset="0.198235" stop-color="#C9C5BB" stop-opacity="0" /><stop offset="1" stop-color="#5D5A54" stop-opacity="0.2" /></linearGradient>
+      <linearGradient id="pr2" x1="562.128" y1="3.91027e-05" x2="-21.9187" y2="425.491" gradientUnits="userSpaceOnUse"><stop offset="0.2" stop-color="#C9C5BB" stop-opacity="0" /><stop offset="1" stop-color="#C9C5BB" stop-opacity="0.5" /></linearGradient>
+    </defs>
+  </svg>
+</div>
+
+<!-- Scroll animation: replaces WordPress/Paula animation system -->
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.item').forEach(el => el.classList.add('animated'));
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  const el = document.querySelector('.ochrona360');
+  if (el) observer.observe(el);
+</script>
+
+<style is:global>
+  /* ============================================================
+     Ochrona 360 diagram — ported 1:1 from cc-ochrona360.css
+     Only change: WP utility classes replaced with explicit props
+     ============================================================ */
+
+  @keyframes cc-spin {
+    0%   { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  .ochrona360 {
+    --padding: 60px 0;
+    --circle-top: 190px;
+    position: relative;
+    padding: var(--padding);
+    overflow: hidden;
+  }
+
+  /* Arrow circle */
+  .ochrona360 .arrow-circle {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    z-index: 2;
+    width: min(380px, 100%);
+    transform: translateX(-50%);
+  }
+
+  .ochrona360 .arrow-circle svg {
+    position: absolute;
+    left: 50%;
+    top: var(--circle-top);
+    z-index: 2;
+    width: min(380px, 90%);
+    height: auto;
+    animation: cc-spin 6s infinite linear;
+  }
+
+  /* Central photo */
+  .ochrona360 .main-picture {
+    margin: 7% auto 0;
+    max-width: min(330px, 80%);
+    position: relative;
+    z-index: 1;
+  }
+
+  .ochrona360 .main-picture img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Background shapes — hidden on mobile */
+  .ochrona360 .bg {
+    display: none;
+  }
+
+  /* Service items */
+  .ochrona360 .item {
+    position: relative;
+    z-index: 3;
+    margin: 1em auto;
+    padding: 15px;
+    width: min(calc(100% - 20px), 400px);
+    border-radius: 20px;
+    color: #000;
+    background-color: #feffe0;
+    gap: 12px;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  .ochrona360 .item .item-icon {
+    width: 48px;
+    height: auto;
+    flex-shrink: 0;
+  }
+
+  .ochrona360 .item p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 25px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  @media (min-width: 400px) {
+    .ochrona360 .main-picture {
+      margin-top: 0;
+    }
+  }
+
+  /* ============ DESKTOP (900px+) ============ */
+  @media (min-width: 900px) {
+    .ochrona360 {
+      --padding: 130px 0 110px;
+      --circle-top: 50%;
+    }
+
+    .ochrona360 .arrow-circle {
+      top: var(--circle-top);
+    }
+
+    .ochrona360 .main-picture {
+      max-width: none;
+      margin: 0 auto;
+    }
+
+    /* Items: absolute, with transition animation */
+    .ochrona360 .item {
+      position: absolute;
+      margin: 0;
+      transition: transform 1s;
+      max-width: 280px;
+    }
+
+    /* --- Pre-animation (starting) positions --- */
+    .ochrona360 .item.item1 {
+      top: 20px;
+      left: 50%;
+      transition-delay: 1s;
+      transform: translate(-70%, 30px);
+    }
+    .ochrona360 .item.item2 {
+      top: 50%;
+      left: 50%;
+      transition-delay: 2s;
+      transform: translate(110px, -130%);
+    }
+    .ochrona360 .item.item3 {
+      left: 50%;
+      bottom: 0;
+      transition-delay: 3s;
+      transform: translate(95px, -70%);
+    }
+    .ochrona360 .item.item4 {
+      right: 50%;
+      bottom: 0;
+      transition-delay: 4s;
+      transform: translate(-35px, -20%);
+    }
+    .ochrona360 .item.item5 {
+      top: 50%;
+      right: 50%;
+      transition-delay: 5s;
+      transform: translate(-140px, -70%);
+    }
+
+    /* --- Animated (final) positions --- */
+    .ochrona360 .item.animated.item1 { transform: translate(-50%, 0); }
+    .ochrona360 .item.animated.item2 { transform: translate(150px, -100%); }
+    .ochrona360 .item.animated.item3 { transform: translate(65px, -50%); }
+    .ochrona360 .item.animated.item4 { transform: translate(-65px, -50%); }
+    .ochrona360 .item.animated.item5 { transform: translate(-150px, -100%); }
+
+    /* Background decorative shapes */
+    .ochrona360 .bg {
+      display: block;
+      position: absolute;
+      top: 50%;
+      z-index: 0;
+    }
+
+    .ochrona360 .bg.bg-l {
+      right: 50%;
+      transform: translate(-210px, -50%);
+      mask: linear-gradient(to right, #fff0 0%, #ffff 50px);
+    }
+
+    .ochrona360 .bg.bg-r {
+      left: 50%;
+      transform: translate(210px, -50%);
+      mask: linear-gradient(to left, #fff0 0%, #ffff 50px);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .ochrona360 .item {
+      width: 300px;
+    }
+  }
+</style>

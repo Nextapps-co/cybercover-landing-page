@@ -1,0 +1,12 @@
+---
+import CheckoutLayout from '../../layouts/CheckoutLayout.astro';
+import { OperationalStandardsStep } from '../../components/checkout/OperationalStandardsStep';
+---
+<CheckoutLayout
+  title="Standardy operacyjne — Checkout CyberCover"
+  description="Odpowiedz na kilka pytań o swojej firmie"
+  showBackButton={true}
+  backHref="/checkout/personal-data"
+>
+  <OperationalStandardsStep client:load />
+</CheckoutLayout>

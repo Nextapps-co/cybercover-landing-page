@@ -1,0 +1,12 @@
+---
+import CheckoutLayout from '../../layouts/CheckoutLayout.astro';
+import { CompanyDataStep } from '../../components/checkout/CompanyDataStep';
+---
+<CheckoutLayout
+  title="Dane firmy — Checkout CyberCover"
+  description="Wprowadź dane firmy do zamówienia"
+  showBackButton={true}
+  backHref="/cennik"
+>
+  <CompanyDataStep client:load />
+</CheckoutLayout>

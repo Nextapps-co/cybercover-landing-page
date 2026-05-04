@@ -1,0 +1,214 @@
+---
+import '../styles/global.css'
+import Header from '../components/Header.astro'
+import Footer from '../components/Footer.astro'
+import heroImg from '../assets/img/ochrona-twojej-firmy-cena.jpg'
+
+interface Props {
+  title: string
+  description: string
+}
+
+const { title, description } = Astro.props
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Cyber Cover sp. z o.o.",
+  "url": "https://cybercover.pl",
+  "logo": new URL('/img/logo-cybercover.svg', Astro.site ?? Astro.url).href,
+  "description": "CyberCover dostarcza zalecenia, monitoring zagrożeń i pomoc ekspertów. Ubezpieczenie pokrywa kary RODO, roszczenia i straty.",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Warszawa",
+    "addressCountry": "PL"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "availableLanguage": "Polish"
+  }
+}
+---
+
+<!DOCTYPE html>
+<html lang="pl-PL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" />
+
+  <link rel="canonical" href={Astro.url.href} />
+
+  <title>{title}</title>
+  <meta name="description" content={description} />
+
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={Astro.url.href} />
+  <meta property="og:image" content={new URL(heroImg.src, Astro.site ?? Astro.url).href} />
+
+  <link rel="icon" href="/img/cropped-favicon-4-32x32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/img/cropped-favicon-4-32x32.png" />
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.1.0/dist/cookieconsent.css" />
+  <style>
+    #cc-main {
+      --cc-font-family: 'Plus Jakarta Sans', sans-serif;
+      --cc-bg: #1a1a1a;
+      --cc-secondary-color: rgba(255, 255, 255, 0.65);
+      --cc-primary-color: #ffffff;
+      --cc-btn-primary-bg: #FFD237;
+      --cc-btn-primary-color: #000000;
+      --cc-btn-primary-border-color: #FFD237;
+      --cc-btn-primary-hover-bg: #fac000;
+      --cc-btn-primary-hover-color: #000000;
+      --cc-btn-primary-hover-border-color: #fac000;
+      --cc-btn-secondary-bg: transparent;
+      --cc-btn-secondary-color: rgba(255, 255, 255, 0.75);
+      --cc-btn-secondary-border-color: rgba(255, 255, 255, 0.25);
+      --cc-btn-secondary-hover-bg: rgba(255, 255, 255, 0.08);
+      --cc-btn-secondary-hover-color: #ffffff;
+      --cc-btn-secondary-hover-border-color: rgba(255, 255, 255, 0.4);
+      --cc-toggle-on-bg: #FFD237;
+      --cc-toggle-off-bg: #444;
+      --cc-toggle-on-knob-bg: #000000;
+      --cc-toggle-off-knob-bg: #ffffff;
+      --cc-toggle-enabled-icon-color: #000000;
+      --cc-toggle-disabled-icon-color: #ffffff;
+      --cc-toggle-readonly-bg: #333;
+      --cc-toggle-readonly-knob-bg: #888;
+      --cc-separator-border-color: rgba(255, 255, 255, 0.1);
+      --cc-link-color: #FFD237;
+      --cc-cookie-category-block-bg: rgba(255, 255, 255, 0.04);
+      --cc-cookie-category-block-border: rgba(255, 255, 255, 0.08);
+      --cc-cookie-category-block-hover-bg: rgba(255, 255, 255, 0.08);
+      --cc-cookie-table-border: rgba(255, 255, 255, 0.1);
+      --cc-cookie-table-header-bg: rgba(255, 255, 255, 0.05);
+      --cc-overlay-bg: rgba(0, 0, 0, 0.5);
+      --cc-modal-border-radius: 16px;
+      --cc-btn-border-radius: 30px;
+      --cc-toggle-border-radius: 999px;
+    }
+    #cc-main .cm { max-width: 420px; }
+    #cc-main .cm__btns { flex-direction: column; gap: 8px; }
+    #cc-main .cm__btn { width: 100%; text-align: center; font-weight: 600; font-size: 15px; }
+    #cc-main .pm { max-width: 520px; }
+    #cc-main .cm__title { font-weight: 700; font-size: 18px; }
+  </style>
+
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <!-- Google Consent Mode v2 -->
+  <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      wait_for_update: 500
+    });
+    gtag('set', 'ads_data_redaction', true);
+    gtag('set', 'url_passthrough', true);
+  </script>
+
+  <!-- Google Tag Manager -->
+  <script is:inline>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-WBWGV72G');
+  </script>
+
+</head>
+
+<body class="font-sans text-brand-text bg-white antialiased">
+  <!-- GTM noscript -->
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WBWGV72G"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
+
+  <Header />
+  <slot />
+  <Footer />
+
+  <!-- Cookie Consent -->
+  <script is:inline src="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.1.0/dist/cookieconsent.umd.js"></script>
+  <script is:inline>
+    CookieConsent.run({
+      onConsent: function () {
+        if (CookieConsent.acceptedCategory('analytics')) {
+          gtag('consent', 'update', { analytics_storage: 'granted' });
+        }
+      },
+      onChange: function () {
+        if (CookieConsent.acceptedCategory('analytics')) {
+          gtag('consent', 'update', { analytics_storage: 'granted' });
+        } else {
+          gtag('consent', 'update', { analytics_storage: 'denied' });
+        }
+      },
+      guiOptions: {
+        consentModal: { layout: 'box', position: 'bottom right', equalWeightButtons: false, flipButtons: false },
+        preferencesModal: { layout: 'box', equalWeightButtons: true, flipButtons: false }
+      },
+      categories: {
+        necessary: { enabled: true, readOnly: true },
+        analytics: {
+          enabled: false,
+          autoClear: { cookies: [{ name: /^_ga/ }, { name: '_gid' }] }
+        }
+      },
+      language: {
+        default: 'pl',
+        translations: {
+          pl: {
+            consentModal: {
+              title: 'Używamy plików cookies',
+              description: 'Korzystamy z plików cookie do przechowywania lub uzyskiwania dostępu do informacji o urządzeniu. Zgoda na te technologie pozwoli nam przetwarzać dane, takie jak zachowanie podczas przeglądania lub unikalne identyfikatory na tej stronie. Brak wyrażenia zgody lub wycofanie zgody może niekorzystnie wpłynąć na niektóre cechy i funkcje. Więcej informacji w naszej <a href="/polityka-plikow-cookies" class="cc__link">Polityce plików cookies</a>.',
+              acceptAllBtn: 'Akceptuj wszystkie',
+              acceptNecessaryBtn: 'Tylko niezbędne',
+              showPreferencesBtn: 'Dostosuj ustawienia'
+            },
+            preferencesModal: {
+              title: 'Preferencje plików cookies',
+              acceptAllBtn: 'Akceptuj wszystkie',
+              acceptNecessaryBtn: 'Tylko niezbędne',
+              savePreferencesBtn: 'Zapisz preferencje',
+              closeIconLabel: 'Zamknij',
+              sections: [
+                { description: 'Możesz dostosować ustawienia plików cookies. Twój wybór zostanie zapisany w przeglądarce. Więcej informacji w <a href="/polityka-plikow-cookies" class="cc__link">Polityce plików cookies</a>.' },
+                { title: 'Niezbędne pliki cookies', description: 'Wymagane do prawidłowego działania strony. Nie mogą być wyłączone.', linkedCategory: 'necessary' },
+                {
+                  title: 'Analityczne pliki cookies',
+                  description: 'Pomagają nam zrozumieć, jak odwiedzający korzystają ze strony (Google Analytics). Dane są anonimizowane.',
+                  linkedCategory: 'analytics',
+                  cookieTable: {
+                    caption: 'Pliki cookies',
+                    headers: { name: 'Nazwa', domain: 'Domena', desc: 'Opis' },
+                    body: [
+                      { name: '_ga', domain: location.hostname, desc: 'Identyfikator użytkownika — przechowywany przez 2 lata' },
+                      { name: '_ga_*', domain: location.hostname, desc: 'Stan sesji Google Analytics — przechowywany przez 2 lata' },
+                      { name: '_gid', domain: location.hostname, desc: 'Identyfikator sesji — przechowywany przez 24 godziny' }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+---
+import CheckoutLayout from '../../layouts/CheckoutLayout.astro';
+import { PersonalDataStep } from '../../components/checkout/PersonalDataStep';
+---
+<CheckoutLayout
+  title="Dane osobiste — Checkout CyberCover"
+  description="Wprowadź dane osoby kontaktowej"
+  showBackButton={true}
+  backHref="/checkout/company-data"
+>
+  <PersonalDataStep client:load />
+</CheckoutLayout>

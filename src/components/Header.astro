@@ -1,0 +1,140 @@
+---
+const menuItems = [
+  { label: 'Start', href: '/' },
+  { label: 'Ochrona 360', href: '/#rozwiazanie' },
+  { label: 'Zagrożenia', href: '/#cyberzagrozenia' },
+  { label: 'Komu pomagamy', href: '/#wyzwania' },
+  { label: 'Kontakt', href: '/#stopka' },
+]
+---
+
+<header
+  class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+  id="site-header"
+>
+  <div class="max-w-[1480px] mx-auto px-5 py-4" id="header-wrapper">
+    <div class="flex items-center justify-between bg-brand-bg border border-brand-border rounded-full px-6 h-[70px]" id="header-pill">
+      <!-- Logo -->
+      <a href="/" class="shrink-0">
+        <img
+          src="/img/logo-cyber-cover.svg"
+          alt="logo Cyber Cover"
+          width="250"
+          height="39"
+          class="h-[39px] w-auto"
+        />
+      </a>
+
+      <!-- Desktop nav -->
+      <nav id="desktop-nav" class="hidden lg:flex items-center gap-6">
+        {menuItems.map(item => (
+          <a
+            href={item.href}
+            class="text-black font-semibold text-body-lg hover:text-brand-navy transition-colors"
+          >
+            {item.label}
+          </a>
+        ))}
+        <a
+          href="https://dev-portal.cybercover.pl/auth"
+          target="_blank"
+          rel="noopener"
+          class="ml-2 bg-black hover:bg-black/85 text-white font-semibold text-body-lg px-7 py-3 rounded-full transition-colors"
+        >
+          Portal Klienta
+        </a>
+        <a
+          href="/cennik"
+          class="bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-body-lg px-7 py-3 rounded-full transition-colors inline-flex items-center gap-2"
+        >
+          Sprawdź cenę
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </nav>
+
+      <!-- Mobile toggle -->
+      <button
+        id="menu-toggle"
+        class="lg:hidden flex flex-col gap-1.5 p-2"
+        aria-label="Otwórz menu"
+      >
+        <span class="block w-6 h-0.5 bg-black transition-transform" id="bar1"></span>
+        <span class="block w-6 h-0.5 bg-black transition-opacity" id="bar2"></span>
+        <span class="block w-6 h-0.5 bg-black transition-transform" id="bar3"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div
+    id="mobile-menu"
+    class="lg:hidden hidden fixed inset-0 top-[90px] bg-white z-40 px-6 py-8 overflow-y-auto"
+  >
+    <nav class="flex flex-col gap-1">
+      {menuItems.map(item => (
+        <a
+          href={item.href}
+          class="text-black font-semibold text-lg py-4 border-b border-brand-border-light hover:text-brand-navy transition-colors mobile-link"
+        >
+          {item.label}
+        </a>
+      ))}
+      <a
+        href="https://dev-portal.cybercover.pl/auth"
+        target="_blank"
+        rel="noopener"
+        class="mt-6 bg-black hover:bg-black/85 text-white font-semibold text-lg px-7 py-4 rounded-full text-center transition-colors mobile-link"
+      >
+        Portal Klienta
+      </a>
+      <a
+        href="/cennik"
+        class="mt-3 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-lg px-7 py-4 rounded-full text-center transition-colors mobile-link inline-flex items-center justify-center gap-2"
+      >
+        Sprawdź cenę
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById('menu-toggle')
+  const menu = document.getElementById('mobile-menu')
+  const bar1 = document.getElementById('bar1')
+  const bar2 = document.getElementById('bar2')
+  const bar3 = document.getElementById('bar3')
+
+  let isOpen = false
+
+  toggle?.addEventListener('click', () => {
+    isOpen = !isOpen
+    menu?.classList.toggle('hidden', !isOpen)
+    bar1?.classList.toggle('rotate-45', isOpen)
+    bar1?.classList.toggle('translate-y-[4px]', isOpen)
+    bar2?.classList.toggle('opacity-0', isOpen)
+    bar3?.classList.toggle('-rotate-45', isOpen)
+    bar3?.classList.toggle('-translate-y-[4px]', isOpen)
+    document.body.classList.toggle('overflow-hidden', isOpen)
+    toggle?.setAttribute('aria-label', isOpen ? 'Zamknij menu' : 'Otwórz menu')
+  })
+
+  document.querySelectorAll('.mobile-link').forEach(link => {
+    link.addEventListener('click', () => {
+      isOpen = false
+      menu?.classList.add('hidden')
+      document.body.classList.remove('overflow-hidden')
+    })
+  })
+
+  // White header on cennik page
+  const headerPill = document.getElementById('header-pill')
+  if (headerPill && window.location.pathname.startsWith('/cennik')) {
+    headerPill.classList.remove('bg-brand-bg')
+    headerPill.classList.add('bg-white')
+  }
+</script>

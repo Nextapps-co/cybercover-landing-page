@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1900" height="505" viewBox="0 0 1900 505">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.309" y1="0.489" x2="2.965" y2="0.343" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-opacity="0"/>
+      <stop offset="1" stop-color="#a7a7a7" stop-opacity="0.251"/>
+    </linearGradient>
+    <clipPath id="clip-tlo-niebieskie-kula-1">
+      <rect width="1900" height="505"/>
+    </clipPath>
+  </defs>
+  <g id="tlo-niebieskie-kula-1" clip-path="url(#clip-tlo-niebieskie-kula-1)">
+    <rect width="1900" height="505" fill="#edf8ff"/>
+    <path id="Path_354" data-name="Path 354" d="M172.57,0C284.13,0,374.58,89.55,374.58,200S284.14,400,172.57,400V0Z" transform="translate(763.43 53)" fill="url(#linear-gradient)"/>
+  </g>
+</svg>

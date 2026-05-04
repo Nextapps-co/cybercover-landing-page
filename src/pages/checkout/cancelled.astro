@@ -1,0 +1,11 @@
+---
+import CheckoutLayout from '../../layouts/CheckoutLayout.astro';
+import { StripeCancelledRetry } from '../../components/checkout/StripeCancelledRetry';
+---
+<CheckoutLayout
+  title="Płatność anulowana — CyberCover"
+  description="Spróbuj ponownie lub wybierz inną metodę płatności"
+  showBackButton={false}
+>
+  <StripeCancelledRetry client:load />
+</CheckoutLayout>

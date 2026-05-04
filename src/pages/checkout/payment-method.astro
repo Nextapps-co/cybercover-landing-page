@@ -1,0 +1,12 @@
+---
+import CheckoutLayout from '../../layouts/CheckoutLayout.astro';
+import { PaymentMethodStep } from '../../components/checkout/PaymentMethodStep';
+---
+<CheckoutLayout
+  title="Metoda płatności — Checkout CyberCover"
+  description="Wybierz metodę płatności"
+  showBackButton={true}
+  backHref="/checkout/operational-standards"
+>
+  <PaymentMethodStep client:load />
+</CheckoutLayout>

@@ -1,0 +1,19 @@
+---
+import BaseLayout from './BaseLayout.astro'
+
+interface Props {
+  title: string
+  description: string
+}
+
+const { title, description } = Astro.props
+---
+
+<BaseLayout title={`${title} – Cyber Cover`} description={description}>
+  <div class="max-w-[1210px] mx-auto px-6 pt-36 lg:pt-40 pb-16 lg:pb-20">
+    <h1 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-8">{title}</h1>
+    <div class="prose prose-lg max-w-none text-brand-text prose-headings:text-black prose-headings:font-semibold prose-h2:text-[26px] prose-h2:mt-10 prose-h2:mb-4 prose-p:mb-4 prose-li:mb-2 prose-ol:pl-6 prose-ul:pl-6 prose-a:text-[#32a0df] prose-a:no-underline hover:prose-a:underline prose-strong:text-black">
+      <slot />
+    </div>
+  </div>
+</BaseLayout>
