@@ -1,0 +1,15 @@
+image: atlassian/default-image:3
+
+pipelines:
+  # Automated pipeline for syncing Bitbucket repository with its GitHub mirror, ensuring real-time updates across platforms
+  branches:
+    '*':
+      - step:
+          name: Sync GitHub Mirror
+          image: alpine/git:latest
+          clone:
+            enabled: false
+          script:
+            - git clone --bare git@bitbucket.org:nextappspl/cybercover-landing-page.git
+            - cd cybercover-landing-page.git
+            - git push --mirror git@github.com:Nextapps-co/cybercover-landing-page.git
