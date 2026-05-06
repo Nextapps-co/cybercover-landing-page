@@ -4,7 +4,8 @@ import { FormActions } from './FormActions';
 import { FormAlert } from './FormAlert';
 import { SummaryDataCard } from './SummaryDataCard';
 import { SummaryPlanCard } from './SummaryPlanCard';
-import { getOrderSession } from '../../lib/state/order-session';
+import { getOrderSession, resolveOsSkipped } from '../../lib/state/order-session';
+import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
 import { canAccessStep } from '../../lib/state/checkout-navigation';
 import { getOrder, confirmOrder, createStripeCheckoutSession } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
@@ -32,6 +33,7 @@ export function ConfirmStep() {
   const [hydrating, setHydrating] = useState(true);
   const [hydrationError, setHydrationError] = useState<string | null>(null);
   const [order, setOrder] = useState<OrderResponseDto | null>(null);
+  const [osSkipped, setOsSkipped] = useState(false);
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
   const [confirming, setConfirming] = useState(false);
 
@@ -45,8 +47,9 @@ export function ConfirmStep() {
 
     (async () => {
       try {
-        const o = await getOrder(id);
+        const [o, skipped] = await Promise.all([getOrder(id), resolveOsSkipped(id)]);
         if (cancelled) return;
+        setOsSkipped(skipped);
         if (!canAccessStep(4, o.checkoutProgress) || !o.checkoutProgress.hasPaymentMethod) {
           const next = !o.checkoutProgress.hasCompanyData
             ? 'company-data'
@@ -55,7 +58,7 @@ export function ConfirmStep() {
               : !o.checkoutProgress.hasOperationalStandards
                 ? 'operational-standards'
                 : 'payment-method';
-          window.location.assign(`/checkout/${next}?orderId=${encodeURIComponent(id)}`);
+          navigateBackward(`/checkout/${next}?orderId=${encodeURIComponent(id)}`);
           return;
         }
         setOrder(o);
@@ -94,11 +97,11 @@ export function ConfirmStep() {
       // BANK_TRANSFER
       if (promoZero) {
         // Flow C — no ProForma issued. Order already moves to PENDING_ALLOCATION.
-        window.location.assign(withOrderId('/checkout/success', orderId));
+        navigateForward(withOrderId('/checkout/success', orderId));
         return;
       }
       const token = result.confirmationToken ?? '';
-      window.location.assign(
+      navigateForward(
         `/checkout/bank-transfer?orderId=${encodeURIComponent(orderId)}&token=${encodeURIComponent(token)}`,
       );
     } catch (err) {
@@ -137,7 +140,7 @@ export function ConfirmStep() {
   return (
     <div className="bg-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <CheckoutProgressBar currentStep={5} />
+        <CheckoutProgressBar currentStep={5} osSkipped={osSkipped} />
         <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-4xl text-black mb-12">
           Podsumowanie
         </h1>
@@ -192,7 +195,7 @@ export function ConfirmStep() {
 
         <form onSubmit={(e) => { e.preventDefault(); void handleConfirm(); }}>
           <FormActions
-            onBack={() => window.location.assign(withOrderId('/checkout/payment-method', orderId))}
+            onBack={() => navigateBackward(withOrderId('/checkout/payment-method', orderId))}
             submitLabel="Zamawiam z obowiązkiem zapłaty"
             submitting={confirming}
             submittingLabel="Potwierdzanie…"

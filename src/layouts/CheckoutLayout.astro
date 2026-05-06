@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css'
 import CheckoutHeader from '../components/CheckoutHeader.astro'
+import { ClientRouter } from 'astro:transitions'
 
 interface Props {
   title: string
@@ -26,6 +27,8 @@ const { title, description = 'Proces zamówienia CyberCover.', showBackButton = 
 
   <title>{title}</title>
   <meta name="description" content={description} />
+
+  <ClientRouter />
 
   <link rel="icon" href="/img/cropped-favicon-4-32x32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/img/cropped-favicon-4-32x32.png" />
@@ -109,9 +112,29 @@ const { title, description = 'Proces zamówienia CyberCover.', showBackButton = 
   </noscript>
 
   <CheckoutHeader showBackButton={showBackButton} backHref={backHref} />
-  <main class="min-h-screen pt-[100px]">
+  <main class="min-h-screen pt-[100px]" style="view-transition-name: checkout-content;">
     <slot />
   </main>
+
+  <!-- Direction-aware View Transitions: forward / back routing decides which slide
+       to play. Programmatic nav sets data-checkout-direction explicitly via the
+       checkout-transition helper; browser back/forward (history traverse) is
+       inferred from the navigation type and forced to "backward". -->
+  <script>
+    document.addEventListener('astro:before-preparation', (event: any) => {
+      // Only override if the helper hasn't already set a direction. Browser
+      // back/forward = traverse → backward; everything else without a flag
+      // defaults to forward.
+      const root = document.documentElement;
+      if (root.hasAttribute('data-checkout-direction')) return;
+      const isTraverse = event?.navigationType === 'traverse';
+      root.setAttribute('data-checkout-direction', isTraverse ? 'backward' : 'forward');
+    });
+    document.addEventListener('astro:after-swap', () => {
+      // Clean up so the next navigation starts from a blank slate.
+      document.documentElement.removeAttribute('data-checkout-direction');
+    });
+  </script>
 
   <!-- Cookie Consent -->
   <script is:inline src="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.1.0/dist/cookieconsent.umd.js"></script>

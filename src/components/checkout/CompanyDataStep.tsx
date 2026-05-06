@@ -7,7 +7,8 @@ import { FormField } from './FormField';
 import { FormActions } from './FormActions';
 import { FormAlert } from './FormAlert';
 import { NipLookupField } from './NipLookupField';
-import { getOrderSession } from '../../lib/state/order-session';
+import { getOrderSession, resolveOsSkipped } from '../../lib/state/order-session';
+import { navigateForward } from '../../lib/state/checkout-transition';
 import { saveFormState, getFormState } from '../../lib/state/form-persistence';
 import { getOrder, submitCompanyData } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
@@ -40,6 +41,7 @@ export function CompanyDataStep() {
   const [hydrationError, setHydrationError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [osSkipped, setOsSkipped] = useState(false);
 
   const form = useForm<CompanyDataFormValues>({
     mode: 'onTouched',
@@ -76,8 +78,12 @@ export function CompanyDataStep() {
 
     (async () => {
       try {
-        const order = await getOrder(id);
+        // §2.6 — first wizard page after start: resolve and persist osSkipped to
+        // OrderSession in parallel with the order fetch, so subsequent steps
+        // don't need extra requests to render the progress bar.
+        const [order, skipped] = await Promise.all([getOrder(id), resolveOsSkipped(id)]);
         if (cancelled) return;
+        setOsSkipped(skipped);
 
         // Prefer backend's stored data; fall back to local form-persistence draft
         if (order.companyData) {
@@ -145,7 +151,7 @@ export function CompanyDataStep() {
       saveFormState('company-data', data);
 
       if (state.nextRequiredStep === 'PERSONAL_DATA' || state.progress.hasCompanyData) {
-        window.location.assign(`/checkout/personal-data?orderId=${encodeURIComponent(orderId)}`);
+        navigateForward(`/checkout/personal-data?orderId=${encodeURIComponent(orderId)}`);
       }
     } catch (err) {
       const t = translateApiError(err);
@@ -192,7 +198,7 @@ export function CompanyDataStep() {
   return (
     <div className="bg-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <CheckoutProgressBar currentStep={1} />
+        <CheckoutProgressBar currentStep={1} osSkipped={osSkipped} />
 
         <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-4xl text-black mb-12">
           Dane firmy

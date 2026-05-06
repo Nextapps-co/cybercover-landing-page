@@ -44,3 +44,58 @@ html {
 [id] {
   scroll-margin-top: 120px;
 }
+
+/* ────────────────────────────────────────────────────────────────────────
+   Checkout View Transitions — direction-aware slide between wizard steps.
+   Driven by data-checkout-direction on <html> (set by checkout-transition.ts
+   for programmatic nav, and by CheckoutLayout's astro:before-preparation
+   listener for browser back/forward).
+   ──────────────────────────────────────────────────────────────────────── */
+
+@keyframes checkout-slide-out-left {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-6%); }
+}
+@keyframes checkout-slide-in-right {
+  from { opacity: 0; transform: translateX(6%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes checkout-slide-out-right {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(6%); }
+}
+@keyframes checkout-slide-in-left {
+  from { opacity: 0; transform: translateX(-6%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Forward (Dalej) — old slides out left, new comes in from right */
+html[data-checkout-direction="forward"]::view-transition-old(checkout-content) {
+  animation: checkout-slide-out-left 280ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+html[data-checkout-direction="forward"]::view-transition-new(checkout-content) {
+  animation: checkout-slide-in-right 280ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Backward (Wstecz / browser back) — old slides out right, new comes in from left */
+html[data-checkout-direction="backward"]::view-transition-old(checkout-content) {
+  animation: checkout-slide-out-right 280ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+html[data-checkout-direction="backward"]::view-transition-new(checkout-content) {
+  animation: checkout-slide-in-left 280ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Header / chrome (root group) — instant swap, no fade flicker between
+   visually-identical headers. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* Respect motion preferences — fall back to instant swap. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(checkout-content),
+  ::view-transition-new(checkout-content) {
+    animation: none;
+  }
+}

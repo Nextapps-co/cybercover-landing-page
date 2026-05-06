@@ -8,9 +8,10 @@ import { FormActions } from './FormActions';
 import { FormAlert } from './FormAlert';
 import { PhoneField } from './PhoneField';
 import { ConsentCheckbox } from './ConsentCheckbox';
-import { getOrderSession } from '../../lib/state/order-session';
+import { getOrderSession, resolveOsSkipped } from '../../lib/state/order-session';
+import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
 import { saveFormState, getFormState } from '../../lib/state/form-persistence';
-import { canAccessStep } from '../../lib/state/checkout-navigation';
+import { canAccessStep, stepToUrl } from '../../lib/state/checkout-navigation';
 import { fetchConsentDefinitions, getOrder, submitPersonalData } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
@@ -42,6 +43,7 @@ export function PersonalDataStep() {
   const [consentDefinitions, setConsentDefinitions] = useState<ConsentDefinitionDto[]>([]);
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [osSkipped, setOsSkipped] = useState(false);
 
   const { register, handleSubmit, control, watch, setValue, setError, reset, formState: { errors } } =
     useForm<PersonalDataFormValues>({
@@ -63,12 +65,17 @@ export function PersonalDataStep() {
 
     (async () => {
       try {
-        const [order, defs] = await Promise.all([getOrder(id), fetchConsentDefinitions()]);
+        const [order, defs, skipped] = await Promise.all([
+          getOrder(id),
+          fetchConsentDefinitions(),
+          resolveOsSkipped(id),
+        ]);
         if (cancelled) return;
         if (!canAccessStep(2, order.checkoutProgress)) {
-          window.location.assign(`/checkout/company-data?orderId=${encodeURIComponent(id)}`);
+          navigateBackward(`/checkout/company-data?orderId=${encodeURIComponent(id)}`);
           return;
         }
+        setOsSkipped(skipped);
         setConsentDefinitions(defs);
 
         const draft = getFormState<PersonalDataFormValues>('personal-data');
@@ -141,7 +148,10 @@ export function PersonalDataStep() {
       const state = await submitPersonalData(orderId, payload);
       saveFormState('personal-data', data);
       if (state.progress.hasPersonalData) {
-        window.location.assign(`/checkout/operational-standards?orderId=${encodeURIComponent(orderId)}`);
+        // §2.6 — for plans without insurance, BE auto-marks OS as done and
+        // nextRequiredStep skips straight to PAYMENT_METHOD.
+        const next = state.nextRequiredStep ?? 'OPERATIONAL_STANDARDS';
+        navigateForward(`${stepToUrl(next)}?orderId=${encodeURIComponent(orderId)}`);
       }
     } catch (err) {
       const t = translateApiError(err);
@@ -185,7 +195,7 @@ export function PersonalDataStep() {
   return (
     <div className="bg-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <CheckoutProgressBar currentStep={2} />
+        <CheckoutProgressBar currentStep={2} osSkipped={osSkipped} />
         <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-4xl text-black mb-12">
           Dane osobiste
         </h1>
@@ -242,7 +252,7 @@ export function PersonalDataStep() {
               </FormStep>
 
               <FormActions
-                onBack={() => window.location.assign(`/checkout/company-data?orderId=${encodeURIComponent(orderId ?? '')}`)}
+                onBack={() => navigateBackward(`/checkout/company-data?orderId=${encodeURIComponent(orderId ?? '')}`)}
                 submitLabel="Dalej"
                 submitting={submitting}
               />

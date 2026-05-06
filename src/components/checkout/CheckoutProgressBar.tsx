@@ -1,11 +1,14 @@
 interface Step {
-  number: number;
+  number: number;        // canonical (1=CompanyData, 2=PersonalData, 3=OS, 4=Payment, 5=Confirm)
   label: string;
   path: string;
 }
 
 interface CheckoutProgressBarProps {
+  // Canonical step number (1..5). The bar maps to display position when osSkipped hides step 3.
   currentStep: number;
+  // §2.6 — when true, the OS step is filtered out and remaining steps are renumbered (4 total).
+  osSkipped?: boolean;
 }
 
 const STEPS: Step[] = [
@@ -16,13 +19,20 @@ const STEPS: Step[] = [
   { number: 5, label: 'Potwierdzenie',       path: '/checkout/confirm' },
 ];
 
-export function CheckoutProgressBar({ currentStep }: CheckoutProgressBarProps) {
+export function CheckoutProgressBar({ currentStep, osSkipped }: CheckoutProgressBarProps) {
+  const visibleSteps = (osSkipped ? STEPS.filter(s => s.number !== 3) : STEPS)
+    .map((s, i) => ({ ...s, displayNumber: i + 1 }));
+
+  const currentVisible = visibleSteps.find(s => s.number === currentStep);
+  const currentDisplay = currentVisible?.displayNumber ?? currentStep;
+  const totalDisplay = visibleSteps.length;
+
   return (
     <div className="mb-12">
       <div className="max-w-4xl mx-auto">
         {/* Desktop */}
         <div className="hidden md:flex items-start justify-between">
-          {STEPS.map((step, index) => (
+          {visibleSteps.map((step, index) => (
             <div key={step.number} className="flex items-start flex-1">
               <div className="flex flex-col items-center">
                 <div
@@ -39,7 +49,7 @@ export function CheckoutProgressBar({ currentStep }: CheckoutProgressBarProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
-                    step.number
+                    step.displayNumber
                   )}
                 </div>
                 <span
@@ -52,7 +62,7 @@ export function CheckoutProgressBar({ currentStep }: CheckoutProgressBarProps) {
                   {step.label}
                 </span>
               </div>
-              {index < STEPS.length - 1 && (
+              {index < visibleSteps.length - 1 && (
                 <div className="flex-1 flex items-center h-10">
                   <div className="w-full h-0.5 mx-4 bg-[#EAEAE8] relative">
                     <div
@@ -71,16 +81,16 @@ export function CheckoutProgressBar({ currentStep }: CheckoutProgressBarProps) {
         <div className="md:hidden">
           <div className="flex items-center justify-between mb-4">
             <span className="font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-sm text-black">
-              Krok {currentStep} z {STEPS.length}
+              Krok {currentDisplay} z {totalDisplay}
             </span>
             <span className="font-['Plus_Jakarta_Sans',sans-serif] font-normal text-sm text-[#6b6966]">
-              {STEPS[currentStep - 1]?.label}
+              {currentVisible?.label}
             </span>
           </div>
           <div className="w-full h-2 bg-[#f8f7f4] rounded-full overflow-hidden">
             <div
               className="h-full bg-[#FED64B] transition-all duration-300"
-              style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
+              style={{ width: `${(currentDisplay / totalDisplay) * 100}%` }}
             />
           </div>
         </div>

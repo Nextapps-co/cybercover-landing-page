@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { FormAlert } from './FormAlert';
 import { createStripeCheckoutSession, getOrder } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
+import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
 import type { OrderResponseDto } from '../../lib/api/types/order';
 
 function readOrderIdFromUrl(): string | null {
@@ -60,12 +61,12 @@ export function StripeCancelledRetry() {
 
   const handleChangeMethod = () => {
     const id = readOrderIdFromUrl();
-    window.location.assign(`/checkout/payment-method${id ? `?orderId=${encodeURIComponent(id)}` : ''}`);
+    navigateBackward(`/checkout/payment-method${id ? `?orderId=${encodeURIComponent(id)}` : ''}`);
   };
 
   const handleSkipSetup = () => {
     const id = readOrderIdFromUrl();
-    window.location.assign(`/checkout/success${id ? `?orderId=${encodeURIComponent(id)}` : ''}`);
+    navigateForward(`/checkout/success${id ? `?orderId=${encodeURIComponent(id)}` : ''}`);
   };
 
   if (hydrating) {

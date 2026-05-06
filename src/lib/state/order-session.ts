@@ -4,6 +4,7 @@
 
 import type { BillingCycle } from '../api/types/money';
 import type { StartOrderResponseDto } from '../api/types/order';
+import { getOperationalStandardsSchema } from '../api/orders';
 
 export interface PlanSnapshot {
   planName: string;             // Display name (already in user's language; PricingCards passes Polish title via render-policy)
@@ -19,6 +20,10 @@ export interface OrderSession {
   partnerCode?: string;
   planSnapshot: PlanSnapshot;
   createdAt: string;            // ISO timestamp
+  // §2.6 — true for plans without InsuranceCoverage (e.g. Standard).
+  // Resolved once via /operational-standards-schema and cached for the wizard
+  // lifetime so subsequent steps don't need extra requests.
+  osSkipped?: boolean;
 }
 
 export const STORAGE_KEY = 'cybercover:order-session';
@@ -26,13 +31,15 @@ export const STORAGE_KEY = 'cybercover:order-session';
 function isValidSession(value: unknown): value is OrderSession {
   if (!value || typeof value !== 'object') return false;
   const obj = value as Record<string, unknown>;
+  const osSkippedOk = obj.osSkipped === undefined || typeof obj.osSkipped === 'boolean';
   return (
     typeof obj.orderId === 'string' &&
     typeof obj.catalogEntryId === 'string' &&
     (obj.billingCycle === 'MONTHLY' || obj.billingCycle === 'ANNUAL') &&
     typeof obj.planSnapshot === 'object' &&
     obj.planSnapshot !== null &&
-    typeof (obj.planSnapshot as Record<string, unknown>).planName === 'string'
+    typeof (obj.planSnapshot as Record<string, unknown>).planName === 'string' &&
+    osSkippedOk
   );
 }
 
@@ -86,3 +93,29 @@ export function setFromStartOrderResponse(
 export const getOrderSession = loadFromStorage;
 export const saveOrderSession = persistToStorage;
 export const clearOrderSession = clearSession;
+
+/**
+ * Returns whether the operational-standards step is auto-skipped for this order
+ * (plans without InsuranceCoverage — §2.6). Cached on the OrderSession after the
+ * first lookup; defaults to `false` if the schema endpoint fails or no session
+ * exists, so wizards never lose the OS step due to a transient error.
+ */
+export async function resolveOsSkipped(orderId: string): Promise<boolean> {
+  const session = loadFromStorage();
+  if (session?.osSkipped !== undefined) return session.osSkipped;
+  try {
+    const schema = await getOperationalStandardsSchema(orderId);
+    const skipped = Boolean(schema.skipped);
+    if (session) persistToStorage({ ...session, osSkipped: skipped });
+    return skipped;
+  } catch {
+    return false;
+  }
+}
+
+export function persistOsSkipped(skipped: boolean): void {
+  const session = loadFromStorage();
+  if (!session) return;
+  if (session.osSkipped === skipped) return;
+  persistToStorage({ ...session, osSkipped: skipped });
+}

@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { CheckoutProgressBar } from './CheckoutProgressBar';
 import { OrderSummaryAside } from './OrderSummaryAside';
 import { FormActions } from './FormActions';
 import { FormAlert } from './FormAlert';
 import { StandardQuestion } from './StandardQuestion';
-import { getOrderSession } from '../../lib/state/order-session';
+import { getOrderSession, persistOsSkipped } from '../../lib/state/order-session';
+import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
 import { saveFormState, getFormState } from '../../lib/state/form-persistence';
 import { canAccessStep } from '../../lib/state/checkout-navigation';
 import { getOrder, getOperationalStandardsSchema, submitOperationalStandards } from '../../lib/api/orders';
@@ -14,11 +15,54 @@ import { validateOperationalStandards } from '../../lib/validation/operational-s
 import type {
   OperationalStandardsSchemaResponseDto,
   EligibilityContributionDto,
+  StandardQuestionDto,
 } from '../../lib/api/types/order';
 
 function readOrderIdFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search);
   return params.get('orderId');
+}
+
+// Question keys that are rendered as required-acknowledgement checkboxes
+// instead of YES/NO/DONT_KNOW tiles. Checking the box submits 'YES' for that
+// key; unchecked blocks form submission.
+const HARDCODED_CHECKBOX_KEYS = new Set(['BUSINESS_NOT_HEALTHCARE', 'SWU_ACKNOWLEDGED']);
+
+function isCheckboxQuestion(q: StandardQuestionDto): boolean {
+  return HARDCODED_CHECKBOX_KEYS.has(q.key);
+}
+
+interface CheckboxAcknowledgeProps {
+  question: StandardQuestionDto;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  error?: string;
+}
+
+function CheckboxAcknowledge({ question, checked, onChange, error }: CheckboxAcknowledgeProps) {
+  const id = useId();
+  const hasDescription = Boolean(question.description?.trim());
+  return (
+    <div className="flex gap-3 rounded-[12px] bg-[#f8f7f4] p-4">
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={e => onChange(e.currentTarget.checked)}
+        className="mt-1 h-4 w-4 shrink-0 rounded border-[#E4E2DF] accent-[#FED64B] cursor-pointer"
+      />
+      <div className="flex-1">
+        <label htmlFor={id} className="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#0D0D0D] leading-snug cursor-pointer">
+          <span aria-hidden="true" className="mr-0.5 text-red-500">*</span>
+          {question.label}
+        </label>
+        {hasDescription && (
+          <p className="mt-1 font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#6B6965]">{question.description}</p>
+        )}
+        {error && <p className="mt-1 text-xs text-red-500" role="alert">{error}</p>}
+      </div>
+    </div>
+  );
 }
 
 export function OperationalStandardsStep() {
@@ -49,9 +93,17 @@ export function OperationalStandardsStep() {
           getOperationalStandardsSchema(id),
         ]);
         if (cancelled) return;
+        // §2.6 — Standard (no-insurance) plan: BE marks step as auto-skipped.
+        // Jump straight to payment-method; rendering an empty form would let
+        // the user submit and trigger 409 INVALID_ORDER_STATE on PATCH.
+        persistOsSkipped(Boolean(schemaRes.skipped));
+        if (schemaRes.skipped) {
+          navigateForward(`/checkout/payment-method?orderId=${encodeURIComponent(id)}`);
+          return;
+        }
         if (!canAccessStep(3, order.checkoutProgress)) {
           const next = !order.checkoutProgress.hasCompanyData ? 'company-data' : 'personal-data';
-          window.location.assign(`/checkout/${next}?orderId=${encodeURIComponent(id)}`);
+          navigateBackward(`/checkout/${next}?orderId=${encodeURIComponent(id)}`);
           return;
         }
         setSchema(schemaRes);
@@ -86,7 +138,15 @@ export function OperationalStandardsStep() {
     e.preventDefault();
     if (!orderId || !schema) return;
 
-    const errors = validateOperationalStandards(answers, schema.questions);
+    const regularQuestions = schema.questions.filter(q => !isCheckboxQuestion(q));
+    const checkboxQuestions = schema.questions.filter(isCheckboxQuestion);
+
+    const errors = validateOperationalStandards(answers, regularQuestions);
+    for (const q of checkboxQuestions) {
+      if (answers[q.key] !== 'YES') {
+        errors[q.key] = 'Musisz potwierdzić, aby kontynuować';
+      }
+    }
     setQuestionErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -100,7 +160,7 @@ export function OperationalStandardsStep() {
         setEligibilityWarning(result.contributions.filter(c => !c.met));
         // Per spec, ineligibility doesn't block — we navigate.
       }
-      window.location.assign(`/checkout/payment-method?orderId=${encodeURIComponent(orderId)}`);
+      navigateForward(`/checkout/payment-method?orderId=${encodeURIComponent(orderId)}`);
     } catch (err) {
       const t = translateApiError(err);
       if (err instanceof ApiError && err.code === 'ORDER_NOT_FOUND') {
@@ -156,7 +216,7 @@ export function OperationalStandardsStep() {
                 </p>
               </div>
 
-              {schema.questions.map(q => (
+              {schema.questions.filter(q => !isCheckboxQuestion(q)).map(q => (
                 <StandardQuestion
                   key={q.key}
                   question={q}
@@ -168,8 +228,25 @@ export function OperationalStandardsStep() {
                 />
               ))}
 
+              {schema.questions.some(isCheckboxQuestion) && (
+                <div className="space-y-3 border-t border-[#E4E2DF] pt-6">
+                  <p className="font-['Plus_Jakarta_Sans',sans-serif] text-sm font-semibold text-[#0D0D0D]">
+                    Potwierdzenia
+                  </p>
+                  {schema.questions.filter(isCheckboxQuestion).map(q => (
+                    <CheckboxAcknowledge
+                      key={q.key}
+                      question={q}
+                      checked={answers[q.key] === 'YES'}
+                      onChange={checked => handleAnswer(q.key, checked ? 'YES' : '')}
+                      error={questionErrors[q.key]}
+                    />
+                  ))}
+                </div>
+              )}
+
               <FormActions
-                onBack={() => window.location.assign(`/checkout/personal-data?orderId=${encodeURIComponent(orderId ?? '')}`)}
+                onBack={() => navigateBackward(`/checkout/personal-data?orderId=${encodeURIComponent(orderId ?? '')}`)}
                 submitLabel="Dalej"
                 submitting={submitting}
               />

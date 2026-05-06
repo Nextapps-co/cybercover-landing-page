@@ -166,6 +166,10 @@ export interface OperationalStandardsSchemaResponseDto {
   insurerName: string;
   questions: StandardQuestionDto[];
   answerOptions: string[];
+  // §2.6.2: true for plans without `InsuranceCoverage` (Standard).
+  // When true, FE must skip the OS step (questions/answerOptions are empty,
+  // insurerName is ''). Optional for backward compat with backends pre-2026-05-06.
+  skipped?: boolean;
 }
 
 // §9.1.9 submit operational-standards
