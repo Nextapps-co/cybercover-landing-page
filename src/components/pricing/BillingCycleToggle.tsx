@@ -26,13 +26,16 @@ export function BillingCycleToggle({ value, onChange }: Props) {
         <button
           type="button"
           onClick={() => onChange('ANNUAL')}
-          className={`px-6 py-2 rounded-[8px] font-['Plus_Jakarta_Sans',sans-serif] font-medium text-[14px] tracking-[-0.14px] transition-all cursor-pointer ${
+          className={`px-6 py-2 rounded-[8px] font-['Plus_Jakarta_Sans',sans-serif] font-medium text-[14px] tracking-[-0.14px] transition-all cursor-pointer relative ${
             value === 'ANNUAL'
               ? 'bg-black text-white'
               : 'bg-transparent text-[#413f3b] hover:text-black'
           }`}
         >
-          Rocznie
+          Roczna
+          <span className="absolute -top-2 -right-2 bg-[#FED64B] text-black text-[10px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap">
+            2 mies. gratis
+          </span>
         </button>
       </div>
     </div>
