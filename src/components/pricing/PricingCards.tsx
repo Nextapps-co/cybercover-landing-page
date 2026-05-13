@@ -62,8 +62,8 @@ export function PricingCards() {
       // Resolve which value to send as `partnerCode` to /orders/start.
       // - ?partner= URL param is canonical partner channel — always treated as partnerCode.
       // - ?discountCode= preview tells us actual kind via plan.discount.kind:
-      //     PARTNER_FLAT / PARTNER_COMPOSITE / PARTNER_TIMEBOUND → must auto-attach as
-      //         partnerCode (otherwise previewed price disappears at /start).
+      //     PARTNER_FLAT / PARTNER_COMPOSITE / PARTNER_TIMEBOUND / PARTNER_TIMEBOUND_COMPOSITE
+      //         → must auto-attach as partnerCode (otherwise previewed price disappears at /start).
       //     CODE_FLAT → stays in sessionStorage and pre-fills Step 4 input.
       //     null → don't auto-attach.
       const partnerFromUrl = getPartnerFromUrl();
@@ -72,7 +72,8 @@ export function PricingCards() {
       const isPartnerKindPreview =
         previewKind === 'PARTNER_FLAT' ||
         previewKind === 'PARTNER_COMPOSITE' ||
-        previewKind === 'PARTNER_TIMEBOUND';
+        previewKind === 'PARTNER_TIMEBOUND' ||
+        previewKind === 'PARTNER_TIMEBOUND_COMPOSITE';
 
       let partnerCode: string | undefined = partnerFromUrl ?? undefined;
       if (!partnerCode && discountCodeFromUrl && isPartnerKindPreview) {

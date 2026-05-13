@@ -25,7 +25,11 @@ function withOrderId(path: string, orderId: string): string {
 function isPromoZeroOrder(order: OrderResponseDto): boolean {
   const d = order.discount;
   if (!d) return false;
-  const isPartner = d.kind === 'PARTNER_FLAT' || d.kind === 'PARTNER_COMPOSITE' || d.kind === 'PARTNER_TIMEBOUND';
+  const isPartner =
+    d.kind === 'PARTNER_FLAT' ||
+    d.kind === 'PARTNER_COMPOSITE' ||
+    d.kind === 'PARTNER_TIMEBOUND' ||
+    d.kind === 'PARTNER_TIMEBOUND_COMPOSITE';
   return isPartner && d.priceAfterDiscount === 0;
 }
 

@@ -16,7 +16,7 @@ import { ApiError } from '../../lib/api/types/errors';
 import { validateCompanyData, type CompanyDataFormValues } from '../../lib/validation/company-data';
 import { normalizeNip } from '../../lib/validation/nip';
 import { INDUSTRIES } from '../../data/industries';
-import type { CompanyLookupDataDto } from '../../lib/api/types/order';
+import type { CompanyLookupDataDto, OrderResponseDto } from '../../lib/api/types/order';
 
 const INITIAL_VALUES: CompanyDataFormValues = {
   nip: '', name: '', street: '', city: '', postalCode: '', industry: '',
@@ -37,6 +37,7 @@ function industryValueFromLabel(label: string): string {
 
 export function CompanyDataStep() {
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [order, setOrder] = useState<OrderResponseDto | null>(null);
   const [hydrating, setHydrating] = useState(true);
   const [hydrationError, setHydrationError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
@@ -83,6 +84,7 @@ export function CompanyDataStep() {
         // don't need extra requests to render the progress bar.
         const [order, skipped] = await Promise.all([getOrder(id), resolveOsSkipped(id)]);
         if (cancelled) return;
+        setOrder(order);
         setOsSkipped(skipped);
 
         // Prefer backend's stored data; fall back to local form-persistence draft
@@ -261,7 +263,7 @@ export function CompanyDataStep() {
           </div>
 
           <aside className="lg:col-span-1">
-            <OrderSummaryAside />
+            <OrderSummaryAside order={order} />
           </aside>
         </div>
       </div>

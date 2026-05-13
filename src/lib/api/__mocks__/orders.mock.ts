@@ -441,6 +441,7 @@ const PARTNER_DISCOUNT_KINDS: ReadonlyArray<OrderDiscountDto['kind']> = [
   'PARTNER_FLAT',
   'PARTNER_COMPOSITE',
   'PARTNER_TIMEBOUND',
+  'PARTNER_TIMEBOUND_COMPOSITE',
 ];
 
 export async function selectPaymentMethodMock(

@@ -22,7 +22,12 @@ function readOrderIdFromUrl(): string | null {
 
 function hasPartnerDiscount(order: OrderResponseDto): boolean {
   const kind = order.discount?.kind;
-  return kind === 'PARTNER_FLAT' || kind === 'PARTNER_COMPOSITE' || kind === 'PARTNER_TIMEBOUND';
+  return (
+    kind === 'PARTNER_FLAT' ||
+    kind === 'PARTNER_COMPOSITE' ||
+    kind === 'PARTNER_TIMEBOUND' ||
+    kind === 'PARTNER_TIMEBOUND_COMPOSITE'
+  );
 }
 
 export function PaymentMethodStep() {
@@ -240,7 +245,7 @@ export function PaymentMethodStep() {
           </div>
 
           <aside className="lg:col-span-1">
-            <OrderSummaryAside />
+            <OrderSummaryAside order={order} />
           </aside>
         </div>
       </div>

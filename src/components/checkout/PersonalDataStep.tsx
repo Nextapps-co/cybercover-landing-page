@@ -16,7 +16,7 @@ import { fetchConsentDefinitions, getOrder, submitPersonalData } from '../../lib
 import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
 import { validatePersonalData, type PersonalDataFormValues } from '../../lib/validation/personal-data';
-import type { ConsentDefinitionDto } from '../../lib/api/types/order';
+import type { ConsentDefinitionDto, OrderResponseDto } from '../../lib/api/types/order';
 
 const INITIAL_VALUES: PersonalDataFormValues = {
   firstName: '',
@@ -38,6 +38,7 @@ function stripCountryPrefix(phone: string): string {
 
 export function PersonalDataStep() {
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [order, setOrder] = useState<OrderResponseDto | null>(null);
   const [hydrating, setHydrating] = useState(true);
   const [hydrationError, setHydrationError] = useState<string | null>(null);
   const [consentDefinitions, setConsentDefinitions] = useState<ConsentDefinitionDto[]>([]);
@@ -75,6 +76,7 @@ export function PersonalDataStep() {
           navigateBackward(`/checkout/company-data?orderId=${encodeURIComponent(id)}`);
           return;
         }
+        setOrder(order);
         setOsSkipped(skipped);
         setConsentDefinitions(defs);
 
@@ -260,7 +262,7 @@ export function PersonalDataStep() {
           </div>
 
           <aside className="lg:col-span-1">
-            <OrderSummaryAside />
+            <OrderSummaryAside order={order} />
           </aside>
         </div>
       </div>

@@ -51,7 +51,12 @@ export interface OrderLineResponseDto {
 
 export interface OrderDiscountDto {
   code: string;
-  kind: 'CODE_FLAT' | 'PARTNER_FLAT' | 'PARTNER_COMPOSITE' | 'PARTNER_TIMEBOUND';
+  kind:
+    | 'CODE_FLAT'
+    | 'PARTNER_FLAT'
+    | 'PARTNER_COMPOSITE'
+    | 'PARTNER_TIMEBOUND'
+    | 'PARTNER_TIMEBOUND_COMPOSITE';
   originalAmount: number;       // grosze, before discount
   priceAfterDiscount: number;   // grosze, after discount (== totalPriceNet)
   discountAmount: number;       // grosze, savings

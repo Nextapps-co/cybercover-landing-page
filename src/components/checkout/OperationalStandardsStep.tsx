@@ -15,6 +15,7 @@ import { validateOperationalStandards } from '../../lib/validation/operational-s
 import type {
   OperationalStandardsSchemaResponseDto,
   EligibilityContributionDto,
+  OrderResponseDto,
   StandardQuestionDto,
 } from '../../lib/api/types/order';
 
@@ -67,6 +68,7 @@ function CheckboxAcknowledge({ question, checked, onChange, error }: CheckboxAck
 
 export function OperationalStandardsStep() {
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [order, setOrder] = useState<OrderResponseDto | null>(null);
   const [hydrating, setHydrating] = useState(true);
   const [hydrationError, setHydrationError] = useState<string | null>(null);
   const [schema, setSchema] = useState<OperationalStandardsSchemaResponseDto | null>(null);
@@ -106,6 +108,7 @@ export function OperationalStandardsStep() {
           navigateBackward(`/checkout/${next}?orderId=${encodeURIComponent(id)}`);
           return;
         }
+        setOrder(order);
         setSchema(schemaRes);
         const draft = getFormState<{ answers: Record<string, string> }>('operational-standards');
         if (draft?.answers) setAnswers(draft.answers);
@@ -254,7 +257,7 @@ export function OperationalStandardsStep() {
           </div>
 
           <aside className="lg:col-span-1">
-            <OrderSummaryAside />
+            <OrderSummaryAside order={order} />
           </aside>
         </div>
       </div>

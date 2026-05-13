@@ -10,7 +10,12 @@ import type { MoneyDto } from './money';
 
 export type FeatureMap = Record<string, string>;
 
-export type DiscountKind = 'CODE_FLAT' | 'PARTNER_FLAT' | 'PARTNER_COMPOSITE' | 'PARTNER_TIMEBOUND';
+export type DiscountKind =
+  | 'CODE_FLAT'
+  | 'PARTNER_FLAT'
+  | 'PARTNER_COMPOSITE'
+  | 'PARTNER_TIMEBOUND'
+  | 'PARTNER_TIMEBOUND_COMPOSITE';
 
 export type PlanTier = 'entry' | 'mid' | 'high' | 'top';
 
