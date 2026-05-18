@@ -1,9 +1,17 @@
 // SessionStorage manager for the active order during checkout.
 // React-friendly: pure read/write helpers (no signals).
 // Components read on mount via useEffect.
+//
+// Per spec §5.5.2 — OrderSession trzyma także auth-aware fields propagowane
+// z `StartOrderResponseDto`: orderType, wizardEntryStep, prefilledFields.
 
 import type { BillingCycle } from '../api/types/money';
-import type { StartOrderResponseDto } from '../api/types/order';
+import type {
+  StartOrderResponseDto,
+  WizardEntryStep,
+  PrefilledField,
+  OrderType,
+} from '../api/types/order';
 import { getOperationalStandardsSchema } from '../api/orders';
 
 export interface PlanSnapshot {
@@ -24,6 +32,10 @@ export interface OrderSession {
   // Resolved once via /operational-standards-schema and cached for the wizard
   // lifetime so subsequent steps don't need extra requests.
   osSkipped?: boolean;
+  // Auth-aware hints (optional dla backward compat z anonymous flow) per spec §5.5.2.
+  orderType?: OrderType;
+  wizardEntryStep?: WizardEntryStep;
+  prefilledFields?: PrefilledField[];
 }
 
 export const STORAGE_KEY = 'cybercover:order-session';
@@ -46,7 +58,7 @@ function isValidSession(value: unknown): value is OrderSession {
 export function loadFromStorage(): OrderSession | null {
   if (typeof window === 'undefined') return null;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!isValidSession(parsed)) return null;
@@ -58,12 +70,12 @@ export function loadFromStorage(): OrderSession | null {
 
 export function persistToStorage(session: OrderSession): void {
   if (typeof window === 'undefined') return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+  window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
 }
 
 export function clearSession(): void {
   if (typeof window === 'undefined') return;
-  window.localStorage.removeItem(STORAGE_KEY);
+  window.sessionStorage.removeItem(STORAGE_KEY);
 }
 
 export interface SetFromResponseInput {
@@ -84,6 +96,10 @@ export function setFromStartOrderResponse(
     partnerCode: input.partnerCode,
     planSnapshot: input.plan,
     createdAt: new Date().toISOString(),
+    // Propagate auth-aware fields per spec §5.5.2.
+    orderType: response.orderType,
+    wizardEntryStep: response.wizardEntryStep,
+    prefilledFields: response.prefilledFields,
   };
   persistToStorage(session);
   return session;

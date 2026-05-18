@@ -4,12 +4,33 @@ import type {
   OrderDiscountDto,
   OrderResponseDto,
   OrderStatus,
+  OrderType,
+  PrefilledField,
   StartOrderDto,
   StartOrderResponseDto,
+  WizardEntryStep,
 } from '../types/order';
 import type { BillingCycle } from '../types/money';
+import { getMockAuthContext } from '../../auth/mock-auth';
 
 const ordersById = new Map<string, OrderResponseDto>();
+
+// Per spec §5.9.2 — mock auth-aware hints per order: orderType + previousPlanCode dla proration calc.
+interface MockAuthMeta {
+  orderType: OrderType;
+  previousPlanCode?: string;
+  previousMonthlyPrice?: number;
+  previousAnnualPrice?: number;
+}
+const orderAuthMeta = new Map<string, MockAuthMeta>();
+
+// Helper — mapuje code → mock catalog prices (musi pasować do catalog.mock MOCK_PLANS).
+const PLAN_BY_CODE: Record<string, { monthly: number; annual: number }> = {
+  standard: { monthly: 35400, annual: 29500 },
+  optimum: { monthly: 59400, annual: 49500 },
+  professional: { monthly: 107400, annual: 89500 },
+  expert: { monthly: 191400, annual: 159500 },
+};
 
 function generateOrderId(): string {
   const rand = Math.random().toString(36).slice(2, 10);
@@ -110,7 +131,92 @@ export async function startOrderMock(dto: StartOrderDto): Promise<StartOrderResp
     createdAt: new Date().toISOString(),
   };
   ordersById.set(orderId, order);
-  return { orderId };
+
+  // Per spec §5.9.2 — decyzja orderType/wizardEntryStep/prefilledFields z mock auth context.
+  const authContext = getMockAuthContext();
+  let orderType: OrderType = 'INITIAL_PURCHASE';
+  let wizardEntryStep: WizardEntryStep = 'company-data';
+  let prefilledFields: PrefilledField[] = [];
+
+  if (authContext) {
+    const targetPlanCode = inferPlanCodeFromCatalogEntry(dto.catalogEntryId);
+
+    if (authContext.status === 'ACTIVE') {
+      orderType = 'PLAN_UPGRADE';
+      // Standard ma insurerId=null; Optimum/Pro/Ekspert mają default insurer.
+      // Standard → Optimum/Pro/Expert: cross-insurer — wymaga ops capture.
+      // Optimum → wyższy: ten sam insurer, ops już są w previous order.
+      if (authContext.planCode === 'standard' && targetPlanCode !== 'standard') {
+        wizardEntryStep = 'operational-standards';
+        prefilledFields = ['companyData', 'personalData'];
+      } else {
+        wizardEntryStep = 'payment-method';
+        prefilledFields = ['companyData', 'personalData', 'operationalStandards'];
+      }
+    } else {
+      // GRACE_PERIOD / EXPIRED / CANCELLED → reactivation
+      orderType = 'REACTIVATION';
+      wizardEntryStep = 'payment-method';
+      prefilledFields = ['companyData', 'personalData', 'operationalStandards'];
+    }
+
+    // Cache meta dla selectPaymentMethodMock (proration calc).
+    const prevPrices = PLAN_BY_CODE[authContext.planCode];
+    orderAuthMeta.set(orderId, {
+      orderType,
+      previousPlanCode: authContext.planCode,
+      previousMonthlyPrice: prevPrices?.monthly,
+      previousAnnualPrice: prevPrices?.annual,
+    });
+
+    // Auto-populate checkoutProgress dla prefilled fields (BE robi to dla nas).
+    if (prefilledFields.includes('companyData')) {
+      order.checkoutProgress = { ...order.checkoutProgress, hasCompanyData: true };
+      order.companyData = {
+        nip: '5260001246',
+        name: 'ACME Sp. z o.o.',
+        street: 'ul. Przykładowa 15',
+        city: 'Warszawa',
+        postalCode: '00-123',
+        industry: 'IT',
+      };
+    }
+    if (prefilledFields.includes('personalData')) {
+      order.checkoutProgress = { ...order.checkoutProgress, hasPersonalData: true };
+      order.personalData = {
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        email: 'jan@acme.pl',
+        phone: '+48123456789',
+      };
+    }
+    if (prefilledFields.includes('operationalStandards')) {
+      order.checkoutProgress = { ...order.checkoutProgress, hasOperationalStandards: true };
+      order.eligibilityResult = {
+        eligible: true,
+        missingRequirements: [],
+        contributions: [],
+      };
+    }
+    ordersById.set(orderId, order);
+  } else {
+    orderAuthMeta.set(orderId, { orderType: 'INITIAL_PURCHASE' });
+  }
+
+  return {
+    orderId,
+    wizardEntryStep,
+    prefilledFields,
+    orderType,
+  };
+}
+
+function inferPlanCodeFromCatalogEntry(catalogEntryId: string): string {
+  if (catalogEntryId.endsWith('standard')) return 'standard';
+  if (catalogEntryId.endsWith('optimum')) return 'optimum';
+  if (catalogEntryId.endsWith('professional')) return 'professional';
+  if (catalogEntryId.endsWith('expert')) return 'expert';
+  return 'unknown';
 }
 
 // Counts get-order calls per order so we can simulate the BC3 → BC4 → BC5 cascade
@@ -161,6 +267,7 @@ export async function getCheckoutStateMock(orderId: string): Promise<CheckoutSta
 export function resetOrdersMock(): void {
   ordersById.clear();
   fulfillmentCallCounts.clear();
+  orderAuthMeta.clear();
 }
 
 import type { CompanyLookupResponseDto, SubmitCompanyDataDto } from '../types/order';
@@ -387,7 +494,7 @@ export async function evaluateEligibilityMock(
 
 import type {
   ValidateDiscountDto, DiscountValidationResponseDto,
-  SelectPaymentMethodDto,
+  SelectPaymentMethodDto, SelectPaymentMethodResponseDto,
   ConfirmOrderResponseDto,
   CreateCheckoutSessionResponseDto,
 } from '../types/order';
@@ -447,7 +554,7 @@ const PARTNER_DISCOUNT_KINDS: ReadonlyArray<OrderDiscountDto['kind']> = [
 export async function selectPaymentMethodMock(
   orderId: string,
   dto: SelectPaymentMethodDto,
-) {
+): Promise<SelectPaymentMethodResponseDto> {
   const order = ordersById.get(orderId);
   if (!order) throw new ApiError('ORDER_NOT_FOUND', 404, 'Order not found (mock)');
   if (dto.discountCode) {
@@ -462,11 +569,58 @@ export async function selectPaymentMethodMock(
   order.paymentMethod = dto.paymentMethod;
   order.checkoutProgress = { ...order.checkoutProgress, hasPaymentMethod: true };
   ordersById.set(orderId, order);
+
+  // Per spec §5.6.2 + §5.9.2 — proration breakdown dla PLAN_UPGRADE; single base line dla innych.
+  const baseAmount = order.totalPriceNet ?? order.lines[0]?.priceNet ?? 0;
+  const catalogEntryId = order.lines[0]?.catalogEntryId ?? '';
+  const planName = order.lines[0]?.planName ?? 'Plan';
+  const meta = orderAuthMeta.get(orderId);
+
+  if (meta?.orderType === 'PLAN_UPGRADE' && meta.previousAnnualPrice && meta.previousMonthlyPrice) {
+    // Mock proration: 33% pozostały cykl, target prorated charge - previous prorated credit.
+    const prevPriceForCycle =
+      order.billingCycle === 'MONTHLY' ? meta.previousMonthlyPrice : meta.previousAnnualPrice;
+    const PRORATION_FACTOR = 0.33;
+    const targetCharge = Math.round(baseAmount * PRORATION_FACTOR);
+    const previousCredit = Math.round(prevPriceForCycle * PRORATION_FACTOR);
+    const amountDueNow = Math.max(0, targetCharge - previousCredit);
+    return {
+      orderId,
+      line: {
+        catalogEntryId,
+        pricing: {
+          kind: 'CalculatedPricing',
+          unitPrice: { amount: amountDueNow, currency: 'PLN' },
+          totalPrice: { amount: amountDueNow, currency: 'PLN' },
+          breakdown: [
+            { label: `Plan ${planName} (proracja)`, amount: { amount: targetCharge, currency: 'PLN' }, kind: 'base' },
+            { label: 'Kredyt — niewykorzystany poprzedni plan', amount: { amount: -previousCredit, currency: 'PLN' }, kind: 'discount' },
+          ],
+          calculatedAt: new Date().toISOString(),
+          componentVersion: 'mock-v1',
+        },
+      },
+      paymentMethod: dto.paymentMethod,
+    };
+  }
+
+  // INITIAL_PURCHASE / REACTIVATION — single base line, no proration.
   return {
     orderId,
-    progress: order.checkoutProgress,
-    isComplete: Object.values(order.checkoutProgress).every(Boolean),
-    nextRequiredStep: null,
+    line: {
+      catalogEntryId,
+      pricing: {
+        kind: 'CalculatedPricing',
+        unitPrice: { amount: baseAmount, currency: 'PLN' },
+        totalPrice: { amount: baseAmount, currency: 'PLN' },
+        breakdown: [
+          { label: `Plan ${planName} (12 miesięcy)`, amount: { amount: baseAmount, currency: 'PLN' }, kind: 'base' },
+        ],
+        calculatedAt: new Date().toISOString(),
+        componentVersion: 'mock-v1',
+      },
+    },
+    paymentMethod: dto.paymentMethod,
   };
 }
 

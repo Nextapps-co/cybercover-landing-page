@@ -24,7 +24,7 @@ const fixture = (): OrderSession => ({
 
 describe('order-session', () => {
   beforeEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   describe('persistToStorage / loadFromStorage', () => {
@@ -40,17 +40,17 @@ describe('order-session', () => {
     });
 
     it('loadFromStorage returns null when stored value is invalid JSON', () => {
-      localStorage.setItem(STORAGE_KEY, '{not-valid}');
+      sessionStorage.setItem(STORAGE_KEY, '{not-valid}');
       expect(loadFromStorage()).toBeNull();
     });
 
     it('loadFromStorage returns null when stored value missing orderId', () => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ catalogEntryId: 'x' }));
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ catalogEntryId: 'x' }));
       expect(loadFromStorage()).toBeNull();
     });
 
     it('loadFromStorage returns null when billingCycle is invalid', () => {
-      localStorage.setItem(
+      sessionStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({ ...fixture(), billingCycle: 'WEEKLY' }),
       );
@@ -59,7 +59,7 @@ describe('order-session', () => {
   });
 
   describe('clearSession', () => {
-    it('clears localStorage', () => {
+    it('clears sessionStorage', () => {
       persistToStorage(fixture());
       clearSession();
       expect(loadFromStorage()).toBeNull();
@@ -69,7 +69,12 @@ describe('order-session', () => {
   describe('setFromStartOrderResponse', () => {
     it('builds session + persists, returning the persisted session', () => {
       const session = setFromStartOrderResponse(
-        { orderId: 'ord_123' },
+        {
+          orderId: 'ord_123',
+          wizardEntryStep: 'company-data',
+          prefilledFields: [],
+          orderType: 'INITIAL_PURCHASE',
+        },
         {
           catalogEntryId: 'ce_mock_optimum',
           billingCycle: 'MONTHLY',
@@ -89,7 +94,11 @@ describe('order-session', () => {
 
     it('omits partnerCode when not provided', () => {
       const session = setFromStartOrderResponse(
-        { orderId: 'ord_2' },
+        {
+          orderId: 'ord_2',
+          wizardEntryStep: 'company-data',
+          prefilledFields: [],
+        },
         {
           catalogEntryId: 'ce_mock_standard',
           billingCycle: 'ANNUAL',
@@ -102,6 +111,34 @@ describe('order-session', () => {
         },
       );
       expect(session.partnerCode).toBeUndefined();
+    });
+
+    it('propagates auth-aware fields (orderType, wizardEntryStep, prefilledFields)', () => {
+      const session = setFromStartOrderResponse(
+        {
+          orderId: 'ord_3',
+          wizardEntryStep: 'payment-method',
+          prefilledFields: ['companyData', 'personalData', 'operationalStandards'],
+          orderType: 'PLAN_UPGRADE',
+        },
+        {
+          catalogEntryId: 'ce_mock_professional',
+          billingCycle: 'ANNUAL',
+          plan: {
+            planName: 'Profesjonalny',
+            priceMinorUnits: 89500,
+            currency: 'PLN',
+            description: 'Pro',
+          },
+        },
+      );
+      expect(session.wizardEntryStep).toBe('payment-method');
+      expect(session.prefilledFields).toEqual(['companyData', 'personalData', 'operationalStandards']);
+      expect(session.orderType).toBe('PLAN_UPGRADE');
+
+      const reloaded = loadFromStorage();
+      expect(reloaded?.wizardEntryStep).toBe('payment-method');
+      expect(reloaded?.orderType).toBe('PLAN_UPGRADE');
     });
   });
 });

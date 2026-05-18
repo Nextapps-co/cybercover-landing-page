@@ -137,7 +137,21 @@ export function PaymentMethodStep() {
     try {
       const dto: { paymentMethod: PaymentMethod; discountCode?: string } = { paymentMethod };
       if (discountState.status === 'applied') dto.discountCode = discountState.code;
-      await selectPaymentMethod(orderId, dto);
+      const response = await selectPaymentMethod(orderId, dto);
+
+      // Per spec §5.6.4 — zapisz pricing snapshot żeby ConfirmStep mógł wyrenderować
+      // ProrationBreakdown gdy orderType === 'PLAN_UPGRADE'.
+      if (response.line?.pricing) {
+        try {
+          window.sessionStorage.setItem(
+            'cybercover:pricing-snapshot',
+            JSON.stringify({ orderId, pricing: response.line.pricing }),
+          );
+        } catch {
+          /* quota / storage disabled — ProrationBreakdown będzie skipped, nie blokujemy flow */
+        }
+      }
+
       saveFormState('payment-method', { paymentMethod });
       if (discountState.status === 'applied') clearDiscountCode();
       navigateForward(`/checkout/confirm?orderId=${encodeURIComponent(orderId)}`);

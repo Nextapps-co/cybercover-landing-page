@@ -105,6 +105,30 @@ const jsonLd = {
 
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
+  <!-- Auth-aware: hide site nav header + lock routing to /cennik when logged in.
+       Inline style + sync script run before <body> parses, no FOUC. -->
+  <style is:inline>
+    html[data-auth-aware="true"] [data-site-header] { display: none; }
+  </style>
+  <script is:inline>
+    (function () {
+      try {
+        var search = window.location.search;
+        var hasToken = !!sessionStorage.getItem('cybercover:auth-access');
+        var hasHandoff = /[?&]handoff=/.test(search);
+        var hasMockAuth = /[?&]mockAuth=/.test(search);
+        if (!(hasToken || hasHandoff || hasMockAuth)) return;
+        var path = window.location.pathname;
+        var allowed = path === '/cennik' || path === '/cennik/' || path.indexOf('/checkout') === 0;
+        if (!allowed) {
+          window.location.replace('/cennik' + search + window.location.hash);
+          return;
+        }
+        document.documentElement.setAttribute('data-auth-aware', 'true');
+      } catch (e) { /* sessionStorage unavailable — fall through to anonymous render */ }
+    })();
+  </script>
+
   <!-- Google Consent Mode v2 -->
   <script is:inline>
     window.dataLayer = window.dataLayer || [];

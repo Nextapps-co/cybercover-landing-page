@@ -62,6 +62,13 @@ export function PersonalDataStep() {
     const session = getOrderSession();
     if (!session || session.orderId !== id) { window.location.assign('/cennik'); return; }
 
+    // Per spec §5.5.3 — auth-aware skip: backend już ma personalData z poprzedniego order'u.
+    if (session.prefilledFields?.includes('personalData')) {
+      const target = session.wizardEntryStep ?? 'payment-method';
+      navigateForward(`/checkout/${target}?orderId=${encodeURIComponent(id)}`);
+      return;
+    }
+
     setOrderId(id);
 
     (async () => {

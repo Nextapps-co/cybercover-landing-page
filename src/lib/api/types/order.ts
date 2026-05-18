@@ -1,6 +1,6 @@
 // checkout-flow.md §9.1 — Sales Order DTOs.
 
-import type { BillingCycle } from './money';
+import type { BillingCycle, MoneyDto } from './money';
 
 export type OrderStatus =
   | 'DRAFT'
@@ -13,6 +13,11 @@ export type OrderStatus =
 
 export type PaymentMethod = 'STRIPE_CHECKOUT' | 'BANK_TRANSFER';
 
+// Per spec §5.5.1 — wizard entry step + prefilled fields + order type.
+export type WizardEntryStep = 'company-data' | 'personal-data' | 'operational-standards' | 'payment-method';
+export type PrefilledField = 'companyData' | 'personalData' | 'operationalStandards';
+export type OrderType = 'INITIAL_PURCHASE' | 'PLAN_UPGRADE' | 'REACTIVATION';
+
 export type CheckoutStep = 'COMPANY_DATA' | 'PERSONAL_DATA' | 'OPERATIONAL_STANDARDS' | 'PAYMENT_METHOD';
 
 // §9.1.1 request/response
@@ -24,6 +29,22 @@ export interface StartOrderDto {
 
 export interface StartOrderResponseDto {
   orderId: string;
+  /**
+   * Od którego kroku FE ma renderować wizard.
+   * - Anonymous initial: 'company-data'
+   * - Auth + Standard → Optimum/Pro/Ekspert: 'operational-standards'
+   * - Auth + Optimum+ → wyższy: 'payment-method'
+   * - Auth + reactivation: 'payment-method' (zwykle) lub 'operational-standards' (cross-insurer)
+   * Per spec §5.5.1 + decision matrix.
+   */
+  wizardEntryStep: WizardEntryStep;
+  /** Pola które backend już wypełnił z poprzedniego order'u klienta. */
+  prefilledFields: PrefilledField[];
+  /**
+   * Tryb pracy zamówienia. Open question OQ1: BE spec §5.3 DTO nie zawiera tego pola,
+   * FE-facing doc §4.2 zawiera. Implementujemy jako optional; gdy brak — treat as INITIAL_PURCHASE.
+   */
+  orderType?: OrderType;
 }
 
 // §9.1.6 checkout state
@@ -262,4 +283,59 @@ export interface OrderConfirmationResponseDto {
   proforma: BankTransferProformaDto;
   payment: BankTransferPaymentDto;
   customerEmail: string;
+}
+
+// Per spec §5.6.1 — proration breakdown dla PLAN_UPGRADE.
+
+export type PricingBreakdownKind = 'base' | 'discount';
+
+export interface PricingBreakdownItemDto {
+  label: string;
+  /** `amount.amount` może być ujemny dla kind='discount' (np. kredyt za niewykorzystany plan). */
+  amount: MoneyDto;
+  kind: PricingBreakdownKind;
+}
+
+export interface CalculatedPricingDto {
+  kind: 'CalculatedPricing';
+  unitPrice: MoneyDto;
+  totalPrice: MoneyDto;
+  breakdown: PricingBreakdownItemDto[];
+  calculatedAt: string;
+  componentVersion: string;
+}
+
+export interface OrderLineWithPricingDto {
+  catalogEntryId: string;
+  pricing: CalculatedPricingDto;
+}
+
+/**
+ * Nowy shape response z PATCH /orders/:id/payment-method (zastępuje CheckoutStateResponseDto dla tego endpointu).
+ * Per spec §5.6.2.
+ */
+export interface SelectPaymentMethodResponseDto {
+  orderId: string;
+  line: OrderLineWithPricingDto;
+  paymentMethod: PaymentMethod;
+}
+
+/**
+ * Metadata zwracana w 409 PLAN_CHANGE_PENDING response.
+ * UWAGA naming: BE używa `xDone` w 409 metadata, nasze `CheckoutProgressDto` używa `hasX`.
+ * Trzymamy oddzielny typ — nie konwertujemy, bo po resume i tak wywołamy `getOrder(existingOrderId)`
+ * które zwraca `CheckoutProgressDto` (FE naming). Per spec OQ5.
+ */
+export interface PlanChangePendingMetadata {
+  existingOrderId: string;
+  status: 'DRAFT' | 'CONFIRMED';
+  wizardEntryStep: WizardEntryStep;
+  checkoutProgress: {
+    companyDataDone: boolean;
+    personalDataDone: boolean;
+    operationalStandardsDone: boolean;
+    paymentMethodDone: boolean;
+  };
+  /** Non-null gdy istniejący Stripe Checkout session jeszcze ważny — FE redirectuje tam. */
+  checkoutSessionUrl: string | null;
 }

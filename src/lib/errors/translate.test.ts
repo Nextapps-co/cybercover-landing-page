@@ -37,3 +37,21 @@ describe('translateApiError', () => {
     expect(result.title.length).toBeGreaterThan(0);
   });
 });
+
+describe('translateApiError — auth-aware codes', () => {
+  it.each<[string, { actionable: boolean }]>([
+    ['HANDOFF_TOKEN_INVALID_OR_EXPIRED', { actionable: true }],
+    ['USER_INACTIVE', { actionable: false }],
+    ['PLAN_CHANGE_PENDING', { actionable: true }],
+    ['DOWNGRADE_NOT_ALLOWED', { actionable: true }],
+    ['REACTIVATION_DOWNGRADE_NOT_ALLOWED', { actionable: true }],
+    ['DISCOUNT_NOT_ALLOWED_FOR_ORDER_TYPE', { actionable: true }],
+    ['OPERATIONAL_STANDARDS_REQUIRED', { actionable: true }],
+    ['PROFORMA_NOT_ISSUED', { actionable: false }],
+  ])('translates %s', (code, { actionable }) => {
+    const t = translateApiError(new ApiError(code as never, 400, null));
+    expect(t.title).toBeTruthy();
+    expect(t.message).toBeTruthy();
+    expect(t.actionable).toBe(actionable);
+  });
+});

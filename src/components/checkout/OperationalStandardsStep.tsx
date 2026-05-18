@@ -86,6 +86,16 @@ export function OperationalStandardsStep() {
     const session = getOrderSession();
     if (!session || session.orderId !== id) { window.location.assign('/cennik'); return; }
 
+    // Per spec §5.5.3 — dwa orthogonalne powody pominięcia kroku OS:
+    // 1. osSkipped: plan bez ubezpieczenia (np. Standard) — kept jak dzisiaj poniżej w schema check
+    // 2. prefilledFields.includes('operationalStandards'): BE ma już dane z poprzedniego order'u
+    // Druga ścieżka wymaga early redirect przed schema fetch.
+    if (session.prefilledFields?.includes('operationalStandards')) {
+      const target = session.wizardEntryStep ?? 'payment-method';
+      navigateForward(`/checkout/${target}?orderId=${encodeURIComponent(id)}`);
+      return;
+    }
+
     setOrderId(id);
 
     (async () => {

@@ -4,13 +4,30 @@ import { FormActions } from './FormActions';
 import { FormAlert } from './FormAlert';
 import { SummaryDataCard } from './SummaryDataCard';
 import { SummaryPlanCard } from './SummaryPlanCard';
+import { ProrationBreakdown } from './ProrationBreakdown';
 import { getOrderSession, resolveOsSkipped } from '../../lib/state/order-session';
 import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
 import { canAccessStep } from '../../lib/state/checkout-navigation';
 import { getOrder, confirmOrder, createStripeCheckoutSession } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
-import type { OrderResponseDto } from '../../lib/api/types/order';
+import type { OrderResponseDto, OrderType, CalculatedPricingDto } from '../../lib/api/types/order';
+
+// Per spec §5.5.4 — orderType-aware copy.
+const HEADER_PER_TYPE: Record<OrderType, string> = {
+  INITIAL_PURCHASE: 'Podsumowanie',
+  PLAN_UPGRADE: 'Podsumowanie zmiany planu',
+  REACTIVATION: 'Podsumowanie wznowienia subskrypcji',
+};
+
+const CTA_PER_TYPE: Record<OrderType, string> = {
+  INITIAL_PURCHASE: 'Zamawiam z obowiązkiem zapłaty',
+  PLAN_UPGRADE: 'Potwierdzam zmianę planu',
+  REACTIVATION: 'Wznawiam subskrypcję',
+};
+
+// Per spec §5.6.4 — pricing-snapshot przekazany z PaymentMethodStep przez sessionStorage.
+const PRICING_SNAPSHOT_KEY = 'cybercover:pricing-snapshot';
 
 function readOrderIdFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search);
@@ -40,6 +57,7 @@ export function ConfirmStep() {
   const [osSkipped, setOsSkipped] = useState(false);
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [pricingSnapshot, setPricingSnapshot] = useState<CalculatedPricingDto | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,6 +84,21 @@ export function ConfirmStep() {
           return;
         }
         setOrder(o);
+
+        // Per spec §5.6.4 — pricing-snapshot zapisany przez PaymentMethodStep
+        // gdy backend zwrócił rich shape z breakdown. Używamy do renderu ProrationBreakdown.
+        try {
+          const raw = window.sessionStorage.getItem(PRICING_SNAPSHOT_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw) as { orderId: string; pricing: CalculatedPricingDto };
+            if (parsed.orderId === id) {
+              setPricingSnapshot(parsed.pricing);
+            }
+          }
+        } catch {
+          /* ignore — snapshot is best-effort UI hint */
+        }
+
         setHydrating(false);
       } catch (err) {
         if (cancelled) return;
@@ -141,12 +174,20 @@ export function ConfirmStep() {
   const priceNet = order.totalPriceNet ?? order.lines[0]?.priceNet ?? null;
   const eligible = order.eligibilityResult?.eligible ?? true;
 
+  // Per spec §5.5.4 — orderType-aware copy. Default 'INITIAL_PURCHASE' gdy session nie ma orderType
+  // (anonymous flow, lub backward compat).
+  const orderType: OrderType = getOrderSession()?.orderType ?? 'INITIAL_PURCHASE';
+  const showProration =
+    orderType === 'PLAN_UPGRADE' &&
+    pricingSnapshot !== null &&
+    pricingSnapshot.breakdown.length > 1;
+
   return (
     <div className="bg-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <CheckoutProgressBar currentStep={5} osSkipped={osSkipped} />
         <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-4xl text-black mb-12">
-          Podsumowanie
+          {HEADER_PER_TYPE[orderType]}
         </h1>
 
         {submitError && <FormAlert variant="error" title={submitError.title} message={submitError.message} />}
@@ -197,10 +238,20 @@ export function ConfirmStep() {
           />
         </div>
 
+        {/* Per spec §5.6.4 — proration breakdown dla PLAN_UPGRADE (2 linie z snapshot). */}
+        {showProration && pricingSnapshot && (
+          <div className="mb-8">
+            <ProrationBreakdown
+              breakdown={pricingSnapshot.breakdown}
+              totalPrice={pricingSnapshot.totalPrice}
+            />
+          </div>
+        )}
+
         <form onSubmit={(e) => { e.preventDefault(); void handleConfirm(); }}>
           <FormActions
             onBack={() => navigateBackward(withOrderId('/checkout/payment-method', orderId))}
-            submitLabel="Zamawiam z obowiązkiem zapłaty"
+            submitLabel={CTA_PER_TYPE[orderType]}
             submitting={confirming}
             submittingLabel="Potwierdzanie…"
           />
