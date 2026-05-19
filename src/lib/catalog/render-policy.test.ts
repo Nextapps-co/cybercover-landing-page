@@ -316,3 +316,105 @@ describe('planToCardProps — pricing', () => {
     expect(p.promoSubtext).toBeUndefined();
   });
 });
+
+describe('planToCardProps — auth-aware variant (per-cycle)', () => {
+  it('returns variant=available when no relativeToCurrent fields (anonymous mode)', () => {
+    const props = planToCardProps(OPTIMUM_PLAN, 'ANNUAL');
+    expect(props.variant).toBe('available');
+    expect(props.currentPlanBadge).toBeUndefined();
+    expect(props.unavailableReason).toBeUndefined();
+  });
+
+  it('returns variant=current with badge for CURRENT + ACTIVE on matching cycle (ANNUAL)', () => {
+    const plan: PlanCatalogEntryDto = {
+      ...OPTIMUM_PLAN,
+      annualRelativeToCurrent: 'CURRENT',
+      monthlyRelativeToCurrent: 'NOT_AVAILABLE',
+    };
+    const props = planToCardProps(plan, 'ANNUAL', {
+      currentPlanCode: 'optimum',
+      subscriptionStatus: 'ACTIVE',
+      currentBillingCycle: 'ANNUAL',
+    });
+    expect(props.variant).toBe('current');
+    expect(props.currentPlanBadge).toBe('Twój aktualny plan');
+  });
+
+  it('CURRENT on monthly + viewing annual → reads annualRelativeToCurrent (NOT_AVAILABLE) and shows cycle reason', () => {
+    const plan: PlanCatalogEntryDto = {
+      ...OPTIMUM_PLAN,
+      monthlyRelativeToCurrent: 'CURRENT',
+      annualRelativeToCurrent: 'NOT_AVAILABLE',
+    };
+    const props = planToCardProps(plan, 'ANNUAL', {
+      currentPlanCode: 'optimum',
+      subscriptionStatus: 'ACTIVE',
+      currentBillingCycle: 'MONTHLY',
+    });
+    expect(props.variant).toBe('unavailable');
+    expect(props.unavailableReason).toBe('Niedostępne na tym cyklu rozliczeniowym');
+  });
+
+  it.each(['GRACE_PERIOD', 'EXPIRED', 'CANCELLED'] as const)(
+    'CURRENT + %s on matching cycle → variant=available with badge "Poprzedni plan"',
+    (status) => {
+      const plan: PlanCatalogEntryDto = { ...OPTIMUM_PLAN, annualRelativeToCurrent: 'CURRENT' };
+      const props = planToCardProps(plan, 'ANNUAL', {
+        currentPlanCode: 'optimum',
+        subscriptionStatus: status,
+        currentBillingCycle: 'ANNUAL',
+      });
+      expect(props.variant).toBe('available');
+      expect(props.currentPlanBadge).toBe('Poprzedni plan');
+    },
+  );
+
+  it('NOT_AVAILABLE on a different (lower) plan → reason "niższy niż aktualny plan"', () => {
+    const plan: PlanCatalogEntryDto = {
+      ...STANDARD_PLAN,
+      annualRelativeToCurrent: 'NOT_AVAILABLE',
+      monthlyRelativeToCurrent: 'NOT_AVAILABLE',
+    };
+    const props = planToCardProps(plan, 'ANNUAL', {
+      currentPlanCode: 'optimum',
+      subscriptionStatus: 'ACTIVE',
+    });
+    expect(props.variant).toBe('unavailable');
+    expect(props.unavailableReason).toBe('Niedostępne — niższy niż aktualny plan');
+  });
+
+  it('UPGRADE_AVAILABLE → variant=available, no badge', () => {
+    const plan: PlanCatalogEntryDto = {
+      ...OPTIMUM_PLAN,
+      annualRelativeToCurrent: 'UPGRADE_AVAILABLE',
+      monthlyRelativeToCurrent: 'UPGRADE_AVAILABLE',
+    };
+    const props = planToCardProps(plan, 'ANNUAL', {
+      currentPlanCode: 'standard',
+      subscriptionStatus: 'ACTIVE',
+    });
+    expect(props.variant).toBe('available');
+    expect(props.currentPlanBadge).toBeUndefined();
+    expect(props.unavailableReason).toBeUndefined();
+  });
+
+  it('reads cycle-specific field — same plan with different per-cycle values', () => {
+    const plan: PlanCatalogEntryDto = {
+      ...OPTIMUM_PLAN,
+      monthlyRelativeToCurrent: 'UPGRADE_AVAILABLE',
+      annualRelativeToCurrent: 'CURRENT',
+    };
+    const onMonthly = planToCardProps(plan, 'MONTHLY', {
+      currentPlanCode: 'optimum',
+      subscriptionStatus: 'ACTIVE',
+      currentBillingCycle: 'ANNUAL',
+    });
+    expect(onMonthly.variant).toBe('available');
+    const onAnnual = planToCardProps(plan, 'ANNUAL', {
+      currentPlanCode: 'optimum',
+      subscriptionStatus: 'ACTIVE',
+      currentBillingCycle: 'ANNUAL',
+    });
+    expect(onAnnual.variant).toBe('current');
+  });
+});

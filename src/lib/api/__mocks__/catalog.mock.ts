@@ -2,7 +2,9 @@ import type {
   DiscountPreviewDto,
   PlanCatalogEntryDto,
   PlanCatalogResponseDto,
+  RelativeToCurrent,
 } from '../types/catalog';
+import { getMockAuthContext } from '../../auth/mock-auth';
 
 // Mock catalog adapted to backend contract documented in
 // `docs/pricing-catalog-changes.md`:
@@ -11,8 +13,11 @@ import type {
 // - § 4.4 — `partnerName`, `partnerLogoUrl` in DiscountPreviewDto
 // - § 4.5 — `ctaLabel` as top-level field
 // - § 4.6 (Option B) — `planName` in English; frontend maps to PL via render-policy
+//
+// Per spec §5.9.1 — gdy mock auth context istnieje (sessionStorage[cybercover:mock-auth-context]),
+// mock injectuje auth-aware fields: `relativeToCurrent` per plan, `currentPlanCode`, `subscriptionStatus`.
 
-const MOCK_PLANS: PlanCatalogResponseDto = [
+const MOCK_PLANS: PlanCatalogEntryDto[] = [
   {
     catalogEntryId: 'CATALOG-mock-standard',
     planId: 'mock-plan-standard',
@@ -225,6 +230,53 @@ export async function getMockPlans(
     discount: null as DiscountPreviewDto | null,
   }));
   const code = resolveActiveCode(discountCode, partnerCode);
-  if (!code) return plans;
-  return plans.map((plan) => ({ ...plan, discount: buildMockDiscount(code, plan) }));
+  const withDiscount = code
+    ? plans.map((plan) => ({ ...plan, discount: buildMockDiscount(code, plan) }))
+    : plans;
+
+  // Per spec §5.9.1 — auth-aware injection gdy mock context istnieje.
+  const authContext = getMockAuthContext();
+  if (!authContext) {
+    return { plans: withDiscount };
+  }
+
+  const currentPlan = withDiscount.find((p) => p.code === authContext.planCode);
+  if (!currentPlan) {
+    // Brak match'u — fall through na anonymous shape (per BE spec §3.5).
+    return { plans: withDiscount };
+  }
+
+  const minDisplayOrder =
+    authContext.status === 'ACTIVE'
+      ? currentPlan.displayOrder + 1 // strict upgrade — current plan grayed-out
+      : currentPlan.displayOrder; // reactivation — same or higher klikalne
+
+  // Mock zakłada że klient jest na cyklu MONTHLY (URL ?mockAuth= nie nosi tego pola).
+  // Per-cycle relative replikuje real BE:
+  //   - własny plan + bieżący cykl → CURRENT
+  //   - własny plan + drugi cykl   → NOT_AVAILABLE (zmiana cyklu nie przez wizard)
+  //   - wyższy plan → UPGRADE_AVAILABLE na obu cyklach
+  //   - niższy plan → NOT_AVAILABLE na obu cyklach
+  const currentCycle: 'MONTHLY' | 'ANNUAL' = 'MONTHLY';
+
+  const plansWithRelative: PlanCatalogEntryDto[] = withDiscount.map((plan) => {
+    const baseRelative = (cycle: 'MONTHLY' | 'ANNUAL'): RelativeToCurrent => {
+      if (plan.code === authContext.planCode) {
+        return cycle === currentCycle ? 'CURRENT' : 'NOT_AVAILABLE';
+      }
+      return plan.displayOrder >= minDisplayOrder ? 'UPGRADE_AVAILABLE' : 'NOT_AVAILABLE';
+    };
+    return {
+      ...plan,
+      monthlyRelativeToCurrent: baseRelative('MONTHLY'),
+      annualRelativeToCurrent: baseRelative('ANNUAL'),
+    };
+  });
+
+  return {
+    plans: plansWithRelative,
+    currentPlanCode: authContext.planCode,
+    subscriptionStatus: authContext.status,
+    currentBillingCycle: currentCycle,
+  };
 }

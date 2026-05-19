@@ -10,6 +10,9 @@ export interface FeatureSection {
   items: FeatureItem[];
 }
 
+// Per spec §5.4.3 — variant decyduje czy karta jest aktywna, greyed-out, czy całkiem niedostępna.
+export type PricingCardVariant = 'available' | 'current' | 'unavailable';
+
 export interface PricingCardProps {
   title: string;
   price: string;
@@ -31,6 +34,13 @@ export interface PricingCardProps {
   savingsBadge?: string;
   onSelect?: () => void;
   ctaDisabled?: boolean;
+  // Auth-aware (optional — anonymous flow nie ustawia):
+  /** Default 'available'. 'current' = klient ma ten plan (greyed gdy ACTIVE, klikalne gdy ex). 'unavailable' = plan niższy niż aktualny. */
+  variant?: PricingCardVariant;
+  /** Badge w prawym górnym rogu — "Twój aktualny plan" (ACTIVE) lub "Poprzedni plan" (po reactivation). */
+  currentPlanBadge?: string;
+  /** Tekst zamiast CTA gdy variant='unavailable' (np. "Niedostępne — niższy niż aktualny plan"). */
+  unavailableReason?: string;
 }
 
 function SectionIcon({ icon }: { icon: FeatureSection['icon'] }) {
@@ -154,7 +164,14 @@ export function PricingCard({
   savingsBadge,
   onSelect,
   ctaDisabled = false,
+  variant = 'available',
+  currentPlanBadge,
+  unavailableReason,
 }: PricingCardProps) {
+  const isUnavailable = variant === 'unavailable';
+  const isCurrentLocked = variant === 'current';
+  const isInactive = isUnavailable || isCurrentLocked;
+  const ctaEffectivelyDisabled = ctaDisabled || isInactive;
   return (
     <div className="h-auto relative w-full max-w-[437px] lg:max-w-[280px] xl:max-w-[350px] 2xl:max-w-[437px]">
       <div className="relative h-full flex flex-col">
@@ -163,13 +180,21 @@ export function PricingCard({
             highlighted
               ? 'border-[#FED64B] border-[2.5px]'
               : 'border-[#EAEAE8]'
-          }`}
+          } ${isInactive ? 'opacity-60 grayscale' : ''}`}
           style={
             highlighted
               ? { background: 'linear-gradient(180deg, rgb(255,255,241) 0%, rgb(255,255,255) 100%)' }
               : { background: '#FFFFFF' }
           }
+          aria-disabled={isInactive}
         >
+          {/* Auth-aware badge (Twój aktualny plan / Poprzedni plan) */}
+          {currentPlanBadge && (
+            <div className="absolute top-3 right-3 z-10 rounded-full bg-[#FED64B] px-3 py-1 font-['Plus_Jakarta_Sans',sans-serif] text-[11px] font-semibold text-[#0D0D0D] shadow-sm">
+              {currentPlanBadge}
+            </div>
+          )}
+
           {/* Title */}
           <h3 className="font-['Plus_Jakarta_Sans',sans-serif] font-medium text-[20px] text-[#0D0D0D] tracking-[-0.4px] mb-2 h-[28px] flex items-start">
             {title}
@@ -238,30 +263,39 @@ export function PricingCard({
             <div className="mb-6"></div>
           )}
 
-          {/* CTA Button — pill shape */}
-          {ctaText && (
-            <button
-              type="button"
-              disabled={ctaDisabled}
-              className={`w-full rounded-[80px] font-['Plus_Jakarta_Sans',sans-serif] font-medium text-[15px] tracking-[-0.3px] transition-all mb-6 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed disabled:opacity-60
-                ${ctaStyle === 'outline'
-                  ? 'bg-white border border-[#A2A09C] text-[#0D0D0D] hover:bg-[#F8F7F4] shadow-sm'
-                  : ctaStyle === 'yellow'
-                  ? 'bg-[#FED64B] text-[#0D0D0D] hover:bg-[#FFC107] border-0 shadow-sm'
-                  : ctaStyle === 'primary'
-                  ? 'bg-[#7C3AED] text-white hover:bg-[#6D28D9] border-0'
-                  : 'bg-white border border-[#A2A09C] text-[#0D0D0D] hover:bg-[#F8F7F4] shadow-sm'
-                }`}
+          {/* CTA Button — pill shape (lub komunikat o niedostępności) */}
+          {isUnavailable ? (
+            <p
+              className="w-full mb-6 text-center font-['Plus_Jakarta_Sans',sans-serif] text-[14px] text-[#6B6965]"
               style={{ paddingTop: '15px', paddingBottom: '15px', paddingLeft: '28px', paddingRight: '28px' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onSelect) {
-                  onSelect();
-                }
-              }}
             >
-              {ctaText}
-            </button>
+              {unavailableReason ?? 'Niedostępne'}
+            </p>
+          ) : (
+            ctaText && (
+              <button
+                type="button"
+                disabled={ctaEffectivelyDisabled}
+                className={`w-full rounded-[80px] font-['Plus_Jakarta_Sans',sans-serif] font-medium text-[15px] tracking-[-0.3px] transition-all mb-6 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed disabled:opacity-60
+                  ${ctaStyle === 'outline'
+                    ? 'bg-white border border-[#A2A09C] text-[#0D0D0D] hover:bg-[#F8F7F4] shadow-sm'
+                    : ctaStyle === 'yellow'
+                    ? 'bg-[#FED64B] text-[#0D0D0D] hover:bg-[#FFC107] border-0 shadow-sm'
+                    : ctaStyle === 'primary'
+                    ? 'bg-[#7C3AED] text-white hover:bg-[#6D28D9] border-0'
+                    : 'bg-white border border-[#A2A09C] text-[#0D0D0D] hover:bg-[#F8F7F4] shadow-sm'
+                  }`}
+                style={{ paddingTop: '15px', paddingBottom: '15px', paddingLeft: '28px', paddingRight: '28px' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onSelect) {
+                    onSelect();
+                  }
+                }}
+              >
+                {ctaText}
+              </button>
+            )
           )}
 
           {/* Description */}

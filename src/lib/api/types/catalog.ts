@@ -6,7 +6,7 @@
 // - § 4.4: `partnerName` and `partnerLogoUrl` on DiscountPreviewDto
 // - § 4.5: `ctaLabel` as top-level field (fallback to features.ctaLabel preserved)
 
-import type { MoneyDto } from './money';
+import type { BillingCycle, MoneyDto } from './money';
 
 export type FeatureMap = Record<string, string>;
 
@@ -18,6 +18,9 @@ export type DiscountKind =
   | 'PARTNER_TIMEBOUND_COMPOSITE';
 
 export type PlanTier = 'entry' | 'mid' | 'high' | 'top';
+
+export type RelativeToCurrent = 'CURRENT' | 'UPGRADE_AVAILABLE' | 'NOT_AVAILABLE';
+export type SubscriptionStatus = 'ACTIVE' | 'GRACE_PERIOD' | 'EXPIRED' | 'CANCELLED';
 
 export interface PromotionalDurationDto {
   months: number;
@@ -51,7 +54,32 @@ export interface PlanCatalogEntryDto {
   annualPrice: MoneyDto;           // monthly rate when billed annually (grosze)
   monthlyPrice: MoneyDto;          // monthly rate when billed monthly (grosze)
   features: FeatureMap;            // keys: `feature.<name>` per docs/pricing-catalog-changes.md § 4.1
+  /**
+   * Per-cycle pozycja względem aktualnego planu klienta (auth-aware response only).
+   * Anonymous request lub klient bez sub → fields nieobecne.
+   *
+   * BE rozróżnia, bo upgrade/downgrade może być różny dla każdego cyklu — np. klient
+   * na standard@MONTHLY widzi:
+   *   - monthlyRelativeToCurrent: "CURRENT"        (jego aktualny plan)
+   *   - annualRelativeToCurrent:  "NOT_AVAILABLE"  (zmiana cyklu nie jest dopuszczalna w wizardzie)
+   *
+   * Frontend wybiera odpowiedni field zgodnie z aktywnym billingCycle togglem.
+   */
+  monthlyRelativeToCurrent?: RelativeToCurrent;
+  annualRelativeToCurrent?: RelativeToCurrent;
   discount: DiscountPreviewDto | null;
 }
 
-export type PlanCatalogResponseDto = PlanCatalogEntryDto[];
+/**
+ * Backend wraps array w obiekt zarówno w anonymous jak i auth mode.
+ * Adapter w `catalog.ts` akceptuje też raw array (legacy) — bumpuje na nowy shape.
+ */
+export interface PlanCatalogResponseDto {
+  plans: PlanCatalogEntryDto[];
+  /** Code aktualnego planu klienta — tylko w auth mode z sub. */
+  currentPlanCode?: string;
+  /** Status subskrypcji klienta — tylko w auth mode z sub. */
+  subscriptionStatus?: SubscriptionStatus;
+  /** Billing cycle aktualnej subskrypcji — auto-select togglem przy mount. */
+  currentBillingCycle?: BillingCycle;
+}

@@ -75,6 +75,14 @@ export function CompanyDataStep() {
       return;
     }
 
+    // Per spec §5.5.3 — auth-aware skip: jeśli backend już wypełnił companyData
+    // z poprzedniego order'u klienta, przeskocz na wizardEntryStep.
+    if (session.prefilledFields?.includes('companyData')) {
+      const target = session.wizardEntryStep ?? 'payment-method';
+      navigateForward(`/checkout/${target}?orderId=${encodeURIComponent(id)}`);
+      return;
+    }
+
     setOrderId(id);
 
     (async () => {

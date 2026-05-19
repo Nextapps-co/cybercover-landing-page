@@ -73,6 +73,46 @@ const TRANSLATIONS: Record<ApiErrorCode, TranslatedError> = {
     message: 'Rejestry firm (CEIDG/KRS) są chwilowo niedostępne. Wypełnij dane firmy ręcznie.',
     actionable: true,
   },
+  HANDOFF_TOKEN_INVALID_OR_EXPIRED: {
+    title: 'Sesja wygasła',
+    message: 'Link do zmiany planu wygasł lub został już użyty. Wróć do portalu i kliknij "Zmień plan" jeszcze raz.',
+    actionable: true,
+  },
+  USER_INACTIVE: {
+    title: 'Konto nieaktywne',
+    message: 'Twoje konto zostało dezaktywowane. Skontaktuj się z administratorem firmy.',
+    actionable: false,
+  },
+  PLAN_CHANGE_PENDING: {
+    title: 'Zmiana planu w toku',
+    message: 'Masz niedokończone zamówienie zmiany planu. Wznawiamy je teraz.',
+    actionable: true,
+  },
+  DOWNGRADE_NOT_ALLOWED: {
+    title: 'Niedostępne',
+    message: 'Nie możesz przejść na niższy plan niż aktualny. Wybierz wyższy plan.',
+    actionable: true,
+  },
+  REACTIVATION_DOWNGRADE_NOT_ALLOWED: {
+    title: 'Niedostępne',
+    message: 'Reaktywacja jest możliwa tylko na poprzedni plan lub wyższy. Wybierz inny plan.',
+    actionable: true,
+  },
+  DISCOUNT_NOT_ALLOWED_FOR_ORDER_TYPE: {
+    title: 'Kod niedostępny',
+    message: 'Ten kod promocyjny nie obowiązuje przy zmianie planu.',
+    actionable: true,
+  },
+  OPERATIONAL_STANDARDS_REQUIRED: {
+    title: 'Wypełnij ankietę',
+    message: 'Musisz uzupełnić standardy operacyjne zanim potwierdzisz zamówienie.',
+    actionable: true,
+  },
+  PROFORMA_NOT_ISSUED: {
+    title: 'Błąd faktury',
+    message: 'Nie udało się wygenerować faktury proforma. Skontaktuj się z pomocą techniczną.',
+    actionable: false,
+  },
   NETWORK_ERROR: {
     title: 'Brak połączenia',
     message: 'Problem z połączeniem. Sprawdź internet i spróbuj ponownie.',

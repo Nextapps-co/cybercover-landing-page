@@ -9,10 +9,60 @@
 // To add a new tier or feature key: extend the contract documented in
 // `docs/pricing-catalog-changes.md` and update SECTIONS to read it.
 
-import type { PlanCatalogEntryDto, FeatureMap, PlanTier } from '../api/types/catalog';
+import type { PlanCatalogEntryDto, FeatureMap, PlanTier, SubscriptionStatus } from '../api/types/catalog';
 import type { BillingCycle, MoneyDto } from '../api/types/money';
-import type { PricingCardProps, FeatureSection, FeatureItem } from '../../components/pricing/PricingCard';
+import type { PricingCardProps, PricingCardVariant, FeatureSection, FeatureItem } from '../../components/pricing/PricingCard';
 import { formatMinorUnits } from '../format/money';
+
+// Per spec §5.4.3 — auth context propagowany przez `planToCardProps` żeby zdecydować
+// czy karta jest klikalna ('available'), zablokowana jako aktualny plan ('current'),
+// czy niedostępna ('unavailable').
+export interface AuthContext {
+  currentPlanCode?: string;
+  subscriptionStatus?: SubscriptionStatus;
+  currentBillingCycle?: BillingCycle;
+}
+
+function deriveVariant(
+  plan: PlanCatalogEntryDto,
+  billingCycle: BillingCycle,
+  ctx?: AuthContext,
+): { variant: PricingCardVariant; currentPlanBadge?: string; unavailableReason?: string } {
+  // BE wysyła per-cycle relative — wybieramy zgodnie z aktywnym togglem.
+  const relative =
+    billingCycle === 'MONTHLY' ? plan.monthlyRelativeToCurrent : plan.annualRelativeToCurrent;
+
+  if (!relative) {
+    // Anonymous mode lub klient bez sub — wszystko klikalne
+    return { variant: 'available' };
+  }
+
+  if (relative === 'CURRENT') {
+    if (ctx?.subscriptionStatus === 'ACTIVE') {
+      // Aktywny klient na tym planie — greyed, brak CTA
+      return { variant: 'current', currentPlanBadge: 'Twój aktualny plan' };
+    }
+    // GRACE/EXPIRED/CANCELLED — klikalne (reactivation), badge wskazuje historię
+    return { variant: 'available', currentPlanBadge: 'Poprzedni plan' };
+  }
+
+  if (relative === 'NOT_AVAILABLE') {
+    // Same plan code + NOT_AVAILABLE → semantyka „zmiana cyklu" (BE nie pozwala na to przez wizard).
+    if (ctx?.currentPlanCode === plan.code) {
+      return {
+        variant: 'unavailable',
+        unavailableReason: 'Niedostępne na tym cyklu rozliczeniowym',
+      };
+    }
+    return {
+      variant: 'unavailable',
+      unavailableReason: 'Niedostępne — niższy niż aktualny plan',
+    };
+  }
+
+  // UPGRADE_AVAILABLE
+  return { variant: 'available' };
+}
 
 // ── Tier-driven presentation policy ──────────────────────────────────
 
@@ -285,7 +335,11 @@ function derivePricing(plan: PlanCatalogEntryDto, billingCycle: BillingCycle): P
 
 // ── Public API ───────────────────────────────────────────────────────
 
-export function planToCardProps(plan: PlanCatalogEntryDto, billingCycle: BillingCycle): PricingCardProps {
+export function planToCardProps(
+  plan: PlanCatalogEntryDto,
+  billingCycle: BillingCycle,
+  authContext?: AuthContext,
+): PricingCardProps {
   const tier: PlanTier = plan.tier ?? 'entry';
   const highlight = TIER_HIGHLIGHT[tier];
 
@@ -294,6 +348,7 @@ export function planToCardProps(plan: PlanCatalogEntryDto, billingCycle: Billing
     .filter(s => s.items.length > 0);
 
   const pricing = derivePricing(plan, billingCycle);
+  const { variant, currentPlanBadge, unavailableReason } = deriveVariant(plan, billingCycle, authContext);
 
   return {
     title: PLAN_NAME_PL[plan.planName] ?? plan.planName,
@@ -302,6 +357,9 @@ export function planToCardProps(plan: PlanCatalogEntryDto, billingCycle: Billing
     ctaStyle: TIER_CTA_STYLE[tier],
     highlighted: plan.recommended,
     features,
+    variant,
+    currentPlanBadge,
+    unavailableReason,
     ...pricing,
   };
 }

@@ -4,62 +4,155 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CyberCover landing page (Astro) with integrated React pricing calculator and multi-step checkout flow. Merged from two projects: Astro landing page + React pricing table.
+CyberCover landing page + cennik + 4-krokowy checkout wizard. Architektura: **Astro multi-page** z **React islands per krok**. Anonymous purchase flow działa end-to-end z mockami; auth-aware tryb (plan-change / reactivation) opisany w `docs/purchase-proces-auth-context-flow.md` — **jeszcze niezaimplementowany**.
 
 ## Commands
 
 ```bash
-pnpm dev        # Start dev server (localhost:4321)
-pnpm build      # Production build to dist/
-pnpm preview    # Preview production build
+npm run dev           # Astro dev server (localhost:4321)
+npm run build         # Production build → dist/
+npm run preview       # Preview production build
+npm run test          # Vitest watch
+npm run test:run      # Vitest single run
+npm run test:coverage # Vitest with coverage
 ```
+
+Node >= 22.12. Repo używa `npm` (był pnpm, usunięty w `ff81c1d`).
 
 ## Architecture
 
-**Astro (static pages)** + **React island (pricing/checkout)**
+### Routing & layouts
 
-- `src/pages/` — Astro routes: landing (`index.astro`), legal pages, `cennik.astro`
-- `src/app/` — React app loaded as island via `<PricingApp client:only="react" />`
-- `src/components/` — Astro components (Header, Footer, Ochrona360)
-- `src/layouts/` — BaseLayout (GTM, cookies, header/footer), LegalLayout (prose)
+Czysty Astro multi-page — **brak React Routera w trakcie checkoutu**. Każda strona jest osobnym plikiem `.astro`, który renderuje React component jako client island (`client:load`).
 
-### React Island Integration
+- `BaseLayout.astro` — landing + `/cennik` + legal pages. Zawiera `<Header />`, `<Footer />`, GTM (`GTM-WBWGV72G`), cookie consent (dark theme), JSON-LD organization.
+- `CheckoutLayout.astro` — wszystkie `/checkout/*` pages. Zawiera `<CheckoutHeader />` (logo + opcjonalne „Powrót"), `<ClientRouter />` z Astro view-transitions, i ten sam GTM/cookie consent.
 
-`cennik.astro` and `checkout/[...step].astro` both render `<PricingApp client:only="react" />`. PricingApp uses `BrowserRouter` for client-side routing between `/cennik` and `/checkout/*` steps. Astro handles initial page load, React takes over navigation.
+`CheckoutLayout` używa direction-aware slide transitions: helper `src/lib/state/checkout-transition.ts` ustawia `data-checkout-direction="forward|backward"` na `<html>` przed `navigate()`, a `astro:before-preparation` listener defaultuje do `backward` dla browser back/forward (`navigationType === 'traverse'`). Style slide'a w `src/styles/global.css`.
 
-**Critical:** React CJS/ESM interop requires `optimizeDeps.include` in `astro.config.mjs` for `react`, `react-dom/client`, etc. Without this, React islands fail silently in browser.
+### Pages
 
-### Checkout Flow
+- `src/pages/index.astro` — landing
+- `src/pages/cennik.astro` — pricing grid (renderuje `<PricingCards client:load />`)
+- `src/pages/checkout/{company-data,personal-data,operational-standards,payment-method,confirm,bank-transfer,success,cancelled}.astro` — każda renderuje odpowiedni React step component
+- `src/pages/{regulamin,polityka-prywatnosci,polityka-plikow-cookies,obowiazek-informacyjny}.astro` — legal
 
-8-step process via React Router: OrderDetails → Standards → PaymentMethod → PersonalData → Summary → ProcessPayment → Confirmation. State managed through `CheckoutContext` (React Context API). During checkout, `LayoutController` in PricingApp hides Astro header nav and footer via DOM manipulation.
+### React island per krok
 
-### Pricing Plans
+Wszystkie pliki w `src/components/checkout/*.tsx` — funkcjonalne komponenty z lokalnym `useState`. **Brak React Context / globalnego store'u**. Komunikacja między krokami:
 
-4 tiers: Standard, Optimum (highlighted), Profesjonalny, Ekspert. Discount system supports partner (5%), standard (free tier), and combined discounts. Billing: monthly (+20%) or yearly (default). Plan definitions with features are in `PricingPage.tsx`.
+- **`sessionStorage['cybercover:order-session']`** — `OrderSession` z `orderId`, `catalogEntryId`, `billingCycle`, `partnerCode`, `planSnapshot`, `osSkipped`. Stworzony przez `PricingCards` po `POST /orders/start`, czytany przez każdy step. Helpers w `src/lib/state/order-session.ts`.
+- **`sessionStorage['cybercover:form-state:<step>']`** — per-step draft typed-but-not-submitted form values. Helpers w `src/lib/state/form-persistence.ts`.
+- **URL `?orderId=`** — każdy `/checkout/*` page wymaga `orderId` w query stringu; brak → redirect `/cennik`.
+- **`getOrder(orderId)`** — server jako single source of truth; każdy step hyduje z `GET /orders/:id` na mount i z `checkoutProgress` decyduje czy pozwolić wejść (`canAccessStep` w `src/lib/state/checkout-navigation.ts`).
+
+### API client (`src/lib/api/`)
+
+- `http.ts` — `apiGet/apiPost/apiPatch` z fetch wrapping. Baseurl z `import.meta.env.PUBLIC_API_BASE_URL`. Custom `ApiError` z kodami z `types/errors.ts` (backend codes + frontend `NETWORK_ERROR`/`INTERNAL_ERROR`/`UNKNOWN`). **Nie wysyła Authorization header** — wszystko anonymous na dziś.
+- `catalog.ts` — `getPlans(discountCode?, partnerCode?)` → `GET /pricing-catalog`. Mock toggle: `PUBLIC_USE_MOCK_CATALOG=true`.
+- `orders.ts` — wszystkie wizard endpointy (`startOrder`, `getOrder`, `submitCompanyData`, `lookupCompany`, `fetchConsentDefinitions`, `submitPersonalData`, `getOperationalStandardsSchema`, `submitOperationalStandards`, `validateDiscountCode`, `selectPaymentMethod`, `confirmOrder`, `createStripeCheckoutSession`, `getOrderConfirmation`, `buildProformaDownloadUrl`). Mock toggle: `PUBLIC_USE_MOCK_ORDERS=true`.
+- `types/` — DTO typy oparte o `checkout-flow.md §9.1`: `order.ts`, `catalog.ts`, `money.ts` (`MoneyDto = { amount: grosze, currency: 'PLN' }`), `errors.ts`.
+- `__mocks__/` — in-memory mocki dla offline dev.
+
+### Plan rendering (`src/lib/catalog/render-policy.ts`)
+
+Backend zwraca semantyczne `PlanCatalogEntryDto` (z `tier: 'entry' | 'mid' | 'high' | 'top'`, mapa `feature.*` keys, EN nazwa planu). Frontend mapuje to na bogatą `PricingCardProps`:
+
+- **Tier → highlight color**: entry=null, mid=blue, high=yellow, top=red.
+- **Tier → CTA style**: entry/high/top=outline, mid=yellow.
+- **EN → PL plan name**: `Professional → Profesjonalny`, `Expert → Ekspert`.
+- **`SECTIONS` array** — deklaratywna definicja co rendrować w karcie (Ocena bezpieczeństwa, Monitoring zagrożeń, Konsultacje, Pomoc 24h, Ubezpieczenie, Szkolenia, Wielodostęp). Predicate `visibleWhen(features)` + tekst statyczny lub funkcja od `features`.
+- **`derivePricing(plan, billingCycle)`** — wybiera między 3 ścieżkami: standard discount (strikethrough), promotional period (np. „0 zł przez 3 mies."), brak discount + savings badge na ANNUAL.
+
+### Form layer
+
+- `react-hook-form` per step (np. `CompanyDataStep`, `PersonalDataStep`).
+- Validation w `src/lib/validation/{nip,postal-code,email,company-data,personal-data,operational-standards,payment}.ts` — czyste funkcje, testowane vitest'em.
+- `NipLookupField` woła `GET /orders/company-lookup?nip=…` żeby auto-fillować dane firmy z KRS/CEIDG.
+- Consents pobierane przez `fetchConsentDefinitions()` z `GET /orders/consent-definitions`, mogą zawierać HTML w `name`.
+
+### Error handling
+
+- `src/lib/errors/translate.ts` — `translateApiError(err)` → `{ title, message, actionable }` PL strings per `ApiErrorCode`. Każdy step łapie błędy submita i wyświetla `FormAlert` (variant error) z przetłumaczonym tekstem.
+- Specyficzne przypadki (np. `DISCOUNT_CODE_NOT_FOUND` w payment-method) są inline-error pod polem, nie globalne.
+
+### Payment flow
+
+`PaymentMethodStep` → wybór `STRIPE_CHECKOUT` lub `BANK_TRANSFER` → `selectPaymentMethod` → `ConfirmStep` z podsumowaniem → `confirmOrder` → rozgałęzienie:
+
+- **STRIPE_CHECKOUT**: `createStripeCheckoutSession(orderId)` (uwaga: endpoint pod `/sales-order/:id/stripe-checkout-session`, **nie** `/orders/`), `window.location.href = session.url`. Po powrocie ze Stripe: `/checkout/success` lub `/checkout/cancelled` (retry).
+- **BANK_TRANSFER**: redirect na `/checkout/bank-transfer?orderId=…&token=…` z proforma PDF z `getOrderConfirmation(orderId, token)`. Wyjątek: **promo-zero order** (partner discount → 0 zł) pomija proformę i idzie wprost na `/checkout/success` (`isPromoZeroOrder` w `ConfirmStep.tsx`).
+
+### Operational standards skip
+
+Plany bez `InsuranceCoverage` (np. Standard) auto-pomijają krok 3. Wykrycie: `GET /orders/:id/operational-standards-schema` zwraca `skipped: true`. Wartość cache'owana w `OrderSession.osSkipped` przez `resolveOsSkipped` / `persistOsSkipped`. `CheckoutProgressBar` renderuje 4 lub 3 kroki w zależności od flagi; nawigacja back/forward omija krok OS.
 
 ## Styling
 
-Tailwind CSS v4 with `@theme` tokens in `src/styles/global.css` (not tailwind.config.js). Key tokens: `--color-brand-yellow`, `--color-brand-navy`, `--color-brand-bg`, `--spacing-container`. Font: Plus Jakarta Sans. Path alias `@` → `./src`.
+Tailwind CSS **v4** z `@theme` tokens w `src/styles/global.css` (nie `tailwind.config.js`). Kluczowe tokeny: `--color-brand-yellow` (`#FFD237`), `--color-brand-navy`, `--color-brand-bg`, `--color-brand-text`, `--spacing-container`. Font: **Plus Jakarta Sans** z Google Fonts (preconnect w obu layoutach).
 
-## Key Files
+Path alias: `@` → `./src` (skonfigurowany w `astro.config.mjs` i `vitest.config.ts`; **nie ma w `tsconfig.json`** — TS używa Astro's strict preset).
 
-- `astro.config.mjs` — Vite config, React integration, optimizeDeps
-- `src/app/PricingApp.tsx` — React entry point, routes, LayoutController
-- `src/app/pages/PricingPage.tsx` — Plan definitions, pricing logic, discounts
-- `src/app/context/CheckoutContext.tsx` — Checkout state (plan, billing, company, personal data)
-- `src/app/components/PricingCard.tsx` — Reusable card with feature sections, spacers, highlights
-- `src/layouts/BaseLayout.astro` — GTM (GTM-WBWGV72G), cookie consent (dark theme), meta tags
-- `src/components/Header.astro` — Fixed header, white bg on /cennik, hidden nav on checkout
+## Key files
+
+- `astro.config.mjs` — React integration, sitemap, Tailwind v4 vite plugin, `optimizeDeps.include` dla React (wymagane do działania client islands)
+- `src/layouts/{BaseLayout,CheckoutLayout}.astro` — dwa różne shell-e (z/bez landing nav)
+- `src/components/{Header,Footer,CheckoutHeader,Ochrona360,SectionTag}.astro` — Astro statyczne komponenty
+- `src/components/pricing/PricingCards.tsx` — entry point z `/cennik`; woła `getPlans` + `startOrder` na CTA; orchestruje handoff + 409 auto-resume
+- `src/components/pricing/{PricingCard,BillingCycleToggle,DiscountBanner,SubscriptionStatusBanner}.tsx` — pricing UI
+- `src/components/checkout/{Company,Personal,OperationalStandards,PaymentMethod,Confirm}Step.tsx` — main step components (auth-aware step-skip guards)
+- `src/components/checkout/{ProrationBreakdown,CheckoutProgressBar,OrderSummaryAside}.tsx` — payment + step UI
+- `src/lib/auth/{session,jwt-claims,portal-redirect,mock-auth,handoff,use-auth-session,types}.ts` — auth module (token storage, ?handoff= exchange, portal redirect na 401, dev mock-auth)
+- `src/lib/api/{http,catalog,orders,iam}.ts` + `src/lib/api/types/*` — backend integration layer (http.ts injectuje Authorization; iam.ts ma exchangeHandoff)
+- `src/lib/state/{order-session,form-persistence,checkout-navigation,checkout-transition}.ts` — state utilities
+- `src/lib/catalog/render-policy.ts` — pricing card data mapping + auth-aware variant detection (current/unavailable/available)
+- `src/lib/errors/translate.ts` — PL error messages (21 codes incl. 8 auth-aware)
+
+## Testing
+
+`vitest` + `happy-dom`. Tests collocated z kodem (`*.test.ts`/`*.test.tsx`). **Aktualnie pokrywają tylko `src/lib/`** (czyste funkcje — validation, format, render-policy, state, API mocks, error translate). `@vitejs/plugin-react` celowo **nie zainstalowany** — jeśli dodajemy testy komponentów, trzeba go dodać (uwaga na vite/Tailwind compat per komentarz w `vitest.config.ts`).
+
+## Environment variables
+
+```bash
+PUBLIC_API_BASE_URL=http://localhost:3000/api          # bez trailing slash
+PUBLIC_PORTAL_URL=https://dev-portal.cybercover.pl     # portal base — redirect na 401 / handoff error
+PUBLIC_USE_MOCK_CATALOG=true                           # mock GET /pricing-catalog
+PUBLIC_USE_MOCK_ORDERS=true                            # mock całego wizard flow offline
+```
+
+Wszystkie `PUBLIC_*` są dostępne w client islandach przez `import.meta.env.*`.
+
+**Dev tip**: aby przetestować auth-aware UI bez prawdziwego portala + handoff token, otwórz `/cennik?mockAuth=optimum-ACTIVE` (format: `<planCode>-<subscriptionStatus>`). Mock layer wstrzykuje `relativeToCurrent` per plan, `subscriptionStatus`, banner. `startOrder` zwraca `PLAN_UPGRADE` / `REACTIVATION` zgodnie z mock context. Statusy: `ACTIVE`, `GRACE_PERIOD`, `EXPIRED`, `CANCELLED`.
 
 ## Conventions
 
 - UI language: Polish
-- `noindex, nofollow` currently set (pre-launch)
+- `noindex, nofollow` w obu layoutach (pre-launch)
 - Site URL: `https://cybercover.pl`
-- Images: raster in `src/assets/img/` (Astro-optimized), SVG in `public/img/` (static)
-- Forms use `react-hook-form`; UI primitives from shadcn/ui + Radix
-- Legacy files exist: `App.tsx`, `routes.tsx` — not used, PricingApp is the entry point
+- Money: zawsze grosze (minor units) jako `number` + `currency: 'PLN'`
+- Plan tiery: `Standard, Optimum (recommended), Profesjonalny, Ekspert` (`displayOrder` 1-4)
+- Discount: 5 rodzajów backend kind'ów (`CODE_FLAT`, `PARTNER_FLAT`, `PARTNER_COMPOSITE`, `PARTNER_TIMEBOUND`, `PARTNER_TIMEBOUND_COMPOSITE`); URL-based: `?partner=` (sticky), `?discountCode=` (clearable)
+- Forms: `react-hook-form` + custom validation w `lib/validation/`
+- Images: raster w `src/assets/img/` (Astro optimization), SVG w `public/img/` (statyczne)
+- `react-router` jest w `package.json` ale **nieużywany w `src/`** — residuum starej iteracji, do usunięcia przy najbliższym sprzątaniu
+
+## Auth-aware integration (zaimplementowane 2026-05-15)
+
+Per `docs/superpowers/specs/2026-05-15-marketing-fe-auth-aware-integration-design.md` i `docs/purchase-proces-auth-context-flow.md`. FE obsługuje 2 tryby pracy:
+
+- **Anonymous** (bez `?handoff=`, bez JWT) — flow z poprzedniej iteracji, 4-krokowy wizard, `INITIAL_PURCHASE`.
+- **Auth-aware** — klient z portala redirectowany przez `marketing/cennik?handoff=<UUID>`. FE: `consumeMockAuthFromUrl` (dev) → `detectAndExchangeHandoff` (real) → wymiana tokenu na JWT → `getPlans` z Authorization zwraca auth-aware wrapper (`{ plans, currentPlanCode?, subscriptionStatus? }`) z `relativeToCurrent` per plan → klik plan → `startOrder` zwraca `{ wizardEntryStep, prefilledFields, orderType }` → wizard skacze od razu na właściwy krok (np. `payment-method`).
+
+**Special cases**:
+- 401 z tokenem → clear sessionStorage + redirect na `PUBLIC_PORTAL_URL?returnReason=session-expired`
+- 409 `PLAN_CHANGE_PENDING` → auto-resume; jeśli `checkoutSessionUrl` non-null → redirect na Stripe, inaczej navigate na `wizardEntryStep` istniejącego DRAFT
+- `PATCH /payment-method` dla `PLAN_UPGRADE` zwraca proration breakdown (2 linie: charge + credit ujemny) — ConfirmStep renderuje `<ProrationBreakdown>`
+- Graceful degradation: gdy klient ma JWT ale BE flag `PLAN_CHANGE_VIA_WIZARD_ENABLED` OFF, `orderType=INITIAL_PURCHASE` mimo JWT — FE pokazuje banner "Funkcja niedostępna" i nie kontynuuje
+
+**Open questions**: refresh-token flow nie zaimplementowany (defer; klient klika "Zmień plan" ponownie). Portal URL alignment wymaga uzgodnienia z portal team (obecnie hardcodowane `/cennik?handoff=`).
 
 ## Repo
 
 - GitHub: https://github.com/CC-radek/CC-Page-Astro-Cennik (konto CC-radek, private)
+- Aktualna gałąź feature: `feature/CC-353`
