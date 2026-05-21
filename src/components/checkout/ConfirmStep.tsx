@@ -207,8 +207,6 @@ export function ConfirmStep() {
             {company && (
               <SummaryDataCard
                 title="Zamawiający"
-                editLabel="Edytuj"
-                editHref={withOrderId('/checkout/company-data', orderId)}
                 rows={[
                   { label: 'NIP', value: company.nip },
                   { label: 'Nazwa', value: company.name },
@@ -220,8 +218,6 @@ export function ConfirmStep() {
             {personal && (
               <SummaryDataCard
                 title="Osoba kontaktowa"
-                editLabel="Edytuj"
-                editHref={withOrderId('/checkout/personal-data', orderId)}
                 rows={[
                   { label: 'Imię', value: personal.firstName },
                   { label: 'Nazwisko', value: personal.lastName },

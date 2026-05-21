@@ -27,7 +27,7 @@ export function OrderSummaryAside({ order }: Props = {}) {
 
   const discount = order?.discount ?? null;
   const currency = (order?.currency ?? session.planSnapshot.currency) as 'PLN';
-  const cycleLabel = session.billingCycle === 'MONTHLY' ? 'netto miesięcznie' : 'netto miesięcznie (przy rocznym rozliczeniu)';
+  const cycleLabel = session.billingCycle === 'MONTHLY' ? 'netto miesięcznie' : 'netto miesięcznie\nprzy rozliczeniu rocznym';
 
   const mainPriceGrosze = discount ? discount.priceAfterDiscount : session.planSnapshot.priceMinorUnits;
   const originalPriceGrosze = discount ? discount.originalAmount : null;
@@ -58,7 +58,7 @@ export function OrderSummaryAside({ order }: Props = {}) {
         <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-3xl text-black whitespace-nowrap">
           {formatMinorUnits(mainPriceGrosze, currency)}
         </span>
-        <span className="font-['Plus_Jakarta_Sans',sans-serif] font-normal text-sm text-[#413f3b]">
+        <span className="font-['Plus_Jakarta_Sans',sans-serif] font-normal text-sm text-[#413f3b] whitespace-pre-wrap">
           {cycleLabel}
         </span>
       </div>
