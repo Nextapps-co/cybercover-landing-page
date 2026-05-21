@@ -3,7 +3,7 @@ import { CheckoutProgressBar } from './CheckoutProgressBar';
 import { FormActions } from './FormActions';
 import { FormAlert } from './FormAlert';
 import { SummaryDataCard } from './SummaryDataCard';
-import { SummaryPlanCard } from './SummaryPlanCard';
+import { OrderSummaryAside } from './OrderSummaryAside';
 import { ProrationBreakdown } from './ProrationBreakdown';
 import { getOrderSession, resolveOsSkipped } from '../../lib/state/order-session';
 import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
@@ -170,8 +170,6 @@ export function ConfirmStep() {
   const orderId = order.orderId;
   const company = order.companyData;
   const personal = order.personalData;
-  const planName = order.lines[0]?.planName ?? 'Plan';
-  const priceNet = order.totalPriceNet ?? order.lines[0]?.priceNet ?? null;
   const eligible = order.eligibilityResult?.eligible ?? true;
 
   // Per spec §5.5.4 — orderType-aware copy. Default 'INITIAL_PURCHASE' gdy session nie ma orderType
@@ -202,8 +200,8 @@ export function ConfirmStep() {
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-2 mb-8">
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <div className="lg:col-span-2 space-y-6">
             {company && (
               <SummaryDataCard
                 title="Zamawiający"
@@ -227,11 +225,9 @@ export function ConfirmStep() {
               />
             )}
           </div>
-          <SummaryPlanCard
-            planName={planName}
-            priceNet={priceNet}
-            billingCycle={order.billingCycle}
-          />
+          <aside className="lg:col-span-1">
+            <OrderSummaryAside order={order} />
+          </aside>
         </div>
 
         {/* Per spec §5.6.4 — proration breakdown dla PLAN_UPGRADE (2 linie z snapshot). */}
