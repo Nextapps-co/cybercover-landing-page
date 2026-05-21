@@ -176,9 +176,9 @@ export function PricingCard({
     <div className="h-auto relative w-full max-w-[437px] lg:max-w-[280px] xl:max-w-[350px] 2xl:max-w-[437px]">
       <div className="relative h-full flex flex-col">
         <div
-          className={`border border-solid rounded-[20px] p-[30px] flex flex-col h-full ${
+          className={`border-2 border-solid rounded-[20px] py-[30px] px-[20px] flex flex-col h-full ${
             highlighted
-              ? 'border-[#FED64B] border-[2.5px]'
+              ? 'border-[#FED64B]'
               : 'border-[#EAEAE8]'
           } ${isInactive ? 'opacity-60 grayscale' : ''}`}
           style={
@@ -298,9 +298,10 @@ export function PricingCard({
             )
           )}
 
-          {/* Description */}
+          {/* Description — fixed height żeby wszystkie 4 karty miały identyczną wysokość tego boxa,
+              co gwarantuje że separator + nagłówki sekcji niżej są na tej samej linii */}
           {description && (
-            <div className="mb-6 min-h-[100px]">
+            <div className="mb-0 h-[140px] overflow-hidden">
               <p className="font-['Plus_Jakarta_Sans',sans-serif] font-normal leading-[1.5] text-[14px] text-[#6B6965] tracking-[-0.14px]">
                 {description}
               </p>
@@ -312,7 +313,7 @@ export function PricingCard({
             {features.map((section, sIdx) => (
               <div key={sIdx}>
                 {/* Separator line */}
-                <div className="border-t border-[#EAEAE8] my-4"></div>
+                <div className="border-t border-[#EAEAE8] my-2"></div>
 
                 {/* Section header */}
                 <div className="flex items-start gap-[10px] mb-3">

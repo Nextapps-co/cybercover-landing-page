@@ -55,7 +55,7 @@ export function OrderSummaryAside({ order }: Props = {}) {
       </h4>
 
       <div className="flex items-baseline gap-2 mb-2">
-        <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-3xl text-black">
+        <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-3xl text-black whitespace-nowrap">
           {formatMinorUnits(mainPriceGrosze, currency)}
         </span>
         <span className="font-['Plus_Jakarta_Sans',sans-serif] font-normal text-sm text-[#413f3b]">
@@ -65,7 +65,7 @@ export function OrderSummaryAside({ order }: Props = {}) {
 
       {discount && originalPriceGrosze !== null && originalPriceGrosze > mainPriceGrosze && (
         <div className="mb-2 flex items-baseline gap-2">
-          <span className="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#6B6965] line-through">
+          <span className="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#6B6965] line-through whitespace-nowrap">
             {formatMinorUnits(originalPriceGrosze, currency)}
           </span>
           <span className="font-['Plus_Jakarta_Sans',sans-serif] inline-flex items-center rounded-full bg-[#FED64B]/20 px-2 py-0.5 text-xs font-semibold text-[#0D0D0D]">
