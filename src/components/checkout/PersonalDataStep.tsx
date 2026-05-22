@@ -46,7 +46,7 @@ export function PersonalDataStep() {
   const [submitting, setSubmitting] = useState(false);
   const [osSkipped, setOsSkipped] = useState(false);
 
-  const { register, handleSubmit, control, watch, setValue, setError, reset, formState: { errors } } =
+  const { register, handleSubmit, control, watch, setValue, setError, clearErrors, reset, formState: { errors } } =
     useForm<PersonalDataFormValues>({
       mode: 'onTouched',
       defaultValues: INITIAL_VALUES,
@@ -122,10 +122,15 @@ export function PersonalDataStep() {
     const consents: Record<string, boolean> = {};
     for (const def of consentDefinitions) consents[def.id] = next;
     setValue('consents', consents, { shouldValidate: true });
+    // `consents` nie jest register()-owane z rules, więc `shouldValidate` nie czyści
+    // manualnego setError z poprzedniego submit'a. Bez tego handleSubmit gateuje
+    // następny klik "Dalej" na resztkowym errorze i onSubmit się nie odpala.
+    clearErrors('consents');
   };
 
   const handleConsentChange = (id: string, accepted: boolean) => {
     setValue('consents', { ...consentValues, [id]: accepted }, { shouldValidate: true });
+    clearErrors('consents');
   };
 
   const onSubmit = async (data: PersonalDataFormValues) => {
