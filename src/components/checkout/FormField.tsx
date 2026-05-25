@@ -29,8 +29,13 @@ type SelectProps = BaseProps &
     options: FormFieldOption[];
   };
 
+// Layout per Figma (node 5385:18373): label-input grupa to flex column z gap-px (1px).
+// Label ma stałą wysokość h-5 (20px). Tekst label przez leading-[1.1] zajmuje 14.3px,
+// więc ~5.7px pustej przestrzeni pod tekstem + 1px gap daje stały ~6-7px wizualny odstęp
+// label_text → input_top, identyczny dla wszystkich pól niezależnie od długości labela.
+const FIELD_WRAPPER_CLS = 'flex flex-col gap-px';
 const LABEL_CLS =
-  "block font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-[13px] text-[#6b6965] uppercase tracking-[0.26px] leading-[1.1] mb-2";
+  "block h-5 font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-[13px] text-[#6b6965] uppercase tracking-[0.26px] leading-[1.1]";
 const INPUT_BASE_CLS =
   "w-full px-[16px] py-[12px] bg-white border-[1.2px] rounded-[8px] h-[48px] font-['Plus_Jakarta_Sans',sans-serif] text-[14px] text-[#0D0D0D] placeholder:text-[#A2A09C] focus:outline-none focus:ring-2 focus:ring-[#FED64B] disabled:bg-[#F8F7F4] disabled:cursor-not-allowed";
 
@@ -45,28 +50,30 @@ export const FormField = forwardRef<HTMLInputElement | HTMLSelectElement, InputP
       const { label, error, helperText, required, options, className, options: _optsRetained, ...selectProps } = props as SelectProps;
       void _optsRetained;
       return (
-        <div className={className ?? 'mb-0'}>
-          <label htmlFor={id} className={LABEL_CLS}>
-            {label}
-            {required && <span className="ml-0.5 text-red-500">*</span>}
-          </label>
-          <select
-            ref={ref as React.Ref<HTMLSelectElement>}
-            id={id}
-            className={`${INPUT_BASE_CLS} ${stateClass}`}
-            {...selectProps}
-          >
-            <option value="" disabled>
-              {props.placeholder ?? 'Wybierz...'}
-            </option>
-            {options.map(opt => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
+        <div className={className ?? 'flex flex-col gap-2'}>
+          <div className={FIELD_WRAPPER_CLS}>
+            <label htmlFor={id} className={LABEL_CLS}>
+              {label}
+              {required && <span className="ml-0.5 text-red-500">*</span>}
+            </label>
+            <select
+              ref={ref as React.Ref<HTMLSelectElement>}
+              id={id}
+              className={`${INPUT_BASE_CLS} ${stateClass}`}
+              {...selectProps}
+            >
+              <option value="" disabled>
+                {props.placeholder ?? 'Wybierz...'}
               </option>
-            ))}
-          </select>
-          {hasError && <p className="text-red-500 text-xs mt-1">{error}</p>}
-          {!hasError && helperText && <p className="text-[#6b6965] text-xs mt-1">{helperText}</p>}
+              {options.map(opt => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          {hasError && <p className="text-red-500 text-xs">{error}</p>}
+          {!hasError && helperText && <p className="text-[#6b6965] text-xs">{helperText}</p>}
         </div>
       );
     }
@@ -74,20 +81,22 @@ export const FormField = forwardRef<HTMLInputElement | HTMLSelectElement, InputP
     const { label, error, helperText, required, type = 'text', className, ...inputProps } = props as InputProps;
 
     return (
-      <div className={className ?? 'mb-0'}>
-        <label htmlFor={id} className={LABEL_CLS}>
-          {label}
-          {required && <span className="ml-0.5 text-red-500">*</span>}
-        </label>
-        <input
-          ref={ref as React.Ref<HTMLInputElement>}
-          id={id}
-          type={type}
-          className={`${INPUT_BASE_CLS} ${stateClass}`}
-          {...inputProps}
-        />
-        {hasError && <p className="text-red-500 text-xs mt-1">{error}</p>}
-        {!hasError && helperText && <p className="text-[#6b6965] text-xs mt-1">{helperText}</p>}
+      <div className={className ?? 'flex flex-col gap-2'}>
+        <div className={FIELD_WRAPPER_CLS}>
+          <label htmlFor={id} className={LABEL_CLS}>
+            {label}
+            {required && <span className="ml-0.5 text-red-500">*</span>}
+          </label>
+          <input
+            ref={ref as React.Ref<HTMLInputElement>}
+            id={id}
+            type={type}
+            className={`${INPUT_BASE_CLS} ${stateClass}`}
+            {...inputProps}
+          />
+        </div>
+        {hasError && <p className="text-red-500 text-xs">{error}</p>}
+        {!hasError && helperText && <p className="text-[#6b6965] text-xs">{helperText}</p>}
       </div>
     );
   },

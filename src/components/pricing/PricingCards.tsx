@@ -286,7 +286,7 @@ export function PricingCards() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4 justify-items-center">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 lg:gap-3">
         {state.plans.map((plan) => {
           const props = planToCardProps(plan, billingCycle, authContext);
           const isThisLoading = loadingPlanId === plan.planId;
