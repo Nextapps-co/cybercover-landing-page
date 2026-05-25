@@ -1,0 +1,237 @@
+---
+import { Image } from 'astro:assets'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/Hero.astro'
+import Section from '../components/Section.astro'
+import onasImg from '../assets/img/o-nas.jpg'
+
+const aboutJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  url: new URL('/o-nas', Astro.site ?? Astro.url).href,
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'Cyber Cover Sp. z o.o.',
+    url: (Astro.site ?? Astro.url).origin,
+    description:
+      'Cyber Cover — pionierzy kompleksowej ochrony cybernetycznej w Polsce. Łączymy ubezpieczenie cybernetyczne z proaktywną ochroną przed zagrożeniami.',
+  },
+}
+
+const mission = [
+  {
+    icon: '/img/ico-dzialanie-03.png',
+    title: 'Chronić polskie organizacje przed cyberzagrożeniami',
+    body: 'Każda organizacja – od kancelarii prawnej po sklep internetowy – zasługuje na spokój, że jej dane i systemy są bezpieczne. Tworzymy tę pewność przez połączenie najlepszych praktyk cyberbezpieczeństwa z solidną ochroną ubezpieczeniową.',
+  },
+  {
+    icon: '/img/ico-dzialanie-02.png',
+    title: 'Być dostępnym 24/7 gdy nas potrzebujesz',
+    body: 'Cyberprzestępcy nie pracują w godzinach urzędowych. Dlatego nasza pomoc jest dostępna przez całą dobę, każdego dnia roku. W kryzysie nie jesteś sam.',
+  },
+  {
+    icon: '/img/ico-dzialanie-03.png',
+    title: 'Wyjaśniać zamiast komplikować',
+    body: 'Cyberbezpieczeństwo i RODO nie muszą być skomplikowane. Przekładamy prawnicze i techniczne żargony na prosty język biznesu. Dostajesz jasne odpowiedzi na konkretne pytania.',
+  },
+]
+
+const values = [
+  {
+    title: 'Transparentność',
+    body: 'Jasno mówimy co robimy, ile to kosztuje i czego możesz się spodziewać. Bez ukrytych opłat i niejasnych zapisów.',
+  },
+  {
+    title: 'Dostępność',
+    body: 'Prawdziwa pomoc 24/7, nie automatyczna sekretarka. W kryzysie rozmawiasz z żywym człowiekiem, który wie co robić.',
+  },
+  {
+    title: 'Prostota',
+    body: 'Cyberbezpieczeństwo nie musi być skomplikowane. Dostajesz konkretne odpowiedzi na konkretne pytania.',
+  },
+  {
+    title: 'Niezawodność',
+    body: 'Możesz na nas liczyć gdy sytuacja stanie się poważna. Mamy doświadczenie, zasoby i determinację, żeby Ci pomóc.',
+  },
+]
+---
+
+<BaseLayout
+  title="O nas – CyberCover"
+  description="Cyber Cover – pionierzy kompleksowej ochrony cybernetycznej w Polsce. Łączymy ubezpieczenie z proaktywną ochroną przed cyberzagrożeniami."
+>
+  <Fragment slot="head-extra">
+    <link rel="preload" as="image" href="/img/tlo-zolte-kulki.svg" type="image/svg+xml" />
+    <script type="application/ld+json" set:html={JSON.stringify(aboutJsonLd)} />
+  </Fragment>
+
+  <Hero
+    badge="Ubezpieczenie zawarte w cenie usługi"
+    title="O nas"
+    intro="Cyber Cover – pionierzy kompleksowej ochrony cybernetycznej w Polsce"
+    bg="yellow"
+    bgImage="/img/tlo-zolte-kulki.svg"
+  />
+
+  <!-- ======== SEKCJA 1: 360 + obrazek ======== -->
+  <Section>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+      <div>
+        <p class="font-medium uppercase text-sm tracking-wide mb-4">
+          <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
+            <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+            360
+          </span>
+        </p>
+        <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-6">
+          Całościowa ochrona 360
+        </h2>
+        <p class="text-xl lg:text-2xl font-medium leading-snug text-brand-text max-w-[620px]">
+          Jesteśmy pierwszą organizacją w Polsce, która połączyła ubezpieczenie cybernetyczne
+          z proaktywną ochroną przed zagrożeniami. Nasza Ochrona 360 to kompleksowy system obrony przed cyberprzestępcami.
+        </p>
+      </div>
+      <div>
+        <Image
+          src={onasImg}
+          alt="Zespół Cyber Cover"
+          width={720}
+          class="w-full aspect-square object-cover rounded-card"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  </Section>
+
+  <!-- ======== SEKCJA 2: Dlaczego powstaliśmy ======== -->
+  <Section padding="tight">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Dlaczego powstaliśmy?
+      </h2>
+      <p class="text-xl lg:text-2xl font-medium leading-snug text-brand-text max-w-[620px]">
+        Oferty usługowe nie nadążają za dynamicznymi zagrożeniami cybernetycznymi.
+        Organizacje potrzebowały czegoś więcej niż osobnych usług wsparcia i oddzielnego ubezpieczenia
+        z wypłaty odszkodowania po szkodzie – potrzebowały prawdziwej ochrony, która działa
+        zanim coś się stanie.
+      </p>
+    </div>
+
+  </Section>
+
+  <!-- ======== SEKCJA 3: Nasza misja ======== -->
+  <Section>
+    <div class="text-center mb-10 lg:mb-12">
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Nasza misja
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 list-none p-0">
+      {mission.map((item) => (
+        <li class="bg-white border border-brand-border rounded-card p-8 lg:p-10 flex flex-col gap-8 lg:gap-10">
+          <img
+            src={item.icon}
+            alt=""
+            aria-hidden="true"
+            class="w-full max-w-[300px] h-auto mx-auto"
+          />
+          <div class="flex flex-col gap-4">
+            <h3 class="text-xl lg:text-2xl font-semibold leading-tight text-black">
+              {item.title}
+            </h3>
+            <p class="text-body lg:text-base leading-cozy text-brand-text">
+              {item.body}
+            </p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA 4: Nasze wartości ======== -->
+  <Section padding="tight">
+    <div class="text-center mb-10 lg:mb-12">
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Nasze wartości
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 list-none p-0">
+      {values.map((item) => (
+        <li class="text-center flex flex-col items-center gap-4">
+          <img src="/img/ico-sygnet.svg" alt="" aria-hidden="true" class="w-14 h-14 lg:w-16 lg:h-16" />
+          <h3 class="text-lg lg:text-card-heading font-semibold leading-tight text-black">
+            {item.title}
+          </h3>
+          <p class="text-body leading-cozy text-brand-text">
+            {item.body}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA 5: CTA — Gotowy żeby chronić swoją firmę? ======== -->
+  <section class="relative overflow-hidden bg-brand-blue-light py-16 lg:py-24">
+    <!-- Dekoracyjne strzałki w tle (ten sam kształt co hero Kontaktu, rotated 90°) -->
+    <svg
+      class="pointer-events-none absolute top-0 right-0 h-full w-auto opacity-50 select-none"
+      viewBox="0 0 700 519"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+      fill="none"
+    >
+      <defs>
+        <linearGradient id="cta-arrow-grad" x1="0.5" y1="0" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+          <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+          <stop offset="1" stop-color="#a7a7a7" stop-opacity="0.35"/>
+        </linearGradient>
+      </defs>
+      <g fill="url(#cta-arrow-grad)">
+        <path transform="translate(280 -50) rotate(90 283 340) scale(0.75)" d="M1.449,408.126q4.03,14.84,19.2,29.928l9.93,9.869,211.486,210.1q20.672,20.523,40.849,20.517t40.849-20.517l211.486-210.1,9.93-9.869q15.193-15.1,19.2-29.928a40.582,40.582,0,0,0,1.473-10.649V57.391q0-29.048-14.289-43.2Q537.309.019,508.087,0H57.775Q28.522,0,14.289,14.19.025,28.361,0,57.391V397.478a40.583,40.583,0,0,0,1.473,10.649H1.449Z"/>
+        <path transform="translate(480 -50) rotate(90 283 340) scale(0.75)" d="M1.449,408.126q4.03,14.84,19.2,29.928l9.93,9.869,211.486,210.1q20.672,20.523,40.849,20.517t40.849-20.517l211.486-210.1,9.93-9.869q15.193-15.1,19.2-29.928a40.582,40.582,0,0,0,1.473-10.649V57.391q0-29.048-14.289-43.2Q537.309.019,508.087,0H57.775Q28.522,0,14.289,14.19.025,28.361,0,57.391V397.478a40.583,40.583,0,0,0,1.473,10.649H1.449Z"/>
+      </g>
+    </svg>
+
+    <div class="relative max-w-container mx-auto px-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-stretch">
+        <!-- Lewa: badge + heading + caption -->
+        <div class="flex flex-col">
+          <p class="mb-8 lg:mb-10">
+            <span class="inline-flex items-center gap-2 bg-white border border-brand-border rounded-full px-4 py-2 uppercase font-medium text-sm tracking-wide">
+              <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-4 h-auto" />
+              Nie czekaj aż coś się stanie.
+            </span>
+          </p>
+          <h2 class="text-3xl lg:text-page-title font-semibold leading-tight text-black">
+            Gotowy żeby chronić<br class="hidden lg:inline" /> swoją organizację?
+          </h2>
+        </div>
+
+        <!-- Prawa: navy CTA card -->
+        <div class="bg-brand-navy rounded-[20px] p-6 lg:p-10 text-white flex flex-col justify-center gap-6 lg:gap-8">
+          <h3 class="text-2xl lg:text-[33px] font-semibold leading-tight">
+            Z Ochroną 360 działasz proaktywnie
+          </h3>
+          <ul class="list-disc ml-6 text-base lg:text-body-lg leading-relaxed space-y-1.5 marker:text-white">
+            <li>Zapobiegasz problemom zanim się pojawią</li>
+            <li>Masz plan działania w każdej sytuacji</li>
+            <li>W razie kryzysu nie jesteś sam</li>
+          </ul>
+          <a
+            href="/cennik"
+            class="mt-2 inline-flex items-center justify-between gap-3 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-base lg:text-body-lg px-6 py-3 rounded-full transition-colors w-fit"
+          >
+            <span>Załóż konto</span>
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white shrink-0">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
