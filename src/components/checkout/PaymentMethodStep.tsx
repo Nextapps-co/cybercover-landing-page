@@ -110,7 +110,7 @@ export function PaymentMethodStep() {
           discountedPriceNet: res.discountedPriceNet,
         });
       } else {
-        setDiscountState({ status: 'error', message: res.message ?? 'Kod nieaktywny.' });
+        setDiscountState({ status: 'error', message: 'Kod rabatowy nie istnieje lub wygasł.' });
       }
     } catch (err) {
       setDiscountState({ status: 'error', message: translateApiError(err).message });
