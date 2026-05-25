@@ -1,0 +1,33 @@
+---
+interface Props {
+  /** Padding pionowy: 'default' (16/24), 'tight' (12/16), 'none' */
+  padding?: 'default' | 'tight' | 'none'
+  /** Tło sekcji — kolor brand-* lub klasa Tailwind */
+  bg?: string
+  /** Wąski kontener 1000px zamiast 1410px */
+  narrow?: boolean
+  /** Wyłącz kontener (samo padding-y) — slot dostaje pełną szerokość */
+  fullBleed?: boolean
+  /** Dodatkowe klasy na <section> */
+  class?: string
+}
+
+const {
+  padding = 'default',
+  bg,
+  narrow = false,
+  fullBleed = false,
+  class: extraClass = '',
+} = Astro.props
+
+const padClass =
+  padding === 'tight' ? 'py-12 lg:py-16' : padding === 'none' ? '' : 'py-16 lg:py-24'
+
+const containerClass = narrow
+  ? 'max-w-[1000px] mx-auto px-6'
+  : 'max-w-container mx-auto px-6'
+---
+
+<section class={`${padClass} ${bg ?? ''} ${extraClass}`.trim()}>
+  {fullBleed ? <slot /> : <div class={containerClass}><slot /></div>}
+</section>

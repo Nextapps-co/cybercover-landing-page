@@ -1,0 +1,133 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/Hero.astro'
+import Section from '../components/Section.astro'
+
+const contactJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  url: new URL('/kontakt', Astro.site ?? Astro.url).href,
+  mainEntity: {
+    '@type': 'LocalBusiness',
+    name: 'Cyber Cover Sp. z o.o.',
+    telephone: '+48222472418',
+    email: 'info@cybercover.pl',
+    url: (Astro.site ?? Astro.url).origin,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'ul. Gen. Jana Henryka Dąbrowskiego 2',
+      addressLocality: 'Toruń',
+      postalCode: '87-100',
+      addressCountry: 'PL',
+    },
+    openingHoursSpecification: {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+      opens: '09:00',
+      closes: '16:00',
+    },
+    taxID: '5342506260',
+    vatID: 'PL5342506260',
+    identifier: [
+      { '@type': 'PropertyValue', propertyID: 'NIP', value: '5342506260' },
+      { '@type': 'PropertyValue', propertyID: 'REGON', value: '362024974' },
+      { '@type': 'PropertyValue', propertyID: 'KRS', value: '0000566636' },
+    ],
+  },
+}
+---
+
+<BaseLayout
+  title="Kontakt – CyberCover"
+  description="Jesteśmy do Twojej dyspozycji – chętnie doradzimy, pomożemy i odpowiemy na wszelkie wątpliwości. Wybierz dogodną formę kontaktu i porozmawiajmy."
+>
+  <Fragment slot="head-extra">
+    <link rel="preload" as="image" href="/img/tlo-zolte-strzalki.svg" type="image/svg+xml" />
+    <script type="application/ld+json" set:html={JSON.stringify(contactJsonLd)} />
+  </Fragment>
+
+  <Hero
+    badge="Jedna usługa, jedna faktura, pełna ochrona."
+    title="Kontakt"
+    intro="Jesteśmy do Twojej dyspozycji – chętnie doradzimy, pomożemy i odpowiemy na wszelkie wątpliwości. Wybierz dogodną formę kontaktu i porozmawiajmy."
+    bg="yellow"
+    bgImage="/img/tlo-zolte-strzalki.svg"
+  />
+
+  <Section padding="tight">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr] gap-10">
+      <!-- Telefon / Email -->
+      <div class="md:col-span-2 lg:col-span-1">
+        <h2 class="text-body-lg font-semibold leading-snug text-black mb-6">
+          Masz pytania dotyczące naszej usługi?<br />Zadzwoń do nas.
+        </h2>
+        <a
+          href="mailto:info@cybercover.pl"
+          class="block text-2xl lg:text-card-title font-semibold leading-tight text-black hover:text-brand-navy transition-colors mb-2"
+        >
+          info@cybercover.pl
+        </a>
+        <a
+          href="tel:+48222472418"
+          class="block text-2xl lg:text-card-title font-semibold leading-tight text-black hover:text-brand-navy transition-colors"
+        >
+          22 247 24 18
+        </a>
+      </div>
+
+      <!-- Adres -->
+      <address class="not-italic">
+        <h2 class="text-body-lg font-semibold text-black mb-4">Nasz adres:</h2>
+        <p class="text-body leading-cozy text-brand-text mb-4">
+          Cyber Cover Sp. z o.o.<br />
+          ul. Gen. Jana Henryka Dąbrowskiego 2<br />
+          87-100 Toruń
+        </p>
+        <p class="text-body leading-cozy text-brand-text">
+          NIP: 5342506260<br />
+          REGON: 362024974<br />
+          KRS: 0000566636
+        </p>
+      </address>
+
+      <!-- Godziny pracy -->
+      <div>
+        <h2 class="text-body-lg font-semibold text-black mb-4">Godziny pracy</h2>
+        <p class="text-body leading-cozy text-brand-text">
+          Poniedziałek – Piątek:<br />
+          9:00 – 16:00
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <Section padding="none" class="pb-16 lg:pb-24">
+    <aside
+      aria-labelledby="pomoc-24-7-title"
+      class="bg-brand-blue-light border border-brand-border rounded-card p-5 lg:p-6"
+    >
+      <div class="flex items-center gap-4 lg:gap-6">
+        <div class="flex-1">
+          <h2
+            id="pomoc-24-7-title"
+            class="text-lg lg:text-card-heading font-semibold leading-tight text-black mb-2"
+          >
+            Pomoc 24/7 w razie incydentu bezpieczeństwa
+          </h2>
+          <p class="text-body text-brand-text leading-snug">
+            numer alarmowy dostępny w Portalu Klienta po wykupieniu Ochrony 360.
+          </p>
+        </div>
+        <div class="shrink-0">
+          <img
+            src="/img/kontakt-pomoc-24-7.svg"
+            alt=""
+            aria-hidden="true"
+            class="w-[70px] lg:w-[87px] h-auto"
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </aside>
+  </Section>
+</BaseLayout>

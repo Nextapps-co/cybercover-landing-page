@@ -185,3 +185,136 @@ npm run preview  # podgląd buildu lokalnie
 - Prefetching linków (`<link rel="prefetch">`)
 - Critical CSS inlining
 - Service Worker dla offline support
+
+---
+
+## Migracja kolejnych podstron WP → Astro (sesja maj 2026)
+
+Druga iteracja: dodawanie kolejnych podstron (Kontakt, w przyszłości O nas, Komu pomagamy, Ochrona 360, Zagrożenia, 5× usług) na bazie pełnego backupu WP z hostingu LH.pl.
+
+### Które źródło użyć (i czego unikać)
+
+**Używamy (`Cyber/cybercover.pl-WP-all-z-LH.pl/`):**
+- **`wp-content/themes/paula/`** — PHP templates, Sass, CSS bloków Pauli. Czyste źródło bez śmieci.
+- **`wp-content/themes/paula/css/main.css`** — referencja klas (np. `paula-text-border` to pill badge: `inline-block`, `border-radius:1.5em`, `padding:6px .7em`, bg z `--tb-background-color`)
+- **`wp-content/plugins/cyber-cover/`** — custom plugin z patternami (np. `ochrona360`)
+- **`wp-content/uploads/<year>/<month>/`** — oryginalne obrazki w pełnej rozdzielczości + warianty responsywne wygenerowane przez WP
+- **Duplicator SQL dump** w `wp-content/backups-dup-lite/cybercover_*_archive.zip`, w środku `dup-installer/dup-database__*.sql` (~155 MB rozpakowany) — **prawdziwa treść każdej strony**, bo Paula's PHP template (`contact.php`, `page.php`) renderuje tylko skielet + `the_content()` z DB
+
+**NIE używamy:**
+- `Cyber/CC - all WP page/` — saved HTML ("Save Page As") — **zatrute przez Chrome extension** (`plasmo-csui`), fonty wskazują na `chrome-extension://...`, mojibake, bezużyteczne jako wzorzec
+- Statyczny render SQL + Paula CSS bez PHP — Paula's custom bloki (`paula/grid`, `paula/grid-box`, `paula/step`, `paula/timeline-event`) mają **render callbacki w PHP** (`paula_grid_box_render()` itp.) które czytają atrybuty z komentarza Gutenberg i wstrzykują inline style. Bez PHP komentarz `<!-- wp:paula/grid-box {...} -->` jest niewidoczny → custom bloki nie rendrują się
+- Live `cybercover.pl/<slug>` — produkcja ma tylko tymczasowy landing, prawdziwy WP jest na ukrytym staging
+
+### Workflow per podstrona (przepis)
+
+1. **Znajdź post w SQL** — `INSERT INTO \`wp_posts\` VALUES(...)` gdzie position 11 (slug) = target, position 20 = "page", position 7 = "publish"
+2. **Wyciągnij Gutenberg HTML** z position 4 (`post_content`) — to **specyfikacja designu** (rozmiary, kolory, paddingi w JSON atrybutach komentarzy `<!-- wp:* {} -->`)
+3. **Skopiuj obrazki** z `wp-content/uploads/<year>/<month>/` do `public/img/` (SVG) lub `src/assets/img/` (raster, dla Astro Image)
+4. **Zoptymalizuj obrazki** — patrz "Optymalizacja obrazków" poniżej
+5. **Zbuduj stronę** używając `<Hero>` + `<Section>` z `src/components/` (patrz "System komponentów")
+6. **Dodaj JSON-LD per strona** przez `<slot name="head-extra" />` w `BaseLayout`
+7. **Sprawdź a11y** — `<address>` dla danych firmy, `<aside aria-labelledby="...">` dla side info, `alt=""` + `aria-hidden="true"` dla obrazków dekoracyjnych, `tel:+48...` (nie samo `tel:22...`)
+
+Helper skrypt: `render-page.mjs` w katalogu WP root robi pre-render Gutenberg HTML jako sanity check (CSS z Paula da się załadować, ale custom bloki nie renderują się bez PHP — używać tylko do podglądu treści, nie wyglądu).
+
+### Gotchas: WP / Paula vs Astro
+
+- **Gutenberg block JSON to spec designu** — `fontSize`, `customOverlayColor`, `paddingTop`, `borderRadius`, `width: "50%"`, `contentSize: "1410px"`, `minHeightUnit: "vh"` itd. są bezpośrednio w komentarzach. Czytaj te wartości literalnie zamiast zgadywać z DevTools.
+- **Theme vars w PHP, nie CSS** — Paula używa `--h1-font-size`, `--basic-font-size`, `--basic-font-weight-mobile` itp., ale ustawia je w **WP Customizer** (theme_mods w bazie), nie w plikach `.css`. Statyczne otworzenie main.css pokaże tylko `font-size: var(--h1-font-size)` bez konkretnej wartości
+- **Custom classes mogą nie mieć CSS** — np. `paula-title-lil` i `site-intro-lil` istnieją w HTML ale nie mają reguł w `main.css` — styling pochodzi z inline `style="fontSize:..."` w Gutenberg HTML. Czyli: bierz wartości z atrybutów Gutenberg, nie szukaj klasy w CSS
+- **`paula-text-border` jednak ma CSS** — to pill badge z `--tb-background-color` (np. `#ddeef8` na Kontakcie) — w Astro odwzorowane przez `bg-brand-tag-blue border border-brand-tag-blue px-4 py-1 rounded-full`
+- **`alignfull` / `alignwide` / `is-layout-flex`** — WP wstrzykuje je przez `theme.json` + PHP. W Astro: ręcznie ekwiwalent (np. `alignwide` ≈ `max-w-container mx-auto`)
+- **Tło hero z Pauli (`wp:cover` z parallax)** — `minHeightUnit: "vh"` oznacza że hero ma być na 100vh w WP; w Astro decydujemy o sensownej `min-h-[480px] lg:min-h-[608px]` (proporcja 1513:608 wg Figmy)
+- **Treść w `wp_posts.post_content` używa absolutnych URL** `https://cybercover.pl/wp-content/...` — przy renderowaniu trzeba rewrite na `/wp-content/...` lub kopiować obrazki lokalnie i podmieniać ścieżki
+
+### System komponentów (Hero + Section)
+
+Dwa centralne komponenty pokrywają ~90% layoutu podstron.
+
+**`src/components/Hero.astro`** — uniwersalne hero:
+- propsy: `badge?`, `title`, `intro?`, `image?` (raster split layout) **xor** `bgImage?` (SVG cover), `bg='white'|'yellow'`, `introSize='lg'|'xl'`, `minHeight?` (override)
+- slot `cta` na przycisk pod intro
+- 3 warianty: split (text+image jak Start), simple text-only, text+bgImage (jak Kontakt)
+- `bgImage`: `background-position: center bottom; background-size: cover` + `min-h-[480px] lg:min-h-[608px]` (proporcja Figma 1513:608) żeby SVG nie był rozciągany
+
+**`src/components/Section.astro`** — standardowy wrapper:
+- propsy: `padding='default'|'tight'|'none'`, `bg?`, `narrow?` (1000px container zamiast 1410px), `fullBleed?`, `class?`
+- default padding: `py-16 lg:py-24`, tight: `py-12 lg:py-16`
+- container: `max-w-container mx-auto px-6`
+
+**Wzorzec strony:**
+```astro
+<BaseLayout title="..." description="...">
+  <Fragment slot="head-extra">
+    <link rel="preload" as="image" href="/img/..." type="image/svg+xml" />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </Fragment>
+  <Hero badge="..." title="..." intro="..." bg="yellow" bgImage="/img/..." />
+  <Section>...kolumny / karty / grid...</Section>
+  <Section padding="none" class="pb-16 lg:pb-24">
+    <aside aria-labelledby="...">...</aside>
+  </Section>
+</BaseLayout>
+```
+
+### Design tokens (rozszerzone w `global.css @theme`)
+
+```css
+/* Typografia */
+--text-page-title: 58px;       /* H1 — tytuł strony (Kontakt, Ochrona 360...) */
+--text-section-title: 50px;    /* H2 — tytuł sekcji */
+--text-card-title: 30px;       /* H3 — duża linkowana wartość (email/tel) */
+--text-card-heading: 22px;     /* H3 mniejszy — tytuł karty info (np. 24/7) */
+--text-footer-title: 19px;
+--text-body-lg: 17px;
+--text-body: 15px;             /* tekst w kolumnach / kartach */
+
+/* Line-height */
+--leading-cozy: 1.6;           /* gęsty body w kolumnach / adresach */
+
+/* Border radius */
+--radius-card: 10px;
+
+/* Kolory (uzupełnione, brand-tag-yellow = tło hero stron) */
+--color-brand-tag-blue: #DDEEF8;   /* badge background nad H1 */
+--color-brand-tag-yellow: #FEFFE0; /* tło hero z dekoracyjnymi strzałkami */
+--color-brand-blue-light: #EDF8FF; /* tło kart info */
+```
+
+### Optymalizacja obrazków (przepis dla raster-in-SVG)
+
+Avatary i ilustracje z WP są często **SVG z osadzonym base64 PNG** w wysokiej rozdzielczości (1-2 MB na plik). Workflow:
+
+1. Wyodrębnij base64 z SVG (`data:image/png;base64,...`)
+2. Zdekoduj do PNG → resize do max 2× display size (np. 220px dla avataru wyświetlanego 87px)
+3. Konwertuj do WebP (`cwebp -q 80`)
+4. Zakoduj z powrotem do `data:image/webp;base64,...` i wklej do SVG
+
+Wynik typowy: **1.9 MB → 6 KB** (99.7% redukcji).
+
+Skrypty: `/tmp/optimize-avatar.mjs` (resize) i `/tmp/png-to-webp.mjs` (konwersja na WebP) — Node.js zero-dep, używają `sips` (macOS) + `cwebp` (`brew install webp`).
+
+### A11y + SEO checklist per strona
+
+- **`<title>` i `<meta name="description">`** zawsze przez `BaseLayout` propsy
+- **JSON-LD** dla typu strony — np. `ContactPage` z `mainEntity: LocalBusiness` (telefon, adres, openingHours, NIP/REGON/KRS jako `identifier[]`) — przez `head-extra` slot
+- **`<link rel="preload" as="image">`** dla obrazka LCP (np. hero bg-image)
+- **`tel:+48...`** zawsze z prefiksem kraju
+- **Obrazki dekoracyjne**: `alt=""` + `aria-hidden="true"`
+- **`<address class="not-italic">`** dla danych firmy
+- **`<aside aria-labelledby="id-tytułu">`** dla side info (karty 24/7, callouty)
+- **Focus styles** — globalne w `@layer base`: `a:focus-visible, button:focus-visible, [role="button"]:focus-visible { outline: 2px solid var(--color-brand-navy); outline-offset: 2px; }`
+
+### Responsywność — siatki w kolumnach
+
+3-kolumnowy info-grid (jak na Kontakcie) — pattern responsywny:
+```html
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr] gap-10">
+  <div class="md:col-span-2 lg:col-span-1">...kolumna 1 (najszersza)...</div>
+  <div>...kolumna 2...</div>
+  <div>...kolumna 3...</div>
+</div>
+```
+
+Mobile (1 kol) → tablet 768-1023px (2 kol, pierwsza na całą szerokość) → desktop ≥1024px (3 kol 50%/25%/25%).
