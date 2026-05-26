@@ -173,16 +173,25 @@ const menuItems: MenuItem[] = [
         <details class="group border-b border-brand-border-light">
           <summary class="flex items-center justify-between gap-3 text-black font-semibold text-lg py-4 cursor-pointer list-none">
             <span>{item.label}</span>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="transition-transform group-open:rotate-180">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="transition-transform group-open:text-brand-navy">
               <path d="M3.5 5.25 7 8.75l3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </summary>
-          <ul class="flex flex-col gap-1 pb-4 pl-2 list-none">
+          <ul class="flex flex-col list-none p-0">
             {item.children.map(sub => (
-              <li>
-                <a href={sub.href} class="block py-3 mobile-link">
-                  <p class="font-medium text-base text-black leading-snug">{sub.title}</p>
-                  <p class="text-sm text-brand-text leading-snug mt-1">{sub.desc}</p>
+              <li class="border-t border-brand-border-light first:border-t-0">
+                <a href={sub.href} class="flex items-center justify-between gap-4 py-4 mobile-link">
+                  <div class="flex flex-col gap-1.5 flex-1 min-w-0">
+                    <p class="font-medium text-base text-black leading-snug">{sub.title}</p>
+                    <p class="text-sm text-brand-text leading-snug">{sub.desc}</p>
+                  </div>
+                  <span class="shrink-0 text-black" aria-hidden="true">
+                    <svg width="44" height="44" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="25" cy="25" r="24.5" stroke="currentColor"/>
+                      <path d="M37.45 25H7.89" stroke="currentColor" stroke-linecap="square" stroke-width="2.5"/>
+                      <path d="m25 39 14-13.98v-.04L25 11" stroke="currentColor" stroke-width="2.5"/>
+                    </svg>
+                  </span>
                 </a>
               </li>
             ))}
@@ -197,21 +206,21 @@ const menuItems: MenuItem[] = [
         </a>
       ))}
       <a
-        href="https://dev-portal.cybercover.pl/auth"
-        target="_blank"
-        rel="noopener"
-        class="mt-6 bg-black hover:bg-black/85 text-white font-semibold text-lg px-7 py-4 rounded-full text-center transition-colors mobile-link"
-      >
-        Portal Klienta
-      </a>
-      <a
         href="/cennik"
-        class="mt-3 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-lg px-7 py-4 rounded-full text-center transition-colors mobile-link inline-flex items-center justify-center gap-2"
+        class="mt-6 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-lg px-7 py-4 rounded-full text-center transition-colors mobile-link inline-flex items-center justify-center gap-2"
       >
         Sprawdź cenę
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
+      </a>
+      <a
+        href="https://dev-portal.cybercover.pl/auth"
+        target="_blank"
+        rel="noopener"
+        class="mt-3 bg-black hover:bg-black/85 text-white font-semibold text-lg px-7 py-4 rounded-full text-center transition-colors mobile-link"
+      >
+        Portal Klienta
       </a>
     </nav>
   </div>

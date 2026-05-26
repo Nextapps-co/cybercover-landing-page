@@ -60,6 +60,7 @@
 /* Scroll offset for fixed header */
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 [id] {
