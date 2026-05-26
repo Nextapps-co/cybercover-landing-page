@@ -1,7 +1,18 @@
 ---
-const menuItems = [
+type SubItem = { title: string; desc: string; href: string }
+type MenuItem = { label: string; href?: string; children?: SubItem[] }
+
+const ochrona360Children: SubItem[] = [
+  { title: 'Ocena bezpieczeństwa i zalecenia', desc: 'Sprawdź swoje zabezpieczenia i otrzymaj plan działania', href: '#' },
+  { title: 'Konsultacje z ekspertami', desc: 'Odpowiadamy na pytania i wątpliwości', href: '#' },
+  { title: 'Ciągły monitoring zagrożeń', desc: 'Monitorujemy sieć i skanujemy systemy w poszukiwaniu zagrożeń', href: '#' },
+  { title: 'Natychmiastowa pomoc 24/7', desc: 'Zespół ekspertów IT, prawników i specjalistów PR gotowy do działania w kryzysie', href: '#' },
+  { title: 'Ubezpieczenie od kar, roszczeń i strat', desc: 'Ochrona finansowa na najwyższym poziomie — pokrywamy kary UODO, okupy, roszczenia i straty', href: '#' },
+]
+
+const menuItems: MenuItem[] = [
   { label: 'Start', href: '/' },
-  { label: 'Ochrona 360', href: '/#rozwiazanie' },
+  { label: 'Ochrona 360', children: ochrona360Children },
   { label: 'Zagrożenia', href: '/zagrozenia-i-mity' },
   { label: 'Komu pomagamy', href: '/komu-pomagamy' },
   { label: 'O nas', href: '/o-nas' },
@@ -14,7 +25,7 @@ const menuItems = [
   id="site-header"
   data-site-header
 >
-  <div class="max-w-[1480px] mx-auto px-5 py-4" id="header-wrapper">
+  <div class="relative max-w-[1480px] mx-auto px-5 py-4" id="header-wrapper">
     <div class="flex items-center justify-between bg-brand-bg border border-brand-border rounded-full px-6 h-[70px]" id="header-pill">
       <!-- Logo -->
       <a href="/" class="shrink-0">
@@ -29,7 +40,20 @@ const menuItems = [
 
       <!-- Desktop nav -->
       <nav id="desktop-nav" class="hidden lg:flex items-center gap-6">
-        {menuItems.map(item => (
+        {menuItems.map(item => item.children ? (
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 text-black font-semibold text-body-lg hover:text-brand-navy transition-colors cursor-pointer"
+            data-megamenu-trigger
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            {item.label}
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="transition-transform">
+              <path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        ) : (
           <a
             href={item.href}
             class="text-black font-semibold text-body-lg hover:text-brand-navy transition-colors"
@@ -59,13 +83,83 @@ const menuItems = [
       <!-- Mobile toggle -->
       <button
         id="menu-toggle"
-        class="lg:hidden flex flex-col gap-1.5 p-2"
+        class="lg:hidden flex items-center justify-center w-10 h-10 -mr-1 shrink-0"
         aria-label="Otwórz menu"
       >
-        <span class="block w-6 h-0.5 bg-black transition-transform" id="bar1"></span>
-        <span class="block w-6 h-0.5 bg-black transition-opacity" id="bar2"></span>
-        <span class="block w-6 h-0.5 bg-black transition-transform" id="bar3"></span>
+        <svg id="icon-burger" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg id="icon-close" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="hidden">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
       </button>
+    </div>
+
+    <!-- Megamenu (desktop only) -->
+    <div
+      id="megamenu"
+      class="hidden lg:block absolute left-5 right-5 top-full -mt-2 bg-brand-bg border border-brand-border rounded-[20px] p-8 opacity-0 pointer-events-none transition-opacity duration-300"
+      data-megamenu
+      aria-hidden="true"
+    >
+      <div class="grid grid-cols-[minmax(0,28%)_1fr] gap-10">
+        <!-- LEWA: tarcza + tekst -->
+        <div class="flex flex-col justify-between gap-6">
+          <div class="relative w-full max-w-[280px] mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 432" class="w-full h-auto" aria-hidden="true">
+              <defs>
+                <linearGradient id="cc-shield-grad" x1="0.5" x2="0.5" y1="0.218" y2="1" gradientUnits="objectBoundingBox">
+                  <stop offset="0" stop-color="#fff" stop-opacity="0"></stop>
+                  <stop offset="0.496" stop-color="#fff"></stop>
+                  <stop offset="1" stop-color="#fff"></stop>
+                </linearGradient>
+              </defs>
+              <path fill="url(#cc-shield-grad)" d="M1.5 273.46q2.79 10.3 13.26 20.79l6.85 6.85 145.85 145.92q14.26 14.26 28.15 14.25t28.1-14.25L369.06 301.1l6.82-6.85q10.44-10.48 13.2-20.8a29 29 0 0 0 1-7.4l-.43-236.2q-.03-20.17-9.88-30-9.84-9.83-29.96-9.85H39.77Q19.64-10 9.85-.14.05 9.7.07 29.86l.42 236.2a29 29 0 0 0 1.02 7.4Z" transform="translate(-0.07 -29)"/>
+              <g fill="none" stroke="#5d5a54" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke-width="1.5" d="M243 273.8a84.9 84.9 0 1 0-84.9-84.9 84.9 84.9 0 0 0 84.9 84.9"/>
+                <path stroke-width="1.5" d="M195.14 258.99A83.7 83.7 0 0 1 147 273.8a84.9 84.9 0 1 1 0-169.8 83.5 83.5 0 0 1 47.35 14.55"/>
+                <path stroke-width="1.5" d="m221.3 185.99 17.2 17.2 27.77-27.78"/>
+                <path stroke-width="1.322" d="M164.98 134.95a29.62 29.62 0 0 0-53.16 17.98v6.35a29.57 29.57 0 0 0 29.62 29.62 20 20 0 0 0 3.96-.26"/>
+                <path stroke-width="1.322" d="M146.73 204.25h-21.16a33.35 33.35 0 0 0-33.32 33.32"/>
+              </g>
+            </svg>
+          </div>
+          <p class="text-center font-medium text-base leading-snug uppercase tracking-tight text-black max-w-[260px] mx-auto">
+            Ochrona twojego biznesu przed cyberzagrożeniami.
+          </p>
+        </div>
+
+        <!-- PRAWA: title + karty -->
+        <div class="flex flex-col gap-6">
+          <p class="text-2xl font-medium leading-snug text-black">
+            Jedna usługa, jedna faktura, pełna ochrona 360
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {ochrona360Children.map(item => (
+              <a
+                href={item.href}
+                class="group bg-white border border-brand-border rounded-card p-5 flex flex-col gap-4 hover:bg-brand-tag-yellow transition-colors"
+              >
+                <div class="flex flex-col gap-2 flex-1">
+                  <p class="font-medium text-base lg:text-body-lg leading-snug text-black">
+                    {item.title}
+                  </p>
+                  <p class="text-sm leading-snug text-brand-text">
+                    {item.desc}
+                  </p>
+                </div>
+                <span class="self-end mt-auto" aria-hidden="true">
+                  <svg width="44" height="44" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="25" cy="25" r="24.5" stroke="currentColor"/>
+                    <path d="M37.45 25H7.89" stroke="currentColor" stroke-linecap="square" stroke-width="2.5"/>
+                    <path d="m25 39 14-13.98v-.04L25 11" stroke="currentColor" stroke-width="2.5"/>
+                  </svg>
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -75,7 +169,26 @@ const menuItems = [
     class="lg:hidden hidden fixed inset-0 top-[90px] bg-white z-40 px-6 py-8 overflow-y-auto"
   >
     <nav class="flex flex-col gap-1">
-      {menuItems.map(item => (
+      {menuItems.map(item => item.children ? (
+        <details class="group border-b border-brand-border-light">
+          <summary class="flex items-center justify-between gap-3 text-black font-semibold text-lg py-4 cursor-pointer list-none">
+            <span>{item.label}</span>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="transition-transform group-open:rotate-180">
+              <path d="M3.5 5.25 7 8.75l3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </summary>
+          <ul class="flex flex-col gap-1 pb-4 pl-2 list-none">
+            {item.children.map(sub => (
+              <li>
+                <a href={sub.href} class="block py-3 mobile-link">
+                  <p class="font-medium text-base text-black leading-snug">{sub.title}</p>
+                  <p class="text-sm text-brand-text leading-snug mt-1">{sub.desc}</p>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : (
         <a
           href={item.href}
           class="text-black font-semibold text-lg py-4 border-b border-brand-border-light hover:text-brand-navy transition-colors mobile-link"
@@ -107,30 +220,24 @@ const menuItems = [
 <script>
   const toggle = document.getElementById('menu-toggle')
   const menu = document.getElementById('mobile-menu')
-  const bar1 = document.getElementById('bar1')
-  const bar2 = document.getElementById('bar2')
-  const bar3 = document.getElementById('bar3')
+  const iconBurger = document.getElementById('icon-burger')
+  const iconClose = document.getElementById('icon-close')
 
   let isOpen = false
 
-  toggle?.addEventListener('click', () => {
-    isOpen = !isOpen
-    menu?.classList.toggle('hidden', !isOpen)
-    bar1?.classList.toggle('rotate-45', isOpen)
-    bar1?.classList.toggle('translate-y-[4px]', isOpen)
-    bar2?.classList.toggle('opacity-0', isOpen)
-    bar3?.classList.toggle('-rotate-45', isOpen)
-    bar3?.classList.toggle('-translate-y-[4px]', isOpen)
-    document.body.classList.toggle('overflow-hidden', isOpen)
-    toggle?.setAttribute('aria-label', isOpen ? 'Zamknij menu' : 'Otwórz menu')
-  })
+  function setOpen(open: boolean) {
+    isOpen = open
+    menu?.classList.toggle('hidden', !open)
+    iconBurger?.classList.toggle('hidden', open)
+    iconClose?.classList.toggle('hidden', !open)
+    document.body.classList.toggle('overflow-hidden', open)
+    toggle?.setAttribute('aria-label', open ? 'Zamknij menu' : 'Otwórz menu')
+  }
+
+  toggle?.addEventListener('click', () => setOpen(!isOpen))
 
   document.querySelectorAll('.mobile-link').forEach(link => {
-    link.addEventListener('click', () => {
-      isOpen = false
-      menu?.classList.add('hidden')
-      document.body.classList.remove('overflow-hidden')
-    })
+    link.addEventListener('click', () => setOpen(false))
   })
 
   // White header on cennik page
@@ -139,4 +246,55 @@ const menuItems = [
     headerPill.classList.remove('bg-brand-bg')
     headerPill.classList.add('bg-white')
   }
+
+  // Megamenu (desktop): open on hover/focus of trigger or on the panel itself.
+  const trigger = document.querySelector<HTMLButtonElement>('[data-megamenu-trigger]')
+  const megamenu = document.querySelector<HTMLElement>('[data-megamenu]')
+  if (trigger && megamenu) {
+    let closeTimer: number | null = null
+
+    function open() {
+      if (closeTimer !== null) {
+        window.clearTimeout(closeTimer)
+        closeTimer = null
+      }
+      megamenu!.classList.remove('opacity-0', 'pointer-events-none')
+      megamenu!.classList.add('opacity-100', 'pointer-events-auto')
+      megamenu!.setAttribute('aria-hidden', 'false')
+      trigger!.setAttribute('aria-expanded', 'true')
+    }
+
+    function scheduleClose() {
+      if (closeTimer !== null) window.clearTimeout(closeTimer)
+      closeTimer = window.setTimeout(() => {
+        megamenu!.classList.add('opacity-0', 'pointer-events-none')
+        megamenu!.classList.remove('opacity-100', 'pointer-events-auto')
+        megamenu!.setAttribute('aria-hidden', 'true')
+        trigger!.setAttribute('aria-expanded', 'false')
+        closeTimer = null
+      }, 150)
+    }
+
+    trigger.addEventListener('mouseenter', open)
+    trigger.addEventListener('focus', open)
+    trigger.addEventListener('mouseleave', scheduleClose)
+    trigger.addEventListener('blur', scheduleClose)
+    megamenu.addEventListener('mouseenter', open)
+    megamenu.addEventListener('mouseleave', scheduleClose)
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        megamenu.classList.add('opacity-0', 'pointer-events-none')
+        megamenu.classList.remove('opacity-100', 'pointer-events-auto')
+        megamenu.setAttribute('aria-hidden', 'true')
+        trigger.setAttribute('aria-expanded', 'false')
+      }
+    })
+  }
 </script>
+
+<style>
+  /* Hide default <summary> marker in mobile menu */
+  details > summary::-webkit-details-marker { display: none; }
+</style>
