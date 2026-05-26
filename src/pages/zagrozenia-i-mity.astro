@@ -1,0 +1,377 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/Hero.astro'
+import Section from '../components/Section.astro'
+import CtaReady from '../components/CtaReady.astro'
+
+const myths = [
+  {
+    no: 'MIT 1',
+    quote: '„Mojej organizacji <br>to nie dotyczy"',
+    fact: 'Cyberprzestępcy atakują firmy każdej wielkości – od jednoosobowych działalności po międzynarodowe korporacje. Małe firmy są atakowane, bo mają słabsze zabezpieczenia i mniej środków na ochronę. Duże firmy są celem, bo mają więcej cennych danych i pieniędzy. Cyberprzestępcy używają automatycznych narzędzi, które skanują wszystkie firmy w internecie bez względu na branżę czy wielkość.',
+  },
+  {
+    no: 'MIT 2',
+    quote: '„Mam procedury więc nie muszę się obawiać naruszeń RODO"',
+    fact: 'Naruszenia RODO wynikają także z błędów ludzkich. Pracownicy wysyłają dane do złych odbiorców, zostawiają dokumenty w kopiarce, gubią laptopy służbowe, używają prywatnych kont do pracy lub nieprawidłowo konfigurują systemy. Praktyka pokazuje, że naruszenia danych to skutek przypadkowych błędów pracowników, pomimo dokumentacji i wymagań.',
+  },
+  {
+    no: 'MIT 3',
+    quote: '„Antywirus to wszystko, czego potrzebuję do ochrony"',
+    fact: 'Nowoczesne zagrożenia cybernetyczne z powodzeniem omijają tradycyjne oprogramowanie antywirusowe. Większość ataków wykorzystuje socjotechnikę (oszukiwanie ludzi), wyłudzenia lub luki w systemach. Antywirus to niezbędna, ale tylko jedna warstwa ochrony z wielu potrzebnych.',
+  },
+  {
+    no: 'MIT 4',
+    quote: '„Cyberbezpieczeństwo to problem działu IT, nie całej firmy"',
+    fact: 'Wiele udanych ataków cybernetycznych zaczyna się od błędu człowieka – kliknięcia w złośliwy link, pobrania załącznika, czy podania hasła na fałszywej stronie. Najlepsze zabezpieczenia techniczne są bezużyteczne, jeśli pracownicy nie wiedzą, jak rozpoznać zagrożenia. Każdy pracownik to potencjalny punkt wejścia dla cyberprzestępców.',
+  },
+]
+
+// Katalog zagrożeń — 3 accordion groups × 3 tabs × N items
+const catalog = [
+  {
+    id: 'rodo',
+    title: 'Incydenty RODO i ochrony danych osobowych',
+    tabs: [
+      {
+        title: 'Bezpieczeństwo danych osobowych',
+        items: [
+          'Konieczność zgłoszenia naruszenia do PUODO',
+          'Potrzeba powiadomienia osób, których dane zostały naruszone',
+          'Podejrzenie naruszenia przepisów o ochronie danych',
+          'Podejrzenie wycieku danych osobowych klientów/pracowników',
+          'Naruszenie poufności danych osobowych',
+          'Naruszenie integralności danych osobowych',
+          'Naruszenie dostępności danych osobowych',
+          'Przypadkowe ujawnienie danych osobowych osobom nieuprawnionym',
+          'Nieautoryzowany dostęp zewnętrzny do systemów zawierających dane osobowe',
+        ],
+      },
+      {
+        title: 'Incydenty związane z przetwarzaniem danych',
+        items: [
+          'Nieprawidłowe przetwarzanie danych osobowych',
+          'Przetwarzanie danych bez podstawy prawnej',
+          'Przekroczenie celu przetwarzania danych',
+          'Przetwarzanie danych przez okres dłuższy niż niezbędny',
+          'Naruszenie zasady minimalizacji danych',
+          'Niewypełnienie obowiązku informacyjnego względem osób fizycznych',
+          'Nieprawidłowa realizacja praw osób, których dane dotyczą',
+          'Przekazywanie danych do krajów trzecich bez odpowiednich zabezpieczeń',
+          'Automatyczne podejmowanie decyzji bez możliwości interwencji człowieka',
+        ],
+      },
+      {
+        title: 'Incydenty techniczne związane z danymi osobowymi',
+        items: [
+          'Błędna konfiguracja systemów przetwarzających dane osobowe',
+          'Przypadkowe usunięcie danych osobowych',
+          'Błędy w procesie anonimizacji lub pseudonimizacji',
+          'Problemy z eksportem/importem danych osobowych',
+          'Nieprawidłowe działanie mechanizmów kontroli dostępu do danych',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'bezpieczenstwo',
+    title: 'Incydenty bezpieczeństwa',
+    tabs: [
+      {
+        title: 'Złośliwe ataki z okupem',
+        items: [
+          'Zaszyfrowanie plików przez złośliwe oprogramowanie',
+          'Pojawienie się żądania okupu na ekranie',
+          'Blokada danych i żądanie okupu',
+          'Wykrycie wirusa lub trojana w systemie',
+          'Infekcja złośliwym oprogramowaniem (malware, spyware)',
+          'Instalacja ukrytych programów dających stały dostęp przestępcom',
+        ],
+      },
+      {
+        title: 'Naruszenia kontroli dostępu',
+        items: [
+          'Nieprawidłowe przetwarzanie danych osobowych',
+          'Przetwarzanie danych bez podstawy prawnej',
+          'Przekroczenie celu przetwarzania danych',
+          'Przetwarzanie danych przez okres dłuższy niż niezbędny',
+          'Naruszenie zasady minimalizacji danych',
+          'Niewypełnienie obowiązku informacyjnego względem osób fizycznych',
+          'Nieprawidłowa realizacja praw osób, których dane dotyczą',
+          'Przekazywanie danych do krajów trzecich bez odpowiednich zabezpieczeń',
+          'Automatyczne podejmowanie decyzji bez możliwości interwencji człowieka',
+        ],
+      },
+      {
+        title: 'Oszustwa i socjotechnika',
+        items: [
+          'Oszustwa z wyłudzeniem danych (phishing)',
+          'Podejrzenie podszywania się pod zaufane instytucje',
+          'Próby wyłudzenia danych lub środków finansowych',
+          'Wykrycie fałszywych wiadomości w imieniu firmy',
+          'Fałszywe polecenia przelewów',
+          'Oszustwa telefoniczne',
+          'Oszustwa przez SMS',
+          'Przejęcie kontroli nad skrzynkami e-mail zarządu',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'awarie',
+    title: 'Awarie i problemy techniczne',
+    tabs: [
+      {
+        title: 'Błędy ludzkie i proceduralne',
+        items: [
+          'Przypadkowe usunięcie krytycznych danych lub plików',
+          'Błędna konfiguracja systemów IT',
+          'Nieprawidłowe wykonanie procedur kopii zapasowych',
+          'Błędy w procesie aktualizacji oprogramowania',
+          'Przypadkowe wysłanie poufnych informacji do niepowołanych osób',
+          'Naruszenie procedur bezpieczeństwa przez pracowników',
+          'Nieprawidłowe zarządzanie hasłami i dostępami',
+        ],
+      },
+      {
+        title: 'Awarie systemów krytycznych',
+        items: [
+          'Nieplanowane przerwy w działaniu systemów informatycznych',
+          'Problemy z dostępem do kluczowych aplikacji biznesowych',
+          'Awaria systemów płatniczych',
+          'Niedostępność poczty elektronicznej',
+          'Awaria systemów kopii zapasowych',
+          'Problemy z systemami zarządzania bazami danych',
+        ],
+      },
+      {
+        title: 'Uszkodzenia infrastruktury IT',
+        items: [
+          'Uszkodzenie infrastruktury IT w wyniku ataku',
+          'Awarie sprzętowe serwerów',
+          'Uszkodzenia dysków twardych i systemów przechowywania danych',
+          'Problemy z zasilaniem infrastruktury IT',
+          'Uszkodzenia spowodowane warunkami atmosferycznymi',
+          'Problemy z łącznością internetową',
+        ],
+      },
+    ],
+  },
+]
+
+---
+
+<BaseLayout
+  title="Zagrożenia i mity – CyberCover"
+  description="Od „pilnego przelewu od prezesa” po zaszyfrowane pliki z żądaniem okupu. Sprawdź jak wyglądają współczesne cyberataki i dlaczego tradycyjne zabezpieczenia już nie wystarczą."
+>
+  <Fragment slot="head-extra">
+    <link rel="preload" as="image" href="/img/tlo-zolte-kulki.svg" type="image/svg+xml" />
+  </Fragment>
+
+  <Hero
+    badge="Ryzyka"
+    title="Zagrożenia i mity"
+    intro={'Od „pilnego przelewu od prezesa" po zaszyfrowane pliki z żądaniem okupu.'}
+    subtitle="Sprawdź jak wyglądają współczesne cyberataki i dlaczego tradycyjne zabezpieczenia już nie wystarczą."
+    introSize="xl"
+    bg="yellow"
+    bgImage="/img/tlo-zolte-kulki.svg"
+  >
+    <a
+      slot="cta"
+      href="/cennik"
+      class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
+    >
+      Wykup Ochronę 360
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+    </a>
+  </Hero>
+
+  <!-- ======== SEKCJA: Mity ======== -->
+  <Section>
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Mity
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Największe mity o cyberbezpieczeństwie
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-7 list-none p-0">
+      {myths.map((m) => (
+        <li class="bg-white border border-brand-border rounded-card p-6 lg:p-8 flex flex-col gap-5">
+          <div class="flex items-start justify-between gap-4">
+            <h3 class="text-xl lg:text-2xl font-semibold leading-tight text-black">
+              {m.no}
+            </h3>
+            <span
+              class="inline-flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-brand-bg shrink-0"
+              aria-hidden="true"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10Zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm-1-5h2v2h-2v-2Zm2-1.645V15h-2v-2.5a1 1 0 0 1 1-1 1.5 1.5 0 1 0-1.471-1.794l-1.962-.393A3.501 3.501 0 1 1 13 13.355Z" fill="#000"/>
+              </svg>
+            </span>
+          </div>
+
+          <h4 class="text-2xl lg:text-card-title font-semibold italic leading-tight text-black" set:html={m.quote}></h4>
+
+          <p class="font-medium uppercase text-xs tracking-wide">
+            <span class="inline-flex items-center gap-2 bg-brand-tag-blue border border-brand-tag-blue px-3 py-1 rounded-full">
+              <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[15px] h-auto" />
+              Fakty
+            </span>
+          </p>
+
+          <p class="text-body lg:text-base leading-cozy text-brand-text">
+            {m.fact}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA: Katalog zagrożeń (full-bleed gray) ======== -->
+  <Section bg="bg-brand-bg">
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Zakres
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-3">
+        Katalog zagrożeń
+      </h2>
+      <p class="text-base lg:text-body-lg text-brand-text">
+        Zobacz jakie zagrożenia są obecnie najczęściej spotykane
+      </p>
+    </div>
+
+    <div class="max-w-[1170px] mx-auto flex flex-col gap-4" data-catalog-accordion>
+      {catalog.map((group, gi) => (
+        <details
+          class="group bg-white border border-brand-border rounded-card overflow-hidden"
+          open={gi === 0}
+        >
+          <summary
+            class="flex items-center justify-between gap-4 p-5 lg:px-8 lg:py-6 cursor-pointer select-none list-none"
+          >
+            <span class="text-lg lg:text-card-heading font-semibold leading-snug text-black">
+              {group.title}
+            </span>
+            <span
+              class="inline-flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full border border-brand-border shrink-0 transition-transform group-open:rotate-45"
+              aria-hidden="true"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 2v14M2 9h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </summary>
+
+          <div class="px-5 pb-6 lg:px-8 lg:pb-8 border-t border-brand-border">
+            <div class="catalog-tabs pt-5 lg:pt-6" data-tabs>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 mb-5 lg:mb-6 border-b border-brand-border-light">
+                {group.tabs.map((tab, ti) => (
+                  <button
+                    type="button"
+                    class={`relative pb-3 pr-4 text-left text-sm lg:text-body-lg font-medium leading-snug cursor-pointer transition-colors text-balance lg:max-w-[230px] ${
+                      ti === 0 ? 'text-brand-navy' : 'text-brand-text hover:text-black'
+                    }`}
+                    data-tab-btn
+                    data-tab-index={ti}
+                    aria-selected={ti === 0}
+                  >
+                    {tab.title}
+                    <span
+                      class={`absolute left-0 right-0 -bottom-px h-0.5 bg-brand-navy transition-opacity ${
+                        ti === 0 ? 'opacity-100' : 'opacity-0'
+                      }`}
+                      data-tab-underline
+                      aria-hidden="true"
+                    ></span>
+                  </button>
+                ))}
+              </div>
+
+              {group.tabs.map((tab, ti) => (
+                <ul
+                  class={`grid grid-cols-1 md:grid-cols-2 gap-3 list-none p-0 ${ti === 0 ? '' : 'hidden'}`}
+                  data-tab-panel
+                  data-tab-index={ti}
+                >
+                  {tab.items.map((item) => (
+                    <li class="bg-brand-tag-yellow rounded-card px-4 py-3 text-body lg:text-base leading-snug text-brand-text">
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </div>
+          </div>
+        </details>
+      ))}
+    </div>
+  </Section>
+
+  <CtaReady />
+</BaseLayout>
+
+<style>
+  /* Hide default <summary> marker — replaced by + icon */
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary { list-style: none; }
+</style>
+
+<script>
+  // Catalog accordion: tab switching inside each <details> group.
+  function initCatalogTabs() {
+    const root = document.querySelector('[data-catalog-accordion]')
+    if (!root) return
+
+    const groups = root.querySelectorAll<HTMLElement>('[data-tabs]')
+    groups.forEach((group) => {
+      const buttons = group.querySelectorAll<HTMLButtonElement>('[data-tab-btn]')
+      const panels = group.querySelectorAll<HTMLElement>('[data-tab-panel]')
+
+      buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = btn.getAttribute('data-tab-index')
+
+          buttons.forEach((b) => {
+            const active = b === btn
+            b.setAttribute('aria-selected', String(active))
+            b.classList.toggle('text-brand-navy', active)
+            b.classList.toggle('text-brand-text', !active)
+            const underline = b.querySelector<HTMLElement>('[data-tab-underline]')
+            if (underline) {
+              underline.classList.toggle('opacity-100', active)
+              underline.classList.toggle('opacity-0', !active)
+            }
+          })
+
+          panels.forEach((p) => {
+            const active = p.getAttribute('data-tab-index') === idx
+            p.classList.toggle('hidden', !active)
+          })
+        })
+      })
+    })
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCatalogTabs)
+  } else {
+    initCatalogTabs()
+  }
+</script>
