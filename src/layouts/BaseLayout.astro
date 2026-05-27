@@ -105,6 +105,9 @@ const jsonLd = {
 
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
+  <!-- Per-page extras (np. dodatkowe JSON-LD, preloads) -->
+  <slot name="head-extra" />
+
   <!-- Auth-aware: hide site nav header + lock routing to /cennik when logged in.
        Inline style + sync script run before <body> parses, no FOUC. -->
   <style is:inline>

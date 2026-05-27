@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets'
 import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/Hero.astro'
 import SectionTag from '../components/SectionTag.astro'
 import Ochrona360 from '../components/Ochrona360.astro'
 
@@ -46,30 +47,19 @@ const steps = [
   description="CyberCover dostarcza zalecenia, monitoring zagrożeń i pomoc ekspertów. Ubezpieczenie pokrywa kary RODO, roszczenia i straty."
 >
   <!-- ======== HERO ======== -->
-  <section class="pt-32 lg:pt-40 pb-12 lg:pb-20">
-    <div class="max-w-container mx-auto px-6">
-      <div class="flex flex-col-reverse lg:flex-row items-center gap-10 lg:gap-16">
-        <div class="lg:w-1/2">
-          <p class="font-medium uppercase text-sm tracking-wide mb-4">
-            <span class="inline-block bg-brand-tag-blue border border-brand-tag-blue px-4 py-1 rounded-full">Jedna usługa, pełna ochrona</span>
-          </p>
-          <h1 class="text-3xl lg:text-[58px] font-semibold leading-tight text-black mb-6">
-            Ochrona Twojej firmy przed wyciekami danych i atakami hackerskimi.
-          </h1>
-          <p class="text-xl lg:text-2xl font-medium leading-snug text-brand-text mb-8">
-            CyberCover dostarcza zalecenia, monitoring zagrożeń i pomoc ekspertów, a ubezpieczenie pokrywa kary RODO, roszczenia i straty.
-          </p>
-          <a href="#rozwiazanie" class="inline-flex items-center gap-3 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-lg px-8 py-3.5 rounded-full transition-colors">
-            Czytaj więcej
-            <img src="/img/ico-black-arrow.svg" alt="" class="w-10 h-10" />
-          </a>
-        </div>
-        <div class="lg:w-[48%]">
-          <Image src={heroImg} alt="Cyber Cover baner grafika główna" width={621} class="w-full rounded-xl" loading="eager" />
-        </div>
-      </div>
-    </div>
-  </section>
+  <Hero
+    badge="Jedna usługa, pełna ochrona"
+    title="Ochrona Twojej firmy przed wyciekami danych i atakami hackerskimi."
+    intro="CyberCover dostarcza zalecenia, monitoring zagrożeń i pomoc ekspertów, a ubezpieczenie pokrywa kary RODO, roszczenia i straty."
+    image={heroImg}
+    imageAlt="Cyber Cover baner grafika główna"
+    introSize="xl"
+  >
+    <a slot="cta" href="#rozwiazanie" class="inline-flex items-center gap-3 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-lg px-8 py-3.5 rounded-full transition-colors">
+      Czytaj więcej
+      <img src="/img/ico-black-arrow.svg" alt="" class="w-10 h-10" />
+    </a>
+  </Hero>
 
   <!-- ======== CYBERZAGROŻENIA ======== -->
   <section class="py-16 lg:py-24">
