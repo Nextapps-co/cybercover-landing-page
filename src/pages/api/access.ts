@@ -27,10 +27,13 @@ export const POST: APIRoute = async (context) => {
     return context.redirect(`/dostep?return=${encodeURIComponent(returnTo)}&error=1`, 303);
   }
 
+  // Za proxy Railway serwer widzi request jako http — `x-forwarded-proto` mówi
+  // jaki był oryginalny protokół, więc na https cookie dostaje flagę `Secure`.
+  const proto = context.request.headers.get('x-forwarded-proto') ?? context.url.protocol.replace(/:$/, '');
   context.cookies.set(ACCESS_COOKIE, accessToken(key), {
     path: '/',
     httpOnly: true,
-    secure: context.url.protocol === 'https:',
+    secure: proto === 'https',
     sameSite: 'lax',
     maxAge: 60 * 60 * 12, // 12h — wygodne okno na sesję testową
   });
