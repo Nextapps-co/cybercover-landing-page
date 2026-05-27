@@ -13,6 +13,13 @@ export default defineConfig({
   // (oznaczone `prerender = false`) renderowały się on-demand, dzięki czemu
   // `src/middleware.ts` (access gate) odpala się per-request dla tych tras.
   adapter: node({ mode: 'standalone' }),
+  // CSRF origin-check Astro porównuje nagłówek `Origin` z originem `request.url`.
+  // Za proxy Railway (terminacja TLS) serwer widzi request jako http, a `Origin`
+  // to https → mismatch → "Cross-site POST form submissions are forbidden" na
+  // POST `/api/access`. Wyłączamy: jedyny POST-route to bramka dostępu (brak
+  // stanu usera = brak realnej powierzchni CSRF), reszta ruchu to statyki albo
+  // fetch do zewnętrznego backendu.
+  security: { checkOrigin: false },
   integrations: [sitemap(), react()],
   vite: {
     plugins: [tailwindcss()],
