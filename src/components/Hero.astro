@@ -9,6 +9,8 @@ interface Props {
   title: string
   /** Paragraf intro pod H1 — opcjonalny */
   intro?: string
+  /** Drugi, mniejszy paragraf pod intro (np. dodatkowy opis) — opcjonalny */
+  subtitle?: string
   /** Obraz (raster) po prawej stronie — split layout 50/50, wyklucza się z bgImage */
   image?: ImageMetadata
   imageAlt?: string
@@ -29,6 +31,7 @@ const {
   badge,
   title,
   intro,
+  subtitle,
   image,
   imageAlt = '',
   bgImage,
@@ -69,14 +72,20 @@ const heroMinH = minHeight ?? (bgImage ? 'min-h-[480px] lg:min-h-[608px]' : '')
           {title}
         </h1>
 
-        {intro && <p class={`${introClass} mb-8 last:mb-0`}>{intro}</p>}
+        {intro && <p class={`${introClass} mb-6 lg:mb-8 last:mb-0`}>{intro}</p>}
+
+        {subtitle && (
+          <p class="text-sm lg:text-body-lg leading-relaxed text-brand-text max-w-[520px] mb-8 last:mb-0">
+            {subtitle}
+          </p>
+        )}
 
         <slot name="cta" />
       </div>
 
       {image && (
         <div class="lg:w-[48%]">
-          <Image src={image} alt={imageAlt} width={621} class="w-full rounded-xl" loading="eager" />
+          <Image src={image} alt={imageAlt} width={1400} class="w-full rounded-xl" loading="eager" />
         </div>
       )}
     </div>

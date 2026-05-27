@@ -317,4 +317,122 @@ Skrypty: `/tmp/optimize-avatar.mjs` (resize) i `/tmp/png-to-webp.mjs` (konwersja
 </div>
 ```
 
+---
+
+## Lekcje z migracji /kontakt + /o-nas + /komu-pomagamy
+
+Spisane po fakcie po iteracji 3 podstron z Radkiem. **Krytyczne reguły zanim zaczniesz kodować kolejną podstronę.**
+
+### 🔴 Reguła #1: nie wymyślaj designu — sprawdź dwa źródła w kolejności
+
+1. **Figma** — jeśli Radek poda node-id (https://www.figma.com/design/.../?node-id=X-Y), `mcp__figma-desktop__get_design_context` + `get_screenshot`. Z Figmy bierz:
+   - **dokładne kolory każdego elementu** (kolor bg karty, badge, progress bar — często różnią się od domyślnych tokenów)
+   - **dokładne rozmiary** font/padding/min-height/aspect
+   - **strukturę layoutu** (2-col? 3-col? heading lewo + karta prawo?)
+   - **dekoracyjne elementy w tle** (kółka z gradientem, strzałki, ozdoby)
+2. **WP SQL Gutenberg HTML** — w `<!-- wp:* { JSON attrs } -->` siedzą `bgColor1`, `customOverlayColor`, `fontSize`, `paddingTop`, `borderRadius` per element. **Nie zgaduj — czytaj.**
+
+**Figma w cybercover.pl nie ma autolayoutu** → pixele to wireframe, **ale kolory, fonty i struktura są spec**.
+
+### Konkretne błędy które popełniłem (i jak ich uniknąć)
+
+❌ Robiłem **karty Branże** z białym bg i borderem.
+✅ Per WP SQL `bgColor1`: **kolorowe karty bez ramki** cyklicznie (#feffe0 → #edf8ff → #f8f7f4), ikona top-right, sub-kategorie jako pille białe.
+
+❌ Sekcja **"Trudne sytuacje"** zrobiłem jako 3-col grid + scroll-snap + dots.
+✅ Per Figma: **2-col** (heading lewo + single card prawo) z **animowanym progress barem** (5 segmentów wypełniających się od 0% do 100% przez 5s, navy active).
+
+❌ Sekcja **NIS2** w wrapperze z białym bg + image z boku.
+✅ Per Figma: **pełnobleed czarna sekcja** (`<Section bg="bg-black">` — bg leci edge-to-edge viewport), biały tekst, obrazek po lewej w tym samym czarnym kontekście.
+
+❌ Ikony w **Misja cards** dałem 48-56px (`w-12 h-12 lg:w-14 lg:h-14`).
+✅ Per Figma: **~300px** szerokie ilustracje (`w-full max-w-[300px]`) — to są obrazki, nie ikony.
+
+❌ Hero SVG kulek/strzałek użyłem oryginalnego z WP (1900×1080, `bg-cover`).
+✅ **Stwórz nowy SVG z viewBox 1513:608** (proporcja Figmy), `background-position: center bottom; background-size: cover`, `min-h-[480px] lg:min-h-[608px]` na hero.
+
+❌ Hero intro to jeden długi paragraf.
+✅ Czasem Figma ma **2 paragrafy** (duży `intro` 24px + mniejszy `subtitle` 17px). Hero komponent ma już prop `subtitle?`.
+
+❌ Pomijałem **sekcję CTA "Gotowy żeby chronić..."** bo nie ma jej w WP SQL.
+✅ Jest w Figmie na **każdej podstronie**. Wyciągnięta do reusable `<CtaReady />`. Wstawiaj na końcu każdej nowej strony przed `</BaseLayout>`.
+
+❌ Karty z carouselami robione z setInterval i transform: translateX.
+✅ **Lepsze**: stack overlay (`grid col-start-1 row-start-1` z opacity 0/100) + CSS animation z `animationend` event. Brak setInterval, sync naturalny.
+
+### Pattern: auto-rotujący carousel z progress barem (Instagram Stories style)
+
+Komu pomagamy → "Trudne sytuacje". Reusable pattern dla "kolekcja krótkich kart".
+
+```astro
+<div data-carousel class="bg-[#FFF2E0] rounded-card p-8 lg:p-10 flex flex-col gap-8 min-h-[420px]">
+  <!-- Stack overlay — all slides in same grid cell -->
+  <div class="grid flex-1">
+    {slides.map((s, i) => (
+      <div class={`col-start-1 row-start-1 flex flex-col gap-6 transition-opacity duration-500 ${i===0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} data-slide>
+        ...content...
+      </div>
+    ))}
+  </div>
+  <!-- Progress bar -->
+  <div class="flex gap-2">
+    {slides.map(() => (
+      <span class="h-1 flex-1 rounded-full bg-brand-border overflow-hidden" data-bar>
+        <span class="block h-full bg-brand-navy rounded-full" data-fill style="width:0%"></span>
+      </span>
+    ))}
+  </div>
+</div>
+<style>@keyframes carousel-fill { from {width:0%} to {width:100%} }</style>
+<script>
+  // Na każdej zmianie indexu: past=100%, current=animacja 5s, future=0%.
+  // animationend → advance index → repaint.
+  // pause: f.style.animationPlayState = 'paused' (hover/focus)
+</script>
+```
+
+### Pattern: dekoracyjne okręgi w tle (Figma 1663:23843)
+
+```html
+<Section bg="bg-brand-bg" class="relative overflow-hidden">
+  <div class="pointer-events-none absolute -left-32 -top-40 w-[478px] h-[475px] rounded-full hidden lg:block"
+       style="background-image: linear-gradient(257.702deg, rgba(0,0,0,0) 34.57%, rgba(167,167,167,0.25) 255.49%);"
+       aria-hidden="true"></div>
+  <!-- ...drugi okrąg... -->
+  <div class="relative ...">...treść...</div>
+</Section>
+```
+
+### Pattern: subgrid dla równania kart różnej długości
+
+Karty Role / Korzyści na komu-pomagamy — różnej długości opisy, ale badge "Korzyści" zawsze w tej samej linii w pionie:
+
+```html
+<ul class="flex md:grid md:grid-cols-3 md:grid-rows-[auto_auto_1fr_auto_auto] gap-5">
+  {items.map(item => (
+    <li class="bg-brand-bg rounded-card p-6 flex flex-col gap-5 md:grid md:grid-rows-subgrid md:row-span-5">
+      <pills />              <!-- row 1 -->
+      <quote />              <!-- row 2 -->
+      <desc />               <!-- row 3 (1fr — flex space) -->
+      <span class="md:justify-self-start w-fit">Korzyści</span>  <!-- row 4 — aligned across cards -->
+      <benefits />           <!-- row 5 -->
+    </li>
+  ))}
+</ul>
+```
+
+Browser support: subgrid działa w Chrome 117+, Safari 16+, Firefox 71+.
+
+### Workflow per kolejna podstrona
+
+1. **Spytaj o node-id w Figmie** dla całej strony i kluczowych sekcji (hero, custom sections jak NIS2/CTA)
+2. **Wyciągnij content z WP SQL** (slug → post_content → parse Gutenberg)
+3. **Skopiuj obrazki** z `wp-content/uploads/`, zoptymalizuj jeśli są raster-in-SVG (skrypt w /tmp)
+4. **Sprawdź każdą sekcję** w Figmie: kolory, layout, dekoracje — dopiero potem markup
+5. **Reusable komponenty** (Hero, Section, CtaReady) — używaj zamiast inline markup
+6. **Linki w Header** — dodaj nową podstronę do `menuItems`
+7. **JSON-LD per typ strony** przez `head-extra` slot w BaseLayout
+8. **A11y check** — `<address>` dla danych, `<aside aria-labelledby>` dla side info, `alt=""` + `aria-hidden` dla dekoracji
+9. **Commit** dopiero gdy strona wygląda OK; **push wymaga zgody Radka**
+
 Mobile (1 kol) → tablet 768-1023px (2 kol, pierwsza na całą szerokość) → desktop ≥1024px (3 kol 50%/25%/25%).

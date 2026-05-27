@@ -1,0 +1,177 @@
+---
+import { Image } from 'astro:assets'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/Hero.astro'
+import Section from '../components/Section.astro'
+import CtaReady from '../components/CtaReady.astro'
+import onasImg from '../assets/img/o-nas.jpg'
+
+const aboutJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  url: new URL('/o-nas', Astro.site ?? Astro.url).href,
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'Cyber Cover Sp. z o.o.',
+    url: (Astro.site ?? Astro.url).origin,
+    description:
+      'Cyber Cover — pionierzy kompleksowej ochrony cybernetycznej w Polsce. Łączymy ubezpieczenie cybernetyczne z proaktywną ochroną przed zagrożeniami.',
+  },
+}
+
+const mission = [
+  {
+    icon: '/img/ico-dzialanie-03.png',
+    title: 'Chronić polskie organizacje przed cyberzagrożeniami',
+    body: 'Każda organizacja – od kancelarii prawnej po sklep internetowy – zasługuje na spokój, że jej dane i systemy są bezpieczne. Tworzymy tę pewność przez połączenie najlepszych praktyk cyberbezpieczeństwa z solidną ochroną ubezpieczeniową.',
+  },
+  {
+    icon: '/img/ico-dzialanie-02.png',
+    title: 'Być dostępnym 24/7 gdy nas potrzebujesz',
+    body: 'Cyberprzestępcy nie pracują w godzinach urzędowych. Dlatego nasza pomoc jest dostępna przez całą dobę, każdego dnia roku. W kryzysie nie jesteś sam.',
+  },
+  {
+    icon: '/img/ico-dzialanie-03.png',
+    title: 'Wyjaśniać zamiast komplikować',
+    body: 'Cyberbezpieczeństwo i RODO nie muszą być skomplikowane. Przekładamy prawnicze i techniczne żargony na prosty język biznesu. Dostajesz jasne odpowiedzi na konkretne pytania.',
+  },
+]
+
+const values = [
+  {
+    title: 'Transparentność',
+    body: 'Jasno mówimy co robimy, ile to kosztuje i czego możesz się spodziewać. Bez ukrytych opłat i niejasnych zapisów.',
+  },
+  {
+    title: 'Dostępność',
+    body: 'Prawdziwa pomoc 24/7, nie automatyczna sekretarka. W kryzysie rozmawiasz z żywym człowiekiem, który wie co robić.',
+  },
+  {
+    title: 'Prostota',
+    body: 'Cyberbezpieczeństwo nie musi być skomplikowane. Dostajesz konkretne odpowiedzi na konkretne pytania.',
+  },
+  {
+    title: 'Niezawodność',
+    body: 'Możesz na nas liczyć gdy sytuacja stanie się poważna. Mamy doświadczenie, zasoby i determinację, żeby Ci pomóc.',
+  },
+]
+---
+
+<BaseLayout
+  title="O nas – CyberCover"
+  description="Cyber Cover – pionierzy kompleksowej ochrony cybernetycznej w Polsce. Łączymy ubezpieczenie z proaktywną ochroną przed cyberzagrożeniami."
+>
+  <Fragment slot="head-extra">
+    <link rel="preload" as="image" href="/img/tlo-zolte-kulki.svg" type="image/svg+xml" />
+    <script type="application/ld+json" set:html={JSON.stringify(aboutJsonLd)} />
+  </Fragment>
+
+  <Hero
+    badge="Ubezpieczenie zawarte w cenie usługi"
+    title="O nas"
+    intro="Cyber Cover – pionierzy kompleksowej ochrony cybernetycznej w Polsce"
+    bg="yellow"
+    bgImage="/img/tlo-zolte-kulki.svg"
+  />
+
+  <!-- ======== SEKCJA 1: 360 + obrazek ======== -->
+  <Section bg="bg-brand-bg">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+      <div>
+        <p class="font-medium uppercase text-sm tracking-wide mb-4">
+          <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
+            <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+            360
+          </span>
+        </p>
+        <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-6">
+          Całościowa ochrona 360
+        </h2>
+        <p class="text-xl lg:text-2xl font-medium leading-snug text-brand-text max-w-[620px]">
+          Jesteśmy pierwszą organizacją w Polsce, która połączyła ubezpieczenie cybernetyczne
+          z proaktywną ochroną przed zagrożeniami. Nasza Ochrona 360 to kompleksowy system obrony przed cyberprzestępcami.
+        </p>
+      </div>
+      <div>
+        <Image
+          src={onasImg}
+          alt="Zespół Cyber Cover"
+          width={720}
+          class="w-full aspect-square object-cover rounded-card"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  </Section>
+
+  <!-- ======== SEKCJA 2: Dlaczego powstaliśmy ======== -->
+  <Section padding="tight" bg="bg-brand-bg">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Dlaczego powstaliśmy?
+      </h2>
+      <p class="text-xl lg:text-2xl font-medium leading-snug text-brand-text max-w-[620px]">
+        Oferty usługowe nie nadążają za dynamicznymi zagrożeniami cybernetycznymi.
+        Organizacje potrzebowały czegoś więcej niż osobnych usług wsparcia i oddzielnego ubezpieczenia
+        z wypłaty odszkodowania po szkodzie – potrzebowały prawdziwej ochrony, która działa
+        zanim coś się stanie.
+      </p>
+    </div>
+
+  </Section>
+
+  <!-- ======== SEKCJA 3: Nasza misja ======== -->
+  <Section>
+    <div class="text-center mb-10 lg:mb-12">
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Nasza misja
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 list-none p-0">
+      {mission.map((item) => (
+        <li class="bg-white border border-brand-border rounded-card p-8 lg:p-10 flex flex-col gap-8 lg:gap-10">
+          <img
+            src={item.icon}
+            alt=""
+            aria-hidden="true"
+            class="w-full max-w-[300px] h-auto mx-auto"
+          />
+          <div class="flex flex-col gap-4">
+            <h3 class="text-xl lg:text-2xl font-semibold leading-tight text-black">
+              {item.title}
+            </h3>
+            <p class="text-body lg:text-base leading-cozy text-brand-text">
+              {item.body}
+            </p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA 4: Nasze wartości ======== -->
+  <Section padding="tight">
+    <div class="text-center mb-10 lg:mb-12">
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Nasze wartości
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 list-none p-0">
+      {values.map((item) => (
+        <li class="text-center flex flex-col items-center gap-4">
+          <img src="/img/ico-sygnet.svg" alt="" aria-hidden="true" class="w-14 h-14 lg:w-16 lg:h-16" />
+          <h3 class="text-lg lg:text-card-heading font-semibold leading-tight text-black">
+            {item.title}
+          </h3>
+          <p class="text-body leading-cozy text-brand-text">
+            {item.body}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <CtaReady />
+</BaseLayout>
