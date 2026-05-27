@@ -1,6 +1,9 @@
 ---
 import CheckoutLayout from '../../layouts/CheckoutLayout.astro';
 import { OperationalStandardsStep } from '../../components/checkout/OperationalStandardsStep';
+
+// On-demand render, żeby access gate w `src/middleware.ts` mógł chronić tę trasę.
+export const prerender = false;
 ---
 <CheckoutLayout
   title="Standardy operacyjne — Checkout CyberCover"

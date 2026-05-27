@@ -1,6 +1,9 @@
 ---
 import CheckoutLayout from '../../layouts/CheckoutLayout.astro';
 import { StripeCancelledRetry } from '../../components/checkout/StripeCancelledRetry';
+
+// On-demand render, żeby access gate w `src/middleware.ts` mógł chronić tę trasę.
+export const prerender = false;
 ---
 <CheckoutLayout
   title="Płatność anulowana — CyberCover"

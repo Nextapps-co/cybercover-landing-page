@@ -95,7 +95,8 @@ Path alias: `@` → `./src` (skonfigurowany w `astro.config.mjs` i `vitest.confi
 
 ## Key files
 
-- `astro.config.mjs` — React integration, sitemap, Tailwind v4 vite plugin, `optimizeDeps.include` dla React (wymagane do działania client islands)
+- `astro.config.mjs` — React integration, sitemap, Tailwind v4 vite plugin, `@astrojs/node` adapter (dla on-demand `/cennik` + `/checkout/*`), `optimizeDeps.include` dla React (wymagane do działania client islands)
+- `src/middleware.ts` + `src/lib/server/access-gate.ts` + `src/pages/dostep.astro` + `src/pages/api/access.ts` — internal access gate (brandowana bramka z hasłem na flow zakupowym, toggle przez `CHECKOUT_ACCESS_KEY`)
 - `src/layouts/{BaseLayout,CheckoutLayout}.astro` — dwa różne shell-e (z/bez landing nav)
 - `src/components/{Header,Footer,CheckoutHeader,Ochrona360,SectionTag}.astro` — Astro statyczne komponenty
 - `src/components/pricing/PricingCards.tsx` — entry point z `/cennik`; woła `getPlans` + `startOrder` na CTA; orchestruje handoff + 409 auto-resume
@@ -119,9 +120,21 @@ PUBLIC_API_BASE_URL=http://localhost:3000/api          # bez trailing slash
 PUBLIC_PORTAL_URL=https://dev-portal.cybercover.pl     # portal base — redirect na 401 / handoff error
 PUBLIC_USE_MOCK_CATALOG=true                           # mock GET /pricing-catalog
 PUBLIC_USE_MOCK_ORDERS=true                            # mock całego wizard flow offline
+CHECKOUT_ACCESS_KEY=                                   # SERWEROWY (bez PUBLIC_!) — gdy ustawiony, /cennik + /checkout/* za brandowaną bramką /dostep (hasło). Pusty = brak gate'u (dev/local)
 ```
 
-Wszystkie `PUBLIC_*` są dostępne w client islandach przez `import.meta.env.*`.
+Wszystkie `PUBLIC_*` są dostępne w client islandach przez `import.meta.env.*`. **`CHECKOUT_ACCESS_KEY` NIE ma prefiksu `PUBLIC_`** — czytany w runtime przez `process.env` w `src/lib/server/access-gate.ts`, nigdy nie trafia do bundla klienta.
+
+### Internal access gate (flow zakupowy)
+
+`/cennik` + `/checkout/*` można schować za brandowaną stroną-bramką z hasłem — do wewnętrznych testów procesu zakupowego na prod, zanim otworzymy go publicznie. Mechanizm:
+
+- **`@astrojs/node` (standalone)** w `astro.config.mjs`. `output` zostaje `static` — landing/legal dalej prerenderowane; tylko `/cennik` i `/checkout/*` mają `export const prerender = false` → renderują się on-demand, więc `src/middleware.ts` odpala się dla nich per-request.
+- **`src/lib/server/access-gate.ts`** — wspólna logika: klucz z `process.env.CHECKOUT_ACCESS_KEY`, deterministyczny token cookie (`hash(klucz+salt)`, nie sam klucz), `safeEqual` (stały czas), `isGatedPath`, `safeReturnPath`.
+- **`src/middleware.ts`** — gdy klucz ustawiony i request na gated path nie ma ważnego cookie `cc_access` → `302` redirect na `/dostep?return=<ścieżka>`. Brak klucza = gate wyłączony (**fail-open** — dev/local bez ochrony).
+- **`src/pages/dostep.astro`** — pełnoekranowa brandowana strona „prace techniczne" + pole hasła (POST → `/api/access`). **`src/pages/api/access.ts`** — waliduje hasło, ustawia httpOnly cookie (`secure` na https, `SameSite=Lax`, 12h), redirect (`303`) na `return`. Po wpisaniu raz cookie wpuszcza na cały flow.
+- **Deploy (Railway)**: konfiguracja w `railway.toml` (config-as-code) — `startCommand = "HOST=0.0.0.0 node ./dist/server/entry.mjs"`, healthcheck na `/`, `PORT` wstrzykiwany przez Railway. W dashboardzie tylko sekrety: `CHECKOUT_ACCESS_KEY` **tylko** na serwisie prod (brak = bramka off na dev).
+- **Granica**: chroni UI flow zakupowego, nie backendowe API (`PUBLIC_API_BASE_URL`).
 
 **Dev tip**: aby przetestować auth-aware UI bez prawdziwego portala + handoff token, otwórz `/cennik?mockAuth=optimum-ACTIVE` (format: `<planCode>-<subscriptionStatus>`). Mock layer wstrzykuje `relativeToCurrent` per plan, `subscriptionStatus`, banner. `startOrder` zwraca `PLAN_UPGRADE` / `REACTIVATION` zgodnie z mock context. Statusy: `ACTIVE`, `GRACE_PERIOD`, `EXPIRED`, `CANCELLED`.
 

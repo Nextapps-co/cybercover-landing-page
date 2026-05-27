@@ -1,6 +1,9 @@
 ---
 import CheckoutLayout from '../../layouts/CheckoutLayout.astro';
 import { BankTransferConfirmation } from '../../components/checkout/BankTransferConfirmation';
+
+// On-demand render, żeby access gate w `src/middleware.ts` mógł chronić tę trasę.
+export const prerender = false;
 ---
 <CheckoutLayout
   title="Przelew bankowy — Zamówienie złożone — CyberCover"
