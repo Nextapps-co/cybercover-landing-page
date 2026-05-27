@@ -1,6 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { PricingCards } from '../components/pricing/PricingCards';
+
+// On-demand render, żeby access gate w `src/middleware.ts` mógł chronić tę trasę.
+export const prerender = false;
 ---
 
 <BaseLayout

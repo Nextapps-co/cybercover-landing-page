@@ -1,0 +1,98 @@
+---
+import '../styles/global.css';
+import { safeReturnPath } from '../lib/server/access-gate';
+
+export const prerender = false;
+
+const params = Astro.url.searchParams;
+const returnTo = safeReturnPath(params.get('return'));
+const hasError = params.get('error') === '1';
+---
+
+<!DOCTYPE html>
+<html lang="pl-PL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#F8F7F4" />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" />
+
+  <link rel="icon" href="/img/cropped-favicon-4-32x32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/img/cropped-favicon-4-32x32.png" />
+
+  <title>Trwają prace techniczne — CyberCover</title>
+  <meta name="description" content="Cennik CyberCover zostanie uruchomiony już niebawem." />
+</head>
+
+<body class="font-sans text-brand-text bg-brand-bg antialiased min-h-screen flex items-center justify-center px-4 py-12">
+  <main class="w-full max-w-xl">
+    <div class="flex justify-center mb-8">
+      <img src="/img/logo-cyber-cover.svg" alt="CyberCover" class="h-9 w-auto" />
+    </div>
+
+    <div class="rounded-3xl bg-white border border-brand-border-light shadow-[0_20px_60px_-25px_rgba(6,24,86,0.25)] p-8 sm:p-10">
+      <span class="inline-flex items-center gap-2 rounded-full bg-brand-tag-yellow px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-navy">
+        <span class="relative flex h-2 w-2">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-yellow opacity-75"></span>
+          <span class="relative inline-flex h-2 w-2 rounded-full bg-brand-yellow"></span>
+        </span>
+        Prace techniczne
+      </span>
+
+      <h1 class="mt-5 font-bold text-3xl sm:text-4xl tracking-tight text-brand-navy">
+        Trwają prace techniczne
+      </h1>
+
+      <p class="mt-4 text-lg text-brand-text">
+        Cennik zostanie uruchomiony już niebawem.
+      </p>
+      <p class="mt-3 text-base text-brand-text/80">
+        Obecnie aktualizujemy nasz system, aby zapewnić najwyższy poziom bezpieczeństwa.
+      </p>
+      <p class="mt-3 text-base text-brand-text/80">
+        Masz pytania dotyczące pakietów lub chcesz złożyć zamówienie? Skontaktuj się z naszym
+        zespołem — przejdź do zakładki
+        <a href="/#stopka" class="font-semibold text-brand-navy underline underline-offset-2 hover:text-brand-yellow-hover transition-colors">Kontakt</a>.
+      </p>
+
+      <hr class="my-8 border-brand-border-light" />
+
+      <form method="POST" action="/api/access" class="space-y-3">
+        <input type="hidden" name="return" value={returnTo} />
+        <label for="access-password" class="block text-sm font-semibold text-brand-dark">
+          Masz hasło dostępu? Wpisz je tutaj:
+        </label>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input
+            id="access-password"
+            name="password"
+            type="password"
+            required
+            autofocus
+            autocomplete="off"
+            placeholder="Hasło dostępu"
+            aria-invalid={hasError ? 'true' : 'false'}
+            aria-describedby={hasError ? 'access-error' : undefined}
+            class="flex-1 rounded-xl border border-brand-border bg-white px-4 py-3 text-base text-brand-text placeholder:text-brand-text/40 outline-none transition focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/15"
+          />
+          <button
+            type="submit"
+            class="rounded-xl bg-brand-yellow px-6 py-3 font-semibold text-brand-dark whitespace-nowrap transition-colors hover:bg-brand-yellow-hover focus:outline-none focus:ring-2 focus:ring-brand-navy/20"
+          >
+            Zatwierdź
+          </button>
+        </div>
+        {hasError && (
+          <p id="access-error" role="alert" class="text-sm font-medium text-red-600">
+            Nieprawidłowe hasło. Spróbuj ponownie.
+          </p>
+        )}
+      </form>
+    </div>
+  </main>
+</body>
+</html>

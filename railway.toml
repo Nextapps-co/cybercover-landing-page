@@ -1,0 +1,24 @@
+# Railway config-as-code — https://docs.railway.com/reference/config-as-code
+#
+# Build produkuje serwer Node (adapter @astrojs/node standalone) w
+# `dist/server/entry.mjs`, więc start command uruchamia ten serwer, a nie
+# statyczny serwer plików. `HOST=0.0.0.0` jest wymagany, by Railway dobiło się
+# do kontenera; `PORT` Railway wstrzykuje automatycznie (adapter Node je czyta).
+#
+# Wartości tutaj nadpisują ustawienia w dashboardzie (pola stają się read-only),
+# więc po wdrożeniu nie trzeba ręcznie zmieniać start command.
+#
+# Sekrety/zmienne NIE są w tym pliku — ustaw je w dashboardzie per środowisko:
+#   - CHECKOUT_ACCESS_KEY=<klucz>   → TYLKO na prod (włącza bramkę /dostep);
+#                                     brak na dev = bramka wyłączona (fail-open)
+#   - PUBLIC_* (API base, portal, mocki) — jak dotychczas
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "HOST=0.0.0.0 node ./dist/server/entry.mjs"
+healthcheckPath = "/"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10

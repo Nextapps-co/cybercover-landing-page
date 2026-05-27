@@ -1,6 +1,9 @@
 ---
 import CheckoutLayout from '../../layouts/CheckoutLayout.astro';
 import { PaymentMethodStep } from '../../components/checkout/PaymentMethodStep';
+
+// On-demand render, żeby access gate w `src/middleware.ts` mógł chronić tę trasę.
+export const prerender = false;
 ---
 <CheckoutLayout
   title="Metoda płatności — Checkout CyberCover"
