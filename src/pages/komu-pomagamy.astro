@@ -1,0 +1,454 @@
+---
+import { Image } from 'astro:assets'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/Hero.astro'
+import Section from '../components/Section.astro'
+import CtaReady from '../components/CtaReady.astro'
+import nis2Img from '../assets/img/wymagania-nis2x2.jpg'
+
+const industries = [
+  {
+    icon: '/img/ico-uslugi-profesjonalne.svg',
+    title: 'Usługi profesjonalne',
+    bg: 'bg-brand-tag-yellow',
+    sub: ['Biuro rachunkowe', 'Kancelarie prawne', 'Notariusze', 'Rzeczoznawcy'],
+    desc: 'Przetwarzasz wrażliwe dane klientów każdego dnia. Jeden wyciek to nie tylko kara UODO, ale utrata zaufania i reputacji wypracowywanej latami.',
+    threats: 'Kradzież akt sprawy, wyciek danych podatkowych klientów, oszustwa mailowe z podszywaniem się pod kancelarię.',
+  },
+  {
+    icon: '/img/ico-uslugi-medyczne.svg',
+    title: 'Usługi medyczne',
+    bg: 'bg-brand-blue-light',
+    sub: ['Przychodnie', 'Gabinety', 'Laboratoria', 'Gabinety dentystyczne'],
+    desc: 'Dane medyczne to najwyższa kategoria wrażliwości w RODO. Każde naruszenie wymaga natychmiastowego działania i może skutkować wysokimi karami.',
+    threats: 'Wyciek dokumentacji medycznej, paraliż systemów rejestracji pacjentów, kradzież danych ubezpieczeniowych.',
+  },
+  {
+    icon: '/img/ico-technologie-informatyczne.svg',
+    title: 'Technologie informatyczne',
+    bg: 'bg-brand-bg',
+    sub: ['Softwarehouse', 'SI', 'SAAS', 'Usługi chmurowe', 'Doradztwo IT'],
+    desc: 'Musisz dbać o zabezpieczanie strategicznych danych klientów, w tym własności intelektualnej, informacji finansowych i tajemnic handlowych. Brak wiarygodności w tym sektorze może prowadzić do poważnej utraty reputacji i nawet bankructwa klienta.',
+    threats: 'Wyciek danych, paraliż systemów i żądanie okupu, kradzież własności intelektualnej, luki w tworzonym oprogramowaniu.',
+  },
+  {
+    icon: '/img/ico-handel-i-ecommerce.svg',
+    title: 'Handel i e-commerce',
+    bg: 'bg-brand-tag-yellow',
+    sub: ['Sklepy internetowe', 'Hurtownie', 'Dystrybutorzy'],
+    desc: 'Przechowujesz dane płatnicze i osobowe tysięcy klientów. Atak na sklep internetowy może oznaczać przestój sprzedaży i utratę środków z kont firmowych.',
+    threats: 'Kradzież danych kart płatniczych, blokada sklepu internetowego z okupem, oszustwa na fałszywe przelewy.',
+  },
+  {
+    icon: '/img/ico-edukacja-i-szkolenia.svg',
+    title: 'Edukacja i szkolenia',
+    bg: 'bg-brand-blue-light',
+    sub: ['Szkoły', 'Centra szkoleniowe', 'Przedszkola'],
+    desc: 'Chronisz dane dzieci i rodziców – każde naruszenie to ogromna odpowiedzialność prawna i społeczna. Rodzice oczekują najwyższego poziomu bezpieczeństwa.',
+    threats: 'Wyciek danych uczniów, paraliż systemów e-dziennika, kradzież danych osobowych rodziców.',
+  },
+  {
+    icon: '/img/ico-produkcja-i-przemysl.svg',
+    title: 'Produkcja i przemysł',
+    bg: 'bg-brand-bg',
+    sub: ['Zakłady spożywcze', 'Zakłady chemiczne', 'Zakłady przetwórcze'],
+    desc: 'Twoja firma może wydawać się mało atrakcyjna dla hakerów, ale to złudzenie. Automatyczne ataki nie wybierają – testują wszystkich.',
+    threats: 'Paraliż systemów zarządzania produkcją, kradzież tajemnic handlowych, oszustwa na fałszywe faktury.',
+  },
+]
+
+const roles = [
+  {
+    pills: ['Właściciele firm', 'Prezesi'],
+    quote: '„Chcę spać spokojnie wiedząc, że firma jest bezpieczna"',
+    desc: 'Odpowiadasz za wszystko, ale cyberbezpieczeństwo to nie Twoja specjalność. Potrzebujesz prostych rozwiązań, które działają bez Twojego nadzoru.',
+    benefits: 'Pełną ochronę ponad standardowe wsparcie IT, jasne procedury awaryjne, spokój, że w razie problemów masz do kogo dzwonić.',
+  },
+  {
+    pills: ['Menadżerowie', 'Działy IT'],
+    quote: '„Mamy IT, ale cyberbezpieczeństwo to osobna specjalność"',
+    desc: 'Twój zespół IT świetnie radzi sobie z utrzymaniem systemów, ale zagrożenia cybernetyczne wymagają specjalistycznej wiedzy prawnej, procedur kryzysowych i doświadczenia w obsłudze incydentów.',
+    benefits: 'Wsparcie ekspertów w sytuacjach kryzysowych, procedury prawne zgodne z RODO, monitoring zagrożeń zewnętrznych którego IT nie musi obsługiwać.',
+  },
+  {
+    pills: ['Specjaliści HR', 'Administracja'],
+    quote: '„Zajmuję się danymi pracowników i chcę być zgodna z RODO"',
+    desc: 'Codziennie pracujesz z danymi osobowymi pracowników. Obawiasz się kontroli UODO i nie jesteś pewna czy wszystko robisz zgodnie z prawem.',
+    benefits: 'Konsultacje prawne w zakresie RODO, gotowe procedury postępowania z danymi, wsparcie w przypadku kontroli.',
+  },
+]
+
+const crises = [
+  {
+    quote: '„Dostałem pismo z kontroli"',
+    desc: 'Urząd Ochrony Danych Osobowych lub inne instytucje przysłały Ci zawiadomienie o kontroli. Nie wiesz co przygotować i jak się zachować.',
+  },
+  {
+    quote: '„Podejrzewam, że ktoś się włamał"',
+    desc: 'Zauważyłeś podejrzane działanie – dziwne maile, wolno działające komputery, nieznane pliki. Nie wiesz czy to atak czy awaria.',
+  },
+  {
+    quote: '„Pracownik kliknął w podejrzany link"',
+    desc: 'Członek zespołu otrzymał maila, który wyglądał na prawdziwy i podał swoje dane logowania. Obawiasz się, że hakerzy mają dostęp do systemów.',
+  },
+  {
+    quote: '„System nie działa, a na ekranie jest żądanie okupu"',
+    desc: 'Komputery pokazują komunikat o zaszyfrowaniu plików z żądaniem zapłaty. Firma stanęła, a Ty nie wiesz co robić.',
+  },
+  {
+    quote: '„Chcę się zabezpieczyć zanim coś się stanie"',
+    desc: 'Słyszysz o atakach na inne firmy i zdajesz sobie sprawę, że Twoja może być następna. Wolisz przygotować się wcześniej.',
+  },
+]
+
+const reasons = [
+  {
+    icon: '/img/ico-specjalistyczna-wiedza.svg',
+    title: 'Specjalistyczna wiedza prawna i proceduralna',
+    body: 'Twój zespół IT doskonale zna technologię, ale prawne aspekty RODO, procedury zgłaszania incydentów do urzędów i komunikacja kryzysowa to zupełnie inna specjalność.',
+  },
+  {
+    icon: '/img/ico-gotowosc.svg',
+    title: 'Gotowość na sytuacje kryzysowe 24/7',
+    body: 'Gdy w weekend lub w nocy dochodzi do incydentu, nie musisz wyciągać IT z łóżka ani szukać prawników. Masz natychmiastowy dostęp do pełnego zespołu specjalistów.',
+  },
+  {
+    icon: '/img/ico-odciazenie.svg',
+    title: 'Odciążenie zespołu od zadań nietechnicznych',
+    body: 'Twoje IT może skupić się na tym, co robi najlepiej – utrzymaniu systemów. My zajmujemy się prawem, ubezpieczeniami i komunikacją kryzysową.',
+  },
+  {
+    icon: '/img/ico-kontrola-kosztow.svg',
+    title: 'Kontrola kosztów nieprzewidzianych sytuacji',
+    body: 'Zamiast płacić za drogich prawników, rzeczników i konsultantów w trybie awaryjnym, masz stały, przewidywalny koszt miesięczny.',
+  },
+  {
+    icon: '/img/ico-bezposredni-kontakt.svg',
+    title: 'Bezpośredni kontakt z ekspertami',
+    body: 'W razie incydentu otrzymujesz gotowy zespół ekspertów, którego stworzenie we własnej firmie byłoby zbyt kosztowne i skomplikowane.',
+  },
+]
+---
+
+<BaseLayout
+  title="Komu pomagamy – CyberCover"
+  description="Czy prowadzisz kancelarię, sklep internetowy czy fabrykę – hakerzy atakują wszystkich. Z Cyber Cover 360 chronisz swoją działalność bez stresu o cyberbezpieczeństwo."
+>
+  <Fragment slot="head-extra">
+    <link rel="preload" as="image" href="/img/tlo-zolte-kulki.svg" type="image/svg+xml" />
+  </Fragment>
+
+  <Hero
+    badge="Ochrona 360"
+    title="Komu pomagamy"
+    intro="Czy prowadzisz kancelarię, sklep internetowy czy fabrykę – hakerzy atakują wszystkich."
+    subtitle="Z Cyber Cover 360 chronisz swoją działalność bez stresu o cyberbezpieczeństwo."
+    introSize="xl"
+    bg="yellow"
+    bgImage="/img/tlo-zolte-kulki.svg"
+  >
+    <a
+      slot="cta"
+      href="/cennik"
+      class="inline-flex items-center gap-3 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
+    >
+      Wykup Ochronę 360
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white shrink-0">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+    </a>
+  </Hero>
+
+  <!-- ======== SEKCJA: Branże ======== -->
+  <Section>
+    <div class="text-center mb-10 lg:mb-12">
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Branże, które najczęściej chronią się z nami
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 gap-5 list-none p-0">
+      {industries.map((item) => (
+        <li class={`${item.bg} rounded-card p-6 lg:p-8 flex flex-col gap-6`}>
+          <div class="flex items-start justify-between gap-4">
+            <h3 class="text-xl lg:text-2xl font-semibold leading-tight text-black">
+              {item.title}
+            </h3>
+            <img src={item.icon} alt="" aria-hidden="true" class="w-10 h-12 lg:w-12 lg:h-14 shrink-0" />
+          </div>
+          <ul class="flex flex-wrap gap-2 list-none p-0">
+            {item.sub.map((s) => (
+              <li class="inline-flex items-center bg-white rounded-full px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-black">
+                {s}
+              </li>
+            ))}
+          </ul>
+          <p class="text-body lg:text-base leading-cozy text-brand-text">{item.desc}</p>
+          <div class="flex flex-col gap-3 mt-auto">
+            <span class="inline-flex items-center gap-2 self-start bg-white rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-black">
+              <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-3.5 h-auto" />
+              Zagrożenia
+            </span>
+            <p class="text-body lg:text-base leading-cozy text-brand-text">{item.threats}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA: NIS2 (full-bleed black) ======== -->
+  <Section bg="bg-black" padding="tight">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+      <div>
+        <Image
+          src={nis2Img}
+          alt="Wymagania NIS2 — schemat obowiązków"
+          width={720}
+          class="w-full block rounded-card"
+          loading="lazy"
+        />
+      </div>
+      <div class="text-white">
+        <p class="font-medium uppercase text-sm tracking-wide mb-6">
+          <span class="inline-flex items-center gap-2 bg-white text-black rounded-full px-4 py-1.5">
+            <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-4 h-auto" />
+            Dyrektywa
+          </span>
+        </p>
+        <h2 class="text-3xl lg:text-section-title font-semibold leading-tight mb-6">
+          Wymagania NIS2
+        </h2>
+        <p class="text-lg lg:text-xl font-medium leading-snug text-white/85 mb-6 max-w-[480px]">
+          Organizacje z branż IT, zdrowie, transport, administracja publiczna, bankowość, energetyka muszą spełniać surowe wymogi cyberbezpieczeństwa.
+        </p>
+        <ul class="list-disc ml-6 text-base lg:text-body-lg leading-relaxed text-white space-y-2 marker:text-white">
+          <li>Zarządzanie ryzykiem cybernetycznym</li>
+          <li>Zgłaszanie incydentów 24–72&nbsp;h</li>
+          <li>Kontrola bezpieczeństwa dostawców</li>
+        </ul>
+      </div>
+    </div>
+  </Section>
+
+  <!-- ======== SEKCJA: Role ======== -->
+  <Section padding="tight">
+    <div class="text-center mb-10 lg:mb-12">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-block bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full">
+          Klienci
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Role, które najczęściej z&nbsp;nami współpracują
+      </h2>
+    </div>
+
+    <ul
+      class="flex md:grid md:grid-cols-3 md:grid-rows-[auto_auto_1fr_auto_auto] gap-5 list-none p-0
+             overflow-x-auto md:overflow-visible snap-x md:snap-none snap-mandatory
+             -mx-6 md:mx-0 px-6 md:px-0 pb-4 md:pb-0
+             [scrollbar-width:thin]"
+    >
+      {roles.map((item) => (
+        <li class="bg-brand-bg rounded-card p-6 lg:p-8 flex flex-col gap-5 md:grid md:grid-rows-subgrid md:row-span-5 snap-start shrink-0 w-[85vw] md:w-auto">
+          <ul class="flex flex-wrap gap-2 list-none p-0">
+            {item.pills.map((p) => (
+              <li class="inline-flex items-center bg-white border border-brand-border-light rounded-full px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-black">
+                {p}
+              </li>
+            ))}
+          </ul>
+          <p class="text-lg lg:text-card-heading font-semibold leading-tight text-black">
+            {item.quote}
+          </p>
+          <p class="text-body lg:text-base leading-cozy text-brand-text">{item.desc}</p>
+          <span class="inline-flex items-center self-start md:justify-self-start bg-brand-tag-yellow rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-black w-fit">
+            Korzyści
+          </span>
+          <p class="text-body lg:text-base leading-cozy text-brand-text">{item.benefits}</p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA: Trudne sytuacje (heading left, auto-rotating card right) ======== -->
+  <Section bg="bg-brand-bg" class="relative overflow-hidden">
+    <!-- Dekoracyjne okręgi w tle po lewej (Figma 1663:23843) -->
+    <div
+      class="pointer-events-none absolute -left-32 -top-40 w-[380px] h-[380px] lg:w-[478px] lg:h-[475px] rounded-full select-none hidden lg:block"
+      style="background-image: linear-gradient(257.702deg, rgba(0, 0, 0, 0) 34.57%, rgba(167, 167, 167, 0.25) 255.49%);"
+      aria-hidden="true"
+    ></div>
+    <div
+      class="pointer-events-none absolute -left-32 -bottom-40 w-[380px] h-[380px] lg:w-[478px] lg:h-[475px] rounded-full select-none hidden lg:block"
+      style="background-image: linear-gradient(77.702deg, rgba(0, 0, 0, 0) 34.57%, rgba(167, 167, 167, 0.25) 255.49%);"
+      aria-hidden="true"
+    ></div>
+
+    <div class="relative grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <!-- LEFT: heading -->
+      <div>
+        <p class="font-medium uppercase text-sm tracking-wide mb-6">
+          <span class="inline-flex items-center gap-2 bg-brand-tag-blue rounded-full px-4 py-2">
+            <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-4 h-auto" />
+            Kryzysy
+          </span>
+        </p>
+        <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+          Trudne sytuacje, które się często zdarzają.
+        </h2>
+      </div>
+
+      <!-- RIGHT: auto-rotating card with progress bar -->
+      <div
+        class="bg-[#FFF2E0] rounded-card p-8 lg:p-10 flex flex-col gap-8 min-h-[420px]"
+        data-kryzysy-carousel
+      >
+        <!-- Slides stack (grid stacking — only active visible) -->
+        <div class="grid flex-1" data-slides>
+          {crises.map((item, i) => (
+            <div
+              class={`col-start-1 row-start-1 flex flex-col gap-6 justify-between transition-opacity duration-500 ${
+                i === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
+              data-slide
+              aria-hidden={i !== 0}
+            >
+              <div class="flex items-start justify-between gap-6">
+                <p class="text-2xl lg:text-[33px] font-semibold italic leading-tight text-black">
+                  {item.quote}
+                </p>
+                <img
+                  src="/img/ico-sytuacje.svg"
+                  alt=""
+                  aria-hidden="true"
+                  class="w-9 h-11 lg:w-10 lg:h-12 shrink-0"
+                />
+              </div>
+              <p class="text-lg lg:text-2xl font-medium leading-snug text-brand-text">
+                {item.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <!-- Progress bar — 5 segmentów z animowanym wypełnieniem -->
+        <div class="flex gap-2" data-progress>
+          {crises.map(() => (
+            <span class="h-1 flex-1 rounded-full bg-brand-border overflow-hidden" data-bar>
+              <span class="block h-full bg-brand-navy rounded-full" data-fill style="width:0%"></span>
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <style>
+      @keyframes kryzysy-fill {
+        from { width: 0%; }
+        to { width: 100%; }
+      }
+    </style>
+    <script>
+      function initKryzysyCarousel() {
+        const root = document.querySelector('[data-kryzysy-carousel]') as HTMLElement | null
+        if (!root) return
+        const slides = Array.from(root.querySelectorAll<HTMLElement>('[data-slide]'))
+        const fills = Array.from(root.querySelectorAll<HTMLElement>('[data-fill]'))
+        if (slides.length === 0) return
+
+        let index = 0
+        let onEnd: ((e: AnimationEvent) => void) | null = null
+
+        function paintSlides() {
+          slides.forEach((s, i) => {
+            const active = i === index
+            s.classList.toggle('opacity-100', active)
+            s.classList.toggle('opacity-0', !active)
+            s.classList.toggle('pointer-events-none', !active)
+            s.setAttribute('aria-hidden', String(!active))
+          })
+        }
+
+        function paintBars() {
+          fills.forEach((fill, i) => {
+            // Detach any pending listener from previous active
+            if (onEnd) fill.removeEventListener('animationend', onEnd)
+
+            // Reset animation
+            fill.style.animation = 'none'
+            // Force reflow so the animation restarts cleanly
+            void fill.offsetWidth
+
+            if (i < index) {
+              fill.style.width = '100%'
+            } else if (i > index) {
+              fill.style.width = '0%'
+            } else {
+              // current — animate from 0 to 100% over 5s, then advance
+              fill.style.width = '0%'
+              fill.style.animation = 'kryzysy-fill 5s linear forwards'
+              onEnd = () => {
+                index = (index + 1) % slides.length
+                paintSlides()
+                paintBars()
+              }
+              fill.addEventListener('animationend', onEnd, { once: true })
+            }
+          })
+        }
+
+        function pause() {
+          fills.forEach((f) => (f.style.animationPlayState = 'paused'))
+        }
+        function resume() {
+          fills.forEach((f) => (f.style.animationPlayState = 'running'))
+        }
+
+        paintSlides()
+        paintBars()
+
+        root.addEventListener('mouseenter', pause)
+        root.addEventListener('mouseleave', resume)
+        root.addEventListener('focusin', pause)
+        root.addEventListener('focusout', resume)
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initKryzysyCarousel)
+      } else {
+        initKryzysyCarousel()
+      }
+    </script>
+  </Section>
+
+  <!-- ======== SEKCJA: Dlaczego uzupełnienie ======== -->
+  <Section padding="tight">
+    <div class="text-center mb-10 lg:mb-12">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-block bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full">
+          Cyberbezpieczeństwo
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black max-w-[900px] mx-auto">
+        Dlaczego potrzebne jest uzupełnienie istniejących zabezpieczeń
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 list-none p-0">
+      {reasons.map((item) => (
+        <li class="bg-white border border-brand-border rounded-card p-6 lg:p-8 flex flex-col gap-5">
+          <img src={item.icon} alt="" aria-hidden="true" class="w-14 h-14 lg:w-16 lg:h-16" />
+          <h3 class="text-xl lg:text-2xl font-semibold leading-tight text-black">
+            {item.title}
+          </h3>
+          <p class="text-body leading-cozy text-brand-text">{item.body}</p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <CtaReady />
+</BaseLayout>

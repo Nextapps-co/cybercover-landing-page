@@ -1,0 +1,241 @@
+---
+import { Image } from 'astro:assets'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/Hero.astro'
+import Section from '../components/Section.astro'
+import CtaReady from '../components/CtaReady.astro'
+import oceanHero from '../assets/img/ocena-hero.jpg'
+import zCzegoImg from '../assets/img/z-czego-sklada-sie-ocena.jpg'
+
+const dlaczego = [
+  {
+    icon: '/img/ico-luki-w-zabezpieczeniach.svg',
+    title: 'Dowiesz się gdzie dokładnie masz luki w zabezpieczeniach',
+  },
+  {
+    icon: '/img/ico-zidentyfikuj-zagrozenia.svg',
+    title: 'Zidentyfikujesz zagrożenia zanim staną się problemami',
+  },
+  {
+    icon: '/img/ico-gotowe-rekomendacje.svg',
+    title: 'Dostaniesz gotowe rekomendacje dostosowane do Twojej sytuacji',
+  },
+]
+
+const kryteria = [
+  {
+    title: 'Jak chronisz dane klientów i pracowników?',
+    desc: 'Sprawdzisz czy spełniasz wymagania RODO i unikniesz kar za nieprawidłowe przetwarzanie danych osobowych.',
+    tag: 'czyli wymagania RODO',
+  },
+  {
+    title: 'Jak zabezpieczasz dane firmowe przed złodziejami?',
+    desc: 'Zidentyfikujesz luki w zabezpieczeniach, przez które hakerzy mogą wykraść twoje cenne dane lub zażądać okupu za ich zwrot.',
+    tag: 'czyli ochrona informacji',
+  },
+  {
+    title: 'Jak szybko wrócisz do pracy po awarii?',
+    desc: 'Ocenisz czy masz plan działania na wypadek awarii systemów, żeby firma nie straciła pieniędzy z każdą godziną przestoju.',
+    tag: 'czyli ciągłość działania',
+  },
+]
+
+const zaleceniaBullets = [
+  'Wiadomo od razu, który obszar wymaga najpilniejszej uwagi',
+  'Każda rekomendacja wskazuje, co jest do poprawy',
+  'Cykliczne sprawdzanie pozwala śledzić poprawę poziomu bezpieczeństwa',
+]
+
+const kroki = [
+  { n: '01', text: 'Samodzielnie wypełniasz tematyczne listy kontrolne' },
+  { n: '02', text: 'Budujemy dla Twojej organizacji wskaźnik bezpieczeństwa' },
+  { n: '03', text: 'Dostajesz automatyczną ocenę dla każdego obszaru' },
+  { n: '04', text: 'Na podstawie automatycznych rekomendacji wiesz co trzeba zmienić lub poprawić' },
+]
+---
+
+<BaseLayout
+  title="Ocena bezpieczeństwa i zalecenia – CyberCover"
+  description="Cyber Cover Rating to cykliczna ocena poziomu bezpieczeństwa Twojej organizacji wraz z gotowym planem działania."
+>
+  <Hero
+    badge="Ochrona 360"
+    title="Ocena bezpieczeństwa i zalecenia"
+    intro="Cyber Cover Rating, to cykliczna ocena poziomu bezpieczeństwa Twojej organizacji."
+    subtitle="Dodatkowo otrzymujesz gotowy plan działania dla Twojego zespołu."
+    introSize="xl"
+    bg="white"
+    image={oceanHero}
+    imageAlt="Ocena bezpieczeństwa i zalecenia — ilustracja"
+  >
+    <a
+      slot="cta"
+      href="/cennik"
+      class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
+    >
+      Uruchom ocenę bezpieczeństwa
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+    </a>
+  </Hero>
+
+  <!-- ======== SEKCJA: Dlaczego warto ======== -->
+  <Section>
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-[#FFF5E0] border border-[#FFF5E0] px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Ocena
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-4">
+        Dlaczego warto mieć ocenę bezpieczeństwa?
+      </h2>
+      <p class="text-base lg:text-body-lg leading-relaxed text-brand-text max-w-[820px] mx-auto">
+        Wiemy, że potrzebujesz zaleceń do działania tu i teraz, ale też zdajemy sobie sprawę, że często nie wiadomo od czego zacząć. Dlatego stworzyliśmy narzędzie inteligentnej samooceny bezpieczeństwa na podstawie sytuacji Twojej organizacji.
+      </p>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-3 gap-5 list-none p-0">
+      {dlaczego.map((item) => (
+        <li
+          class="relative bg-white rounded-card overflow-hidden min-h-[270px] p-7 lg:p-8 flex flex-col gap-9"
+          style="background-image:url('/img/tlo-box-szersze.svg'); background-repeat:no-repeat; background-position:top right; background-size:cover;"
+        >
+          <img src={item.icon} alt="" aria-hidden="true" class="w-10 h-12 lg:w-12 lg:h-14 -mt-7 lg:-mt-8" />
+          <h3 class="text-[22px] font-semibold leading-snug text-black max-w-[87%]">
+            {item.title}
+          </h3>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA: Z czego się składa ocena ======== -->
+  <Section padding="tight">
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Kryteria
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Z czego się składa ocena?
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_49%] gap-8 lg:gap-10 items-stretch">
+      <ul class="flex flex-col gap-5 list-none p-0">
+        {kryteria.map((k) => (
+          <li class="bg-brand-bg border border-brand-border rounded-card p-7 lg:p-8 flex flex-col gap-4">
+            <h3 class="text-xl lg:text-2xl font-semibold leading-snug text-black">
+              {k.title}
+            </h3>
+            <p class="text-body lg:text-base leading-cozy text-brand-text">
+              {k.desc}
+            </p>
+            <p class="font-medium uppercase text-xs tracking-wide">
+              <span class="inline-flex items-center gap-2 border border-brand-border px-3 py-1 rounded-full text-black">
+                {k.tag}
+              </span>
+            </p>
+          </li>
+        ))}
+      </ul>
+      <div class="relative rounded-card overflow-hidden order-first lg:order-none min-h-[300px] lg:min-h-0">
+        <Image
+          src={zCzegoImg}
+          alt="Z czego składa się ocena bezpieczeństwa"
+          width={900}
+          class="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  </Section>
+
+  <!-- ======== SEKCJA: Zalecenia ======== -->
+  <Section padding="tight" class="relative">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+      <div class="relative">
+        <p class="font-medium uppercase text-sm tracking-wide mb-4">
+          <span class="inline-flex items-center gap-2 bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full">
+            <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+            Zalecenia
+          </span>
+        </p>
+        <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+          Czym są zalecenia na podstawie samooceny?
+        </h2>
+        <img
+          src="/img/tlo-biale-kulki.svg"
+          alt=""
+          aria-hidden="true"
+          class="pointer-events-none select-none hidden lg:block absolute -left-24 -bottom-32 w-[705px] max-w-none -z-10"
+        />
+      </div>
+
+      <div class="bg-brand-navy text-white rounded-card p-8 lg:p-10 flex flex-col gap-6">
+        <h3 class="text-2xl lg:text-[33px] font-semibold leading-tight">
+          Zalecenia to gotowe instrukcje organizacyjne i techniczne, które mówią co i jak wdrożyć w organizacji, aby poprawić bezpieczeństwo.
+        </h3>
+        <p class="font-medium uppercase text-xs tracking-wide">
+          <span class="inline-flex items-center gap-2 bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full text-black">
+            <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+            Korzyści
+          </span>
+        </p>
+        <ul class="list-disc ml-6 text-base lg:text-body-lg leading-relaxed space-y-2 marker:text-white">
+          {zaleceniaBullets.map((b) => <li>{b}</li>)}
+        </ul>
+      </div>
+    </div>
+  </Section>
+
+  <!-- ======== SEKCJA: Jak działa samoocena (full-bleed gray) ======== -->
+  <Section bg="bg-brand-bg">
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-[#FFF2E0] border border-[#FFF2E0] px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Kroki
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Jak działa inteligentna samoocena bezpieczeństwa?
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 list-none p-0">
+      {kroki.map((k) => (
+        <li class="bg-white rounded-card p-7 lg:p-8 flex flex-col gap-5">
+          <div class="flex items-start justify-between gap-4">
+            <span class="text-sm font-medium uppercase tracking-wide text-brand-text mt-2">KROK</span>
+            <span class="text-5xl lg:text-[58px] font-medium leading-none text-black">{k.n}</span>
+          </div>
+          <p class="text-base lg:text-body-lg font-medium leading-snug text-black min-h-[3em]">
+            {k.text}
+          </p>
+          <img src="/img/ico-big-arrow.svg" alt="" aria-hidden="true" class="w-12 h-12 mt-auto" />
+        </li>
+      ))}
+    </ul>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 mt-10 lg:mt-14">
+      <h3 class="text-2xl lg:text-[33px] font-semibold leading-tight text-black">
+        Kto może wypełnić listy kontrolne?
+      </h3>
+      <p class="text-base lg:text-body-lg leading-relaxed text-brand-text">
+        Możesz to zrobić jako właściciel lub manager jeśli znasz szczegóły tych tematów, ale możesz zaprosić do tego też osoby które są bezpośrednio odpowiedzialne za ten obszar.
+      </p>
+    </div>
+  </Section>
+
+  <CtaReady />
+</BaseLayout>
+</content>
+</invoke>

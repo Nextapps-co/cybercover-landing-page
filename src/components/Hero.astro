@@ -1,0 +1,93 @@
+---
+import { Image } from 'astro:assets'
+import type { ImageMetadata } from 'astro'
+
+interface Props {
+  /** Pill badge nad H1 — opcjonalny */
+  badge?: string
+  /** H1 — tytuł strony */
+  title: string
+  /** Paragraf intro pod H1 — opcjonalny */
+  intro?: string
+  /** Drugi, mniejszy paragraf pod intro (np. dodatkowy opis) — opcjonalny */
+  subtitle?: string
+  /** Obraz (raster) po prawej stronie — split layout 50/50, wyklucza się z bgImage */
+  image?: ImageMetadata
+  imageAlt?: string
+  /** Tło SVG na całym hero (np. dekoracyjne strzałki, bg-position: center bottom). Wyklucza się z image. */
+  bgImage?: string
+  /** Kolor tła: 'white' (domyślny) lub 'yellow' (#FEFFE0 — token brand-tag-yellow) */
+  bg?: 'white' | 'yellow'
+  /** Wielkość intro: 'lg' (17px desktop) lub 'xl' (24px desktop, dla hero z CTA jak homepage) */
+  introSize?: 'lg' | 'xl'
+  /**
+   * Override dla min-height hero. Domyślnie: gdy bgImage → 'min-h-[480px] lg:min-h-[608px]'
+   * (proporcja 1513:608 wg Figmy), inaczej brak min-h. Przekaż własne klasy lub pusty string żeby wyłączyć.
+   */
+  minHeight?: string
+}
+
+const {
+  badge,
+  title,
+  intro,
+  subtitle,
+  image,
+  imageAlt = '',
+  bgImage,
+  bg = 'white',
+  introSize = 'lg',
+  minHeight,
+} = Astro.props
+
+const bgClass = bg === 'yellow' ? 'bg-brand-tag-yellow' : 'bg-white'
+const hasImage = !!image
+const introClass =
+  introSize === 'xl'
+    ? 'text-xl lg:text-2xl font-medium leading-snug text-brand-text'
+    : 'text-base lg:text-body-lg leading-relaxed text-brand-text max-w-[480px]'
+
+const bgStyle = bgImage
+  ? `background-image: url('${bgImage}'); background-repeat: no-repeat; background-position: center bottom; background-size: cover;`
+  : undefined
+const heroMinH = minHeight ?? (bgImage ? 'min-h-[480px] lg:min-h-[608px]' : '')
+---
+
+<section
+  class={`relative overflow-hidden ${bgClass} ${heroMinH} pt-32 lg:pt-40 pb-12 lg:pb-20`}
+  style={bgStyle}
+>
+  <div class="relative max-w-container mx-auto px-6">
+    <div class={hasImage ? 'flex flex-col-reverse lg:flex-row items-center gap-10 lg:gap-16' : ''}>
+      <div class={hasImage ? 'lg:w-1/2' : 'max-w-[600px]'}>
+        {badge && (
+          <p class="font-medium uppercase text-sm tracking-wide mb-4">
+            <span class="inline-block bg-brand-tag-blue border border-brand-tag-blue px-4 py-1 rounded-full">
+              {badge}
+            </span>
+          </p>
+        )}
+
+        <h1 class="text-3xl lg:text-page-title font-semibold leading-tight text-black mb-6">
+          {title}
+        </h1>
+
+        {intro && <p class={`${introClass} mb-6 lg:mb-8 last:mb-0`}>{intro}</p>}
+
+        {subtitle && (
+          <p class="text-sm lg:text-body-lg leading-relaxed text-brand-text max-w-[520px] mb-8 last:mb-0">
+            {subtitle}
+          </p>
+        )}
+
+        <slot name="cta" />
+      </div>
+
+      {image && (
+        <div class="lg:w-[48%]">
+          <Image src={image} alt={imageAlt} width={1400} class="w-full rounded-xl" loading="eager" />
+        </div>
+      )}
+    </div>
+  </div>
+</section>

@@ -185,3 +185,254 @@ npm run preview  # podgląd buildu lokalnie
 - Prefetching linków (`<link rel="prefetch">`)
 - Critical CSS inlining
 - Service Worker dla offline support
+
+---
+
+## Migracja kolejnych podstron WP → Astro (sesja maj 2026)
+
+Druga iteracja: dodawanie kolejnych podstron (Kontakt, w przyszłości O nas, Komu pomagamy, Ochrona 360, Zagrożenia, 5× usług) na bazie pełnego backupu WP z hostingu LH.pl.
+
+### Które źródło użyć (i czego unikać)
+
+**Używamy (`Cyber/cybercover.pl-WP-all-z-LH.pl/`):**
+- **`wp-content/themes/paula/`** — PHP templates, Sass, CSS bloków Pauli. Czyste źródło bez śmieci.
+- **`wp-content/themes/paula/css/main.css`** — referencja klas (np. `paula-text-border` to pill badge: `inline-block`, `border-radius:1.5em`, `padding:6px .7em`, bg z `--tb-background-color`)
+- **`wp-content/plugins/cyber-cover/`** — custom plugin z patternami (np. `ochrona360`)
+- **`wp-content/uploads/<year>/<month>/`** — oryginalne obrazki w pełnej rozdzielczości + warianty responsywne wygenerowane przez WP
+- **Duplicator SQL dump** w `wp-content/backups-dup-lite/cybercover_*_archive.zip`, w środku `dup-installer/dup-database__*.sql` (~155 MB rozpakowany) — **prawdziwa treść każdej strony**, bo Paula's PHP template (`contact.php`, `page.php`) renderuje tylko skielet + `the_content()` z DB
+
+**NIE używamy:**
+- `Cyber/CC - all WP page/` — saved HTML ("Save Page As") — **zatrute przez Chrome extension** (`plasmo-csui`), fonty wskazują na `chrome-extension://...`, mojibake, bezużyteczne jako wzorzec
+- Statyczny render SQL + Paula CSS bez PHP — Paula's custom bloki (`paula/grid`, `paula/grid-box`, `paula/step`, `paula/timeline-event`) mają **render callbacki w PHP** (`paula_grid_box_render()` itp.) które czytają atrybuty z komentarza Gutenberg i wstrzykują inline style. Bez PHP komentarz `<!-- wp:paula/grid-box {...} -->` jest niewidoczny → custom bloki nie rendrują się
+- Live `cybercover.pl/<slug>` — produkcja ma tylko tymczasowy landing, prawdziwy WP jest na ukrytym staging
+
+### Workflow per podstrona (przepis)
+
+1. **Znajdź post w SQL** — `INSERT INTO \`wp_posts\` VALUES(...)` gdzie position 11 (slug) = target, position 20 = "page", position 7 = "publish"
+2. **Wyciągnij Gutenberg HTML** z position 4 (`post_content`) — to **specyfikacja designu** (rozmiary, kolory, paddingi w JSON atrybutach komentarzy `<!-- wp:* {} -->`)
+3. **Skopiuj obrazki** z `wp-content/uploads/<year>/<month>/` do `public/img/` (SVG) lub `src/assets/img/` (raster, dla Astro Image)
+4. **Zoptymalizuj obrazki** — patrz "Optymalizacja obrazków" poniżej
+5. **Zbuduj stronę** używając `<Hero>` + `<Section>` z `src/components/` (patrz "System komponentów")
+6. **Dodaj JSON-LD per strona** przez `<slot name="head-extra" />` w `BaseLayout`
+7. **Sprawdź a11y** — `<address>` dla danych firmy, `<aside aria-labelledby="...">` dla side info, `alt=""` + `aria-hidden="true"` dla obrazków dekoracyjnych, `tel:+48...` (nie samo `tel:22...`)
+
+Helper skrypt: `render-page.mjs` w katalogu WP root robi pre-render Gutenberg HTML jako sanity check (CSS z Paula da się załadować, ale custom bloki nie renderują się bez PHP — używać tylko do podglądu treści, nie wyglądu).
+
+### Gotchas: WP / Paula vs Astro
+
+- **Gutenberg block JSON to spec designu** — `fontSize`, `customOverlayColor`, `paddingTop`, `borderRadius`, `width: "50%"`, `contentSize: "1410px"`, `minHeightUnit: "vh"` itd. są bezpośrednio w komentarzach. Czytaj te wartości literalnie zamiast zgadywać z DevTools.
+- **Theme vars w PHP, nie CSS** — Paula używa `--h1-font-size`, `--basic-font-size`, `--basic-font-weight-mobile` itp., ale ustawia je w **WP Customizer** (theme_mods w bazie), nie w plikach `.css`. Statyczne otworzenie main.css pokaże tylko `font-size: var(--h1-font-size)` bez konkretnej wartości
+- **Custom classes mogą nie mieć CSS** — np. `paula-title-lil` i `site-intro-lil` istnieją w HTML ale nie mają reguł w `main.css` — styling pochodzi z inline `style="fontSize:..."` w Gutenberg HTML. Czyli: bierz wartości z atrybutów Gutenberg, nie szukaj klasy w CSS
+- **`paula-text-border` jednak ma CSS** — to pill badge z `--tb-background-color` (np. `#ddeef8` na Kontakcie) — w Astro odwzorowane przez `bg-brand-tag-blue border border-brand-tag-blue px-4 py-1 rounded-full`
+- **`alignfull` / `alignwide` / `is-layout-flex`** — WP wstrzykuje je przez `theme.json` + PHP. W Astro: ręcznie ekwiwalent (np. `alignwide` ≈ `max-w-container mx-auto`)
+- **Tło hero z Pauli (`wp:cover` z parallax)** — `minHeightUnit: "vh"` oznacza że hero ma być na 100vh w WP; w Astro decydujemy o sensownej `min-h-[480px] lg:min-h-[608px]` (proporcja 1513:608 wg Figmy)
+- **Treść w `wp_posts.post_content` używa absolutnych URL** `https://cybercover.pl/wp-content/...` — przy renderowaniu trzeba rewrite na `/wp-content/...` lub kopiować obrazki lokalnie i podmieniać ścieżki
+
+### System komponentów (Hero + Section)
+
+Dwa centralne komponenty pokrywają ~90% layoutu podstron.
+
+**`src/components/Hero.astro`** — uniwersalne hero:
+- propsy: `badge?`, `title`, `intro?`, `image?` (raster split layout) **xor** `bgImage?` (SVG cover), `bg='white'|'yellow'`, `introSize='lg'|'xl'`, `minHeight?` (override)
+- slot `cta` na przycisk pod intro
+- 3 warianty: split (text+image jak Start), simple text-only, text+bgImage (jak Kontakt)
+- `bgImage`: `background-position: center bottom; background-size: cover` + `min-h-[480px] lg:min-h-[608px]` (proporcja Figma 1513:608) żeby SVG nie był rozciągany
+
+**`src/components/Section.astro`** — standardowy wrapper:
+- propsy: `padding='default'|'tight'|'none'`, `bg?`, `narrow?` (1000px container zamiast 1410px), `fullBleed?`, `class?`
+- default padding: `py-16 lg:py-24`, tight: `py-12 lg:py-16`
+- container: `max-w-container mx-auto px-6`
+
+**Wzorzec strony:**
+```astro
+<BaseLayout title="..." description="...">
+  <Fragment slot="head-extra">
+    <link rel="preload" as="image" href="/img/..." type="image/svg+xml" />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </Fragment>
+  <Hero badge="..." title="..." intro="..." bg="yellow" bgImage="/img/..." />
+  <Section>...kolumny / karty / grid...</Section>
+  <Section padding="none" class="pb-16 lg:pb-24">
+    <aside aria-labelledby="...">...</aside>
+  </Section>
+</BaseLayout>
+```
+
+### Design tokens (rozszerzone w `global.css @theme`)
+
+```css
+/* Typografia */
+--text-page-title: 58px;       /* H1 — tytuł strony (Kontakt, Ochrona 360...) */
+--text-section-title: 50px;    /* H2 — tytuł sekcji */
+--text-card-title: 30px;       /* H3 — duża linkowana wartość (email/tel) */
+--text-card-heading: 22px;     /* H3 mniejszy — tytuł karty info (np. 24/7) */
+--text-footer-title: 19px;
+--text-body-lg: 17px;
+--text-body: 15px;             /* tekst w kolumnach / kartach */
+
+/* Line-height */
+--leading-cozy: 1.6;           /* gęsty body w kolumnach / adresach */
+
+/* Border radius */
+--radius-card: 10px;
+
+/* Kolory (uzupełnione, brand-tag-yellow = tło hero stron) */
+--color-brand-tag-blue: #DDEEF8;   /* badge background nad H1 */
+--color-brand-tag-yellow: #FEFFE0; /* tło hero z dekoracyjnymi strzałkami */
+--color-brand-blue-light: #EDF8FF; /* tło kart info */
+```
+
+### Optymalizacja obrazków (przepis dla raster-in-SVG)
+
+Avatary i ilustracje z WP są często **SVG z osadzonym base64 PNG** w wysokiej rozdzielczości (1-2 MB na plik). Workflow:
+
+1. Wyodrębnij base64 z SVG (`data:image/png;base64,...`)
+2. Zdekoduj do PNG → resize do max 2× display size (np. 220px dla avataru wyświetlanego 87px)
+3. Konwertuj do WebP (`cwebp -q 80`)
+4. Zakoduj z powrotem do `data:image/webp;base64,...` i wklej do SVG
+
+Wynik typowy: **1.9 MB → 6 KB** (99.7% redukcji).
+
+Skrypty: `/tmp/optimize-avatar.mjs` (resize) i `/tmp/png-to-webp.mjs` (konwersja na WebP) — Node.js zero-dep, używają `sips` (macOS) + `cwebp` (`brew install webp`).
+
+### A11y + SEO checklist per strona
+
+- **`<title>` i `<meta name="description">`** zawsze przez `BaseLayout` propsy
+- **JSON-LD** dla typu strony — np. `ContactPage` z `mainEntity: LocalBusiness` (telefon, adres, openingHours, NIP/REGON/KRS jako `identifier[]`) — przez `head-extra` slot
+- **`<link rel="preload" as="image">`** dla obrazka LCP (np. hero bg-image)
+- **`tel:+48...`** zawsze z prefiksem kraju
+- **Obrazki dekoracyjne**: `alt=""` + `aria-hidden="true"`
+- **`<address class="not-italic">`** dla danych firmy
+- **`<aside aria-labelledby="id-tytułu">`** dla side info (karty 24/7, callouty)
+- **Focus styles** — globalne w `@layer base`: `a:focus-visible, button:focus-visible, [role="button"]:focus-visible { outline: 2px solid var(--color-brand-navy); outline-offset: 2px; }`
+
+### Responsywność — siatki w kolumnach
+
+3-kolumnowy info-grid (jak na Kontakcie) — pattern responsywny:
+```html
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr] gap-10">
+  <div class="md:col-span-2 lg:col-span-1">...kolumna 1 (najszersza)...</div>
+  <div>...kolumna 2...</div>
+  <div>...kolumna 3...</div>
+</div>
+```
+
+---
+
+## Lekcje z migracji /kontakt + /o-nas + /komu-pomagamy
+
+Spisane po fakcie po iteracji 3 podstron z Radkiem. **Krytyczne reguły zanim zaczniesz kodować kolejną podstronę.**
+
+### 🔴 Reguła #1: nie wymyślaj designu — sprawdź dwa źródła w kolejności
+
+1. **Figma** — jeśli Radek poda node-id (https://www.figma.com/design/.../?node-id=X-Y), `mcp__figma-desktop__get_design_context` + `get_screenshot`. Z Figmy bierz:
+   - **dokładne kolory każdego elementu** (kolor bg karty, badge, progress bar — często różnią się od domyślnych tokenów)
+   - **dokładne rozmiary** font/padding/min-height/aspect
+   - **strukturę layoutu** (2-col? 3-col? heading lewo + karta prawo?)
+   - **dekoracyjne elementy w tle** (kółka z gradientem, strzałki, ozdoby)
+2. **WP SQL Gutenberg HTML** — w `<!-- wp:* { JSON attrs } -->` siedzą `bgColor1`, `customOverlayColor`, `fontSize`, `paddingTop`, `borderRadius` per element. **Nie zgaduj — czytaj.**
+
+**Figma w cybercover.pl nie ma autolayoutu** → pixele to wireframe, **ale kolory, fonty i struktura są spec**.
+
+### Konkretne błędy które popełniłem (i jak ich uniknąć)
+
+❌ Robiłem **karty Branże** z białym bg i borderem.
+✅ Per WP SQL `bgColor1`: **kolorowe karty bez ramki** cyklicznie (#feffe0 → #edf8ff → #f8f7f4), ikona top-right, sub-kategorie jako pille białe.
+
+❌ Sekcja **"Trudne sytuacje"** zrobiłem jako 3-col grid + scroll-snap + dots.
+✅ Per Figma: **2-col** (heading lewo + single card prawo) z **animowanym progress barem** (5 segmentów wypełniających się od 0% do 100% przez 5s, navy active).
+
+❌ Sekcja **NIS2** w wrapperze z białym bg + image z boku.
+✅ Per Figma: **pełnobleed czarna sekcja** (`<Section bg="bg-black">` — bg leci edge-to-edge viewport), biały tekst, obrazek po lewej w tym samym czarnym kontekście.
+
+❌ Ikony w **Misja cards** dałem 48-56px (`w-12 h-12 lg:w-14 lg:h-14`).
+✅ Per Figma: **~300px** szerokie ilustracje (`w-full max-w-[300px]`) — to są obrazki, nie ikony.
+
+❌ Hero SVG kulek/strzałek użyłem oryginalnego z WP (1900×1080, `bg-cover`).
+✅ **Stwórz nowy SVG z viewBox 1513:608** (proporcja Figmy), `background-position: center bottom; background-size: cover`, `min-h-[480px] lg:min-h-[608px]` na hero.
+
+❌ Hero intro to jeden długi paragraf.
+✅ Czasem Figma ma **2 paragrafy** (duży `intro` 24px + mniejszy `subtitle` 17px). Hero komponent ma już prop `subtitle?`.
+
+❌ Pomijałem **sekcję CTA "Gotowy żeby chronić..."** bo nie ma jej w WP SQL.
+✅ Jest w Figmie na **każdej podstronie**. Wyciągnięta do reusable `<CtaReady />`. Wstawiaj na końcu każdej nowej strony przed `</BaseLayout>`.
+
+❌ Karty z carouselami robione z setInterval i transform: translateX.
+✅ **Lepsze**: stack overlay (`grid col-start-1 row-start-1` z opacity 0/100) + CSS animation z `animationend` event. Brak setInterval, sync naturalny.
+
+### Pattern: auto-rotujący carousel z progress barem (Instagram Stories style)
+
+Komu pomagamy → "Trudne sytuacje". Reusable pattern dla "kolekcja krótkich kart".
+
+```astro
+<div data-carousel class="bg-[#FFF2E0] rounded-card p-8 lg:p-10 flex flex-col gap-8 min-h-[420px]">
+  <!-- Stack overlay — all slides in same grid cell -->
+  <div class="grid flex-1">
+    {slides.map((s, i) => (
+      <div class={`col-start-1 row-start-1 flex flex-col gap-6 transition-opacity duration-500 ${i===0 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} data-slide>
+        ...content...
+      </div>
+    ))}
+  </div>
+  <!-- Progress bar -->
+  <div class="flex gap-2">
+    {slides.map(() => (
+      <span class="h-1 flex-1 rounded-full bg-brand-border overflow-hidden" data-bar>
+        <span class="block h-full bg-brand-navy rounded-full" data-fill style="width:0%"></span>
+      </span>
+    ))}
+  </div>
+</div>
+<style>@keyframes carousel-fill { from {width:0%} to {width:100%} }</style>
+<script>
+  // Na każdej zmianie indexu: past=100%, current=animacja 5s, future=0%.
+  // animationend → advance index → repaint.
+  // pause: f.style.animationPlayState = 'paused' (hover/focus)
+</script>
+```
+
+### Pattern: dekoracyjne okręgi w tle (Figma 1663:23843)
+
+```html
+<Section bg="bg-brand-bg" class="relative overflow-hidden">
+  <div class="pointer-events-none absolute -left-32 -top-40 w-[478px] h-[475px] rounded-full hidden lg:block"
+       style="background-image: linear-gradient(257.702deg, rgba(0,0,0,0) 34.57%, rgba(167,167,167,0.25) 255.49%);"
+       aria-hidden="true"></div>
+  <!-- ...drugi okrąg... -->
+  <div class="relative ...">...treść...</div>
+</Section>
+```
+
+### Pattern: subgrid dla równania kart różnej długości
+
+Karty Role / Korzyści na komu-pomagamy — różnej długości opisy, ale badge "Korzyści" zawsze w tej samej linii w pionie:
+
+```html
+<ul class="flex md:grid md:grid-cols-3 md:grid-rows-[auto_auto_1fr_auto_auto] gap-5">
+  {items.map(item => (
+    <li class="bg-brand-bg rounded-card p-6 flex flex-col gap-5 md:grid md:grid-rows-subgrid md:row-span-5">
+      <pills />              <!-- row 1 -->
+      <quote />              <!-- row 2 -->
+      <desc />               <!-- row 3 (1fr — flex space) -->
+      <span class="md:justify-self-start w-fit">Korzyści</span>  <!-- row 4 — aligned across cards -->
+      <benefits />           <!-- row 5 -->
+    </li>
+  ))}
+</ul>
+```
+
+Browser support: subgrid działa w Chrome 117+, Safari 16+, Firefox 71+.
+
+### Workflow per kolejna podstrona
+
+1. **Spytaj o node-id w Figmie** dla całej strony i kluczowych sekcji (hero, custom sections jak NIS2/CTA)
+2. **Wyciągnij content z WP SQL** (slug → post_content → parse Gutenberg)
+3. **Skopiuj obrazki** z `wp-content/uploads/`, zoptymalizuj jeśli są raster-in-SVG (skrypt w /tmp)
+4. **Sprawdź każdą sekcję** w Figmie: kolory, layout, dekoracje — dopiero potem markup
+5. **Reusable komponenty** (Hero, Section, CtaReady) — używaj zamiast inline markup
+6. **Linki w Header** — dodaj nową podstronę do `menuItems`
+7. **JSON-LD per typ strony** przez `head-extra` slot w BaseLayout
+8. **A11y check** — `<address>` dla danych, `<aside aria-labelledby>` dla side info, `alt=""` + `aria-hidden` dla dekoracji
+9. **Commit** dopiero gdy strona wygląda OK; **push wymaga zgody Radka**
+
+Mobile (1 kol) → tablet 768-1023px (2 kol, pierwsza na całą szerokość) → desktop ≥1024px (3 kol 50%/25%/25%).

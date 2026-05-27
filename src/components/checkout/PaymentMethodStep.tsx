@@ -110,7 +110,7 @@ export function PaymentMethodStep() {
           discountedPriceNet: res.discountedPriceNet,
         });
       } else {
-        setDiscountState({ status: 'error', message: res.message ?? 'Kod nieaktywny.' });
+        setDiscountState({ status: 'error', message: 'Kod rabatowy nie istnieje lub wygasł.' });
       }
     } catch (err) {
       setDiscountState({ status: 'error', message: translateApiError(err).message });
@@ -208,10 +208,10 @@ export function PaymentMethodStep() {
           <div className="lg:col-span-2">
             {submitError && <FormAlert variant="error" title={submitError.title} message={submitError.message} />}
             <form onSubmit={handleSubmit} className="space-y-6">
-              <fieldset className="rounded-[12px] bg-[#f8f7f4] p-6">
-                <legend className="font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-lg text-black mb-4 px-1">
+              <div role="group" aria-labelledby="payment-method-label" className="rounded-[12px] bg-[#f8f7f4] p-6">
+                <p id="payment-method-label" className="font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-lg text-black mb-4">
                   Wybierz metodę płatności <span className="text-red-500">*</span>
-                </legend>
+                </p>
                 <div className="space-y-3">
                   <PaymentMethodOption
                     id="pm-stripe"
@@ -236,7 +236,7 @@ export function PaymentMethodStep() {
                 <p className="mt-3 rounded-[8px] bg-blue-50 p-3 font-['Plus_Jakarta_Sans',sans-serif] text-xs text-blue-800">
                   Po kliknięciu „Dalej" zostaniesz przekierowany do bezpiecznej finalizacji płatności.
                 </p>
-              </fieldset>
+              </div>
 
               <DiscountCodeField
                 state={discountState}

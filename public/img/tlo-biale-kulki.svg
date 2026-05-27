@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="705" height="551" viewBox="0 0 705 551">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.679" y1="0.541" x2="-1.887" y2="-0.021" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-opacity="0"/>
+      <stop offset="1" stop-color="#a7a7a7" stop-opacity="0.251"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="0.571" y1="0.531" x2="-1.887" y2="-0.021" xlink:href="#linear-gradient"/>
+    <clipPath id="clip-tlo-biale-kulki">
+      <rect width="705" height="551"/>
+    </clipPath>
+  </defs>
+  <g id="tlo-biale-kulki" clip-path="url(#clip-tlo-biale-kulki)">
+    <g id="Group_2705-2" data-name="Group 2705-2" transform="translate(0 75)">
+      <path id="Path_348" data-name="Path 348" d="M237.5,0h3C371.67,0,478,106.33,478,237.5h0C478,368.67,371.67,475,240.5,475h-3C106.33,475,0,368.67,0,237.5H0C0,106.33,106.33,0,237.5,0Z" fill="url(#linear-gradient)"/>
+      <path id="Path_349" data-name="Path 349" d="M449.5,0h3C583.67,0,690,106.33,690,237.5h0C690,368.67,583.67,475,452.5,475h-3C318.33,475,212,368.67,212,237.5h0C212,106.33,318.33,0,449.5,0Z" fill="url(#linear-gradient)"/>
+      <path id="Path_350" data-name="Path 350" d="M661.5,0h3C795.67,0,902,106.33,902,237.5h0C902,368.67,795.67,475,664.5,475h-3C530.33,475,424,368.67,424,237.5h0C424,106.33,530.33,0,661.5,0Z" fill="url(#linear-gradient-3)"/>
+    </g>
+  </g>
+</svg>

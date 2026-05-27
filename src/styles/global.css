@@ -28,17 +28,39 @@
   --spacing-container: 1410px;
 
   /* Typografia */
-  --text-section-title: 50px;
-  --text-body-lg: 17px;
+  --text-page-title: 58px;       /* H1 — tytuł strony (Kontakt, Ochrona 360...) */
+  --text-section-title: 50px;    /* H2 — tytuł sekcji */
+  --text-card-title: 30px;       /* H3 — tytuł karty / duża linkowana wartość (email/tel) */
+  --text-card-heading: 22px;     /* H3 mniejszy — np. tytuł karty info (24/7) */
   --text-footer-title: 19px;
+  --text-body-lg: 17px;
+  --text-body: 15px;             /* tekst w kolumnach / kartach */
+
+  /* Line-height */
+  --leading-cozy: 1.6;           /* gęsty body text w kolumnach / adresach */
 
   /* Border radius */
   --radius-card: 10px;
 }
 
+/* ────────────────────────────────────────────────────────────────────────
+   Global focus styles — widoczny pierścień dla nawigacji klawiaturowej.
+   Używa :focus-visible (mysz nie pokaże, klawiatura tak).
+   ──────────────────────────────────────────────────────────────────────── */
+@layer base {
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 2px solid var(--color-brand-navy);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
 /* Scroll offset for fixed header */
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 [id] {

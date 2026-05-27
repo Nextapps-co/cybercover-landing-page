@@ -1,9 +1,7 @@
 ---
 import { Image } from 'astro:assets'
 import pictureImg from '../assets/img/picture.png'
-// Ochrona 360 — circular diagram
-// CSS ported 1:1 from original cc-ochrona360.css
-// JS replaces WordPress/Paula animation system (adds .animated on scroll)
+// Ochrona 360 — circular diagram with scroll-triggered animation
 ---
 
 <div class="ochrona360">
@@ -97,7 +95,6 @@ import pictureImg from '../assets/img/picture.png'
   </svg>
 </div>
 
-<!-- Scroll animation: replaces WordPress/Paula animation system -->
 <script>
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {

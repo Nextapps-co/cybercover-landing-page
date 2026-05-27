@@ -27,17 +27,14 @@ export function OrderSummaryAside({ order }: Props = {}) {
 
   const discount = order?.discount ?? null;
   const currency = (order?.currency ?? session.planSnapshot.currency) as 'PLN';
-  const cycleLabel = session.billingCycle === 'MONTHLY' ? 'netto miesięcznie' : 'netto miesięcznie (przy rocznym rozliczeniu)';
+  const isAnnual = session.billingCycle === 'ANNUAL';
 
-  const mainPriceGrosze = discount ? discount.priceAfterDiscount : session.planSnapshot.priceMinorUnits;
-  const originalPriceGrosze = discount ? discount.originalAmount : null;
+  const monthlyGrosze = discount ? discount.priceAfterDiscount : session.planSnapshot.priceMinorUnits;
+  const originalMonthlyGrosze = discount ? discount.originalAmount : null;
 
-  const yearlyTotalGrosze = session.planSnapshot.priceMinorUnits * 12;
-  const yearlyMajor = Math.round(yearlyTotalGrosze / 100);
-  const yearlyFormatted = new Intl.NumberFormat('pl-PL', { useGrouping: true })
-    .format(yearlyMajor)
-    .replace(/ /g, ' ')
-    .replace(/ /g, ' ');
+  const displayPriceGrosze = isAnnual ? monthlyGrosze * 12 : monthlyGrosze;
+  const displayOriginalGrosze = originalMonthlyGrosze !== null ? (isAnnual ? originalMonthlyGrosze * 12 : originalMonthlyGrosze) : null;
+  const displayLabel = isAnnual ? 'netto rocznie' : 'netto miesięcznie';
 
   const discountCode = discount?.code ?? session.partnerCode;
 
@@ -55,39 +52,33 @@ export function OrderSummaryAside({ order }: Props = {}) {
       </h4>
 
       <div className="flex items-baseline gap-2 mb-2">
-        <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-3xl text-black">
-          {formatMinorUnits(mainPriceGrosze, currency)}
+        <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-3xl text-black whitespace-nowrap">
+          {formatMinorUnits(displayPriceGrosze, currency)}
         </span>
         <span className="font-['Plus_Jakarta_Sans',sans-serif] font-normal text-sm text-[#413f3b]">
-          {cycleLabel}
+          {displayLabel}
         </span>
       </div>
 
-      {discount && originalPriceGrosze !== null && originalPriceGrosze > mainPriceGrosze && (
+      {discount && displayOriginalGrosze !== null && displayOriginalGrosze > displayPriceGrosze && (
         <div className="mb-2 flex items-baseline gap-2">
-          <span className="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#6B6965] line-through">
-            {formatMinorUnits(originalPriceGrosze, currency)}
+          <span className="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#6B6965] line-through whitespace-nowrap">
+            {formatMinorUnits(displayOriginalGrosze, currency)}
           </span>
           <span className="font-['Plus_Jakarta_Sans',sans-serif] inline-flex items-center rounded-full bg-[#FED64B]/20 px-2 py-0.5 text-xs font-semibold text-[#0D0D0D]">
-            Oszczędzasz {formatMinorUnits(discount.discountAmount, currency)}
+            Oszczędzasz {formatMinorUnits(discount.discountAmount * (isAnnual ? 12 : 1), currency)}
           </span>
         </div>
-      )}
-
-      {!discount && (
-        <p className="font-['Plus_Jakarta_Sans',sans-serif] font-normal text-sm text-[#6B6965] mb-4">
-          {yearlyFormatted} zł netto/rok
-        </p>
       )}
 
       <p className="font-['Plus_Jakarta_Sans',sans-serif] font-normal text-sm text-[#413f3b] leading-relaxed mt-4">
         {session.planSnapshot.description}
       </p>
 
-      {(discount?.kind === 'PARTNER_TIMEBOUND' || discount?.kind === 'PARTNER_TIMEBOUND_COMPOSITE') && originalPriceGrosze !== null && (
+      {(discount?.kind === 'PARTNER_TIMEBOUND' || discount?.kind === 'PARTNER_TIMEBOUND_COMPOSITE') && displayOriginalGrosze !== null && (
         <p className="mt-4 font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#6B6965]">
           Cena promocyjna na czas trwania promocji. Po jej zakończeniu naliczymy standardową opłatę
-          {' '}{formatMinorUnits(originalPriceGrosze, currency)} {session.billingCycle === 'MONTHLY' ? 'netto/mies.' : 'netto/rok'}.
+          {' '}{formatMinorUnits(displayOriginalGrosze, currency)} {isAnnual ? 'netto/rok' : 'netto/mies.'}.
         </p>
       )}
 

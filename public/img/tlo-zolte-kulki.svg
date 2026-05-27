@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1513 608" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="cc-circle-grad" x1="0.75" y1="0.57" x2="0.13" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#a7a7a7" stop-opacity="0.251"/>
+    </linearGradient>
+  </defs>
+  <rect width="1513" height="608" fill="#feffe0"/>
+  <g fill="url(#cc-circle-grad)">
+    <ellipse cx="891" cy="378" rx="239" ry="230"/>
+    <ellipse cx="1103" cy="378" rx="239" ry="230"/>
+    <ellipse cx="1316" cy="378" rx="239" ry="230"/>
+  </g>
+</svg>
