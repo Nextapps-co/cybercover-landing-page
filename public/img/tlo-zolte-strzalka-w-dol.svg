@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1900" height="505" viewBox="0 0 1900 505">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.253" y1="0.254" x2="0.829" y2="0.846" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#a7a7a7" stop-opacity="0.251"/>
+    </linearGradient>
+    <clipPath id="clip-tlo-zolte-strzalka-w-dol">
+      <rect width="1900" height="505"/>
+    </clipPath>
+  </defs>
+  <g id="tlo-zolte-strzalka-w-dol" clip-path="url(#clip-tlo-zolte-strzalka-w-dol)">
+    <rect width="1900" height="505" fill="#feffe0"/>
+    <path id="Vector-2" d="M312.2,226.16q-2.235,8.22-10.63,16.59l-5.49,5.47L179.1,364.64q-11.43,11.37-22.6,11.37t-22.6-11.37L16.93,248.21l-5.49-5.47Q3.04,234.385.81,226.15a22.727,22.727,0,0,1-.81-5.9V31.8Q0,15.7,7.9,7.87,15.79.01,31.96,0H281.05q16.17,0,24.05,7.87,7.89,7.845,7.9,23.94V220.26a22.727,22.727,0,0,1-.81,5.9h.02Z" transform="translate(794 64)" fill="url(#linear-gradient)"/>
+  </g>
+</svg>

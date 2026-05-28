@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1920" height="505" viewBox="0 0 1920 505">
+  <defs>
+    <linearGradient id="linear-gradient" x1="1" y1="0.5" x2="0" y2="0.5" gradientUnits="objectBoundingBox">
+      <stop offset="0.198" stop-color="#d9d9d9" stop-opacity="0"/>
+      <stop offset="0.628" stop-color="#c5c3be"/>
+    </linearGradient>
+    <clipPath id="clip-tlo-niebieskie-1920">
+      <rect width="1920" height="505"/>
+    </clipPath>
+  </defs>
+  <g id="tlo-niebieskie-1920" clip-path="url(#clip-tlo-niebieskie-1920)">
+    <rect width="1920" height="505" fill="#edf8ff"/>
+    <g id="Group_1" data-name="Group 1" transform="translate(408 -0.578)" opacity="0.3">
+      <path id="Path_6" data-name="Path 6" d="M1430.89,1.866q-13.38,3.6-27,17.144L1395,27.872,1205.51,216.606q-18.525,18.444-18.51,36.459t18.51,36.46L1395,478.259l8.89,8.862q13.62,13.559,27,17.144a37.177,37.177,0,0,0,9.61,1.313h306.74q26.19,0,38.96-12.75,12.78-12.726,12.8-38.808V52.136q0-26.095-12.8-38.807Q1773.42.6,1747.24.578H1440.5a37.2,37.2,0,0,0-9.61,1.313Z" fill="url(#linear-gradient)"/>
+    </g>
+    <g id="Group_2" data-name="Group 2" transform="translate(408 -0.578)" opacity="0.3">
+      <path id="Path_7" data-name="Path 7" d="M1127.89,1.866q-13.38,3.6-27,17.144L1092,27.872,902.506,216.606Q883.987,235.05,884,253.065t18.506,36.46L1092,478.259l8.89,8.862q13.62,13.559,27,17.144a37.177,37.177,0,0,0,9.61,1.313h306.74q26.19,0,38.96-12.75,12.78-12.726,12.8-38.808V52.136q0-26.095-12.8-38.807Q1470.42.6,1444.24.578H1137.5a37.2,37.2,0,0,0-9.61,1.313Z" fill="url(#linear-gradient)"/>
+    </g>
+  </g>
+</svg>

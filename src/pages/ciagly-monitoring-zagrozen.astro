@@ -1,0 +1,324 @@
+---
+import { Image } from 'astro:assets'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/Hero.astro'
+import Section from '../components/Section.astro'
+import CtaReady from '../components/CtaReady.astro'
+import monitoringHero from '../assets/img/Monitoring-zagrozen-portal.jpg'
+import sectionImg from '../assets/img/Image.jpg'
+
+const dlaczego = [
+  {
+    icon: '/img/ico-szybkosc.svg',
+    title: 'Hakerzy działają szybko',
+    desc: 'udany cyberatak może kosztować firmę równowartość kilkuletnich zysków, uwzględniając straty finansowe, kary prawne, koszty odbudowy systemów i utratę klientów',
+  },
+  {
+    icon: '/img/ico-wyciek.svg',
+    title: 'Jeden wyciek = wiele zagrożeń',
+    desc: 'jeśli ktoś używa tego samego hasła w kilku miejscach, hackerzy mogą przejąć wszystkie konta naraz i dotrzeć do wrażliwych danych Twojej firmy oraz Twoich klientów.',
+  },
+  {
+    icon: '/img/ico-koszty.svg',
+    title: 'Koszty ataków są ogromne',
+    desc: 'udany cyberatak może kosztować firmę równowartość kilkuletnich zysków, uwzględniając straty finansowe, kary prawne, koszty odbudowy systemów i utratę klientów',
+  },
+]
+
+const monitoringSections = [
+  {
+    title: 'Twoje dane osobowe i firmowe w podejrzanych miejscach',
+    items: [
+      'Imię i nazwisko właścicieli, zarządzających i pracowników',
+      'Adresy e-mail, numery telefonów i ujawnione hasła',
+      'Nazwa organizacji',
+      'Adresy internetowe',
+    ],
+    subTitle: 'Gdzie szukamy tych informacji',
+    subItems: [
+      'Dark Web — ukryte części internetu gdzie handluje się skradzionymi danymi',
+      'Nielegalne marketplace — platformy sprzedaży danych hakerskich',
+      'Fora hakerskie — miejsca wymiany skompromitowanych informacji',
+    ],
+    image: sectionImg,
+    imageAlt: 'Monitoring danych osobowych — placeholder',
+    imagePosition: 'right' as const,
+  },
+  {
+    title: 'Podatność Twojego środowiska IT na ataki i wyłudzenia',
+    items: [
+      'Domeny i subdomeny powiązane z organizacją — co jest aktywne, kiedy wygasa, czy jest zablokowane.',
+      'Adresy serwerów, otwarte porty — sprawdzanie nieautoryzowanego dostępu lub niewłaściwej konfiguracji',
+      'Wykorzystywane technologie — ich aktualność i otwartość na ataki',
+    ],
+    subTitle: 'Jak to sprawdzamy',
+    subItems: [
+      'przeszukujemy rejestry domen',
+      'wpisy w bazach WHOIS',
+      'używamy specjalistycznych narzędzi monitoringu cyberbezpieczeństwa',
+    ],
+    image: sectionImg,
+    imageAlt: 'Monitoring środowiska IT — placeholder',
+    imagePosition: 'left' as const,
+  },
+  {
+    title: 'Co się dzieje gdy wykryjemy zagrożenie?',
+    items: [],
+    subTitle: 'Otrzymujesz natychmiastowy alert i plan działania',
+    subItems: [
+      'Dostaniesz powiadomienie z opisem zagrożenia.',
+      'Otrzymasz konkretne kroki do natychmiastowego wykonania.',
+      'Możesz także umówić się z konsultantem, aby wyjaśnić detale.',
+    ],
+    image: sectionImg,
+    imageAlt: 'Reakcja na zagrożenie — placeholder',
+    imagePosition: 'right' as const,
+  },
+]
+
+const korzysci = [
+  {
+    bg: '/img/tlo-zolte-kula-1.svg',
+    title: 'Wczesne ostrzeżenie',
+    desc: 'dowiadujesz się o zagrożeniu zanim hakerzy zaatakują',
+    tag: 'Działania',
+    tagBg: 'bg-white',
+  },
+  {
+    bg: '/img/tlo-zolte-kula-2.svg',
+    title: 'Bezpieczeństwo właścicieli i pracowników',
+    desc: 'chronisz dane osobowe i służbowe swojego zespołu',
+    tag: 'Ograniczenia',
+    tagBg: 'bg-[#FFF5E0]',
+  },
+  {
+    bg: '/img/tlo-zolte-strzalka-w-dol.svg',
+    title: 'Unikanie kar prawnych',
+    desc: 'proaktywne działanie chroni przed karami za wycieki danych',
+    tag: 'Efekty',
+    tagBg: 'bg-brand-tag-blue',
+  },
+]
+
+const kroki = [
+  { n: '01', text: 'Zaloguj się do Portalu Klienta' },
+  { n: '02', text: 'Wybierz dane, które chcesz monitorować' },
+  {
+    n: '03',
+    text: 'Dostaniesz cykliczne raporty z monitoringu wraz z informacją co zrobić w razie problemów',
+    note: 'Jeśli będziesz mieć pytania zawsze możesz umówić się na konsultacje.',
+    image: '/img/krok-3.png',
+  },
+]
+---
+
+<BaseLayout
+  title="Ciągły monitoring zagrożeń – CyberCover"
+  description="Automatycznie monitorujemy Twoje dane osobiste i firmowe oraz systemy IT w poszukiwaniu zagrożeń zewnętrznych."
+>
+  <Hero
+    badge="Ochrona 360"
+    title="Ciągły monitoring zagrożeń"
+    intro="Automatycznie monitorujemy Twoje dane osobiste i firmowe oraz systemy IT w poszukiwaniu zagrożeń zewnętrznych."
+    subtitle="Gdy wykryjemy problem, od razu informujemy co trzeba zrobić."
+    introSize="xl"
+    bg="white"
+    image={monitoringHero}
+    imageAlt="Ciągły monitoring zagrożeń — ilustracja"
+  >
+    <a
+      slot="cta"
+      href="/cennik"
+      class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
+    >
+      Włącz monitoring zagrożeń
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+    </a>
+  </Hero>
+
+  <!-- ======== SEKCJA: Dlaczego skanowanie zagrożeń jest ważne? ======== -->
+  <Section>
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-brand-blue-light border border-brand-blue-light px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Monitoring
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Dlaczego skanowanie zagrożeń jest ważne?
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-3 gap-5 list-none p-0">
+      {dlaczego.map((item) => (
+        <li
+          class="relative bg-white rounded-card overflow-hidden min-h-[270px] p-7 lg:p-8 flex flex-col gap-7"
+          style="background-image:url('/img/tlo-box-szersze.svg'); background-repeat:no-repeat; background-position:top right; background-size:cover;"
+        >
+          <img src={item.icon} alt="" aria-hidden="true" class="w-10 h-12 lg:w-12 lg:h-14 -mt-7 lg:-mt-8" />
+          <h3 class="text-[22px] font-semibold leading-snug text-black">
+            {item.title}
+          </h3>
+          <p class="text-base leading-cozy text-brand-text">
+            {item.desc}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA: Jakie dane monitorujemy ======== -->
+  <Section padding="tight">
+    <div class="text-center mb-12 lg:mb-16">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Twoje dane
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Jakie dane monitorujemy?
+      </h2>
+    </div>
+
+    <div class="flex flex-col gap-12 lg:gap-16">
+      {monitoringSections.map((s) => (
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div class={`flex flex-col gap-5 ${s.imagePosition === 'left' ? 'lg:order-2' : ''}`}>
+            <h3 class="text-2xl lg:text-card-title font-semibold leading-tight text-black">
+              {s.title}
+            </h3>
+            {s.items.length > 0 && (
+              <ul class="list-disc ml-5 space-y-2 text-base lg:text-body-lg leading-cozy text-brand-text marker:text-brand-text">
+                {s.items.map((i) => <li>{i}</li>)}
+              </ul>
+            )}
+            {s.subTitle && (
+              <h4 class="text-lg lg:text-card-heading font-medium leading-snug text-black mt-2">
+                {s.subTitle}
+              </h4>
+            )}
+            {s.subItems.length > 0 && (
+              <ul class="list-disc ml-5 space-y-2 text-base lg:text-body-lg leading-cozy text-brand-text marker:text-brand-text">
+                {s.subItems.map((i) => <li>{i}</li>)}
+              </ul>
+            )}
+          </div>
+          <div class={`relative rounded-card overflow-hidden min-h-[300px] lg:min-h-[366px] ${s.imagePosition === 'left' ? 'lg:order-1' : ''}`}>
+            <Image
+              src={s.image}
+              alt={s.imageAlt}
+              width={900}
+              class="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <!-- ======== SEKCJA: Jakie są korzyści z monitoringu? ======== -->
+  <Section padding="tight">
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Korzyści
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Jakie są korzyści z monitoringu?
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 list-none p-0">
+      {korzysci.map((k) => (
+        <li
+          class="relative bg-brand-tag-yellow rounded-card overflow-hidden p-7 lg:p-8 flex flex-col min-h-[424px]"
+          style={`background-image:url('${k.bg}'); background-repeat:no-repeat; background-position:center; background-size:cover;`}
+        >
+          <div class="relative flex-1 flex flex-col justify-center gap-4">
+            <h3 class="text-lg lg:text-xl font-semibold leading-snug text-black">
+              {k.title}
+            </h3>
+            <p class="text-sm leading-relaxed text-brand-text">
+              {k.desc}
+            </p>
+          </div>
+          <p class="relative font-medium uppercase text-xs tracking-wide">
+            <span class={`inline-flex items-center gap-2 ${k.tagBg} border border-black/10 px-3 py-1.5 rounded-full text-black`}>
+              <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[15px] h-auto" />
+              {k.tag}
+            </span>
+          </p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA: Jak włączyć monitoring (full-bleed blue) ======== -->
+  <Section bg="bg-brand-blue-light">
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Start
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-4">
+        Jak włączyć monitoring?
+      </h2>
+      <p class="text-base lg:text-body-lg text-brand-text">
+        Monitoring jest dostępny po wykupieniu Ochrony 360
+      </p>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_2fr] gap-5 list-none p-0">
+      {kroki.map((k) => (
+        <li class="bg-white rounded-card p-7 lg:p-8 flex flex-col gap-5">
+          <div class="flex items-start justify-between gap-4">
+            <span class="text-sm font-medium uppercase tracking-wide text-brand-text mt-2">KROK</span>
+            <span class="text-5xl lg:text-[58px] font-medium leading-none text-black">{k.n}</span>
+          </div>
+
+          {!k.image && (
+            <p class="text-base lg:text-body-lg font-medium leading-snug text-black min-h-[3em]">
+              {k.text}
+            </p>
+          )}
+
+          {k.image && (
+            <div class="flex items-start gap-5 flex-1">
+              <div class="flex-1 flex flex-col gap-3">
+                <p class="text-base lg:text-body-lg font-medium leading-snug text-black">
+                  {k.text}
+                </p>
+                {k.note && (
+                  <p class="text-sm leading-cozy text-brand-text">
+                    {k.note}
+                  </p>
+                )}
+              </div>
+              <img src={k.image} alt="" aria-hidden="true" class="w-24 lg:w-[155px] h-auto shrink-0 hidden md:block" />
+            </div>
+          )}
+
+          <span class="inline-flex items-center justify-center w-[62px] h-[62px] rounded-full bg-brand-yellow text-black mt-auto shrink-0" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14" />
+              <path d="M13 5l7 7-7 7" />
+            </svg>
+          </span>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <CtaReady />
+</BaseLayout>

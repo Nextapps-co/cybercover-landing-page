@@ -27,11 +27,11 @@ const challenges = [
 ]
 
 const services = [
-  { id: 'ocena-bezpieczenstwa', icon: '/img/ico-ocena-bezpieczenstwa.svg', title: 'Ocena bezpieczeństwa i zalecenia', desc: 'Przeprowadzamy cykliczny przegląd bezpieczeństwa, dajemy ocenę i rekomendacje, dostajesz gotowy plan działania dla twojego zespołu i zawsze możesz się z nami skonsultować jeśli potrzebujesz dodatkowego wsparcia.', img: ocenaImg, imgAlt: 'Ocena bezpieczeństwa' },
-  { id: 'konsultacje', icon: '/img/ico-konsultacje-z-ekspertami.svg', title: 'Konsultacje z ekspertami', desc: 'Dajemy dostęp do doświadczonych specjalistów od cyberbezpieczeństwa i RODO, odpowiadamy na pytania i wątpliwości dotyczące ochrony danych w firmie.', img: konsultacjeImg, imgAlt: 'Konsultacje' },
-  { id: 'monitoring', icon: '/img/ico-ciagly-monitoring-zagrozen.svg', title: 'Ciągły monitoring zagrożeń', desc: 'Automatycznie monitorujemy twoje dane firmowe oraz systemy IT w poszukiwaniu zagrożeń zewnętrznych, a gdy wykryjemy problem, od razu informujemy co trzeba zrobić.', img: monitoringImg, imgAlt: 'Monitoring zagrożeń' },
-  { id: 'pomoc-247', icon: '/img/ico-natychmiastowa-pomoc-24-7.svg', title: 'Natychmiastowa pomoc 24/7', desc: 'W razie problemów masz przycisk alarmowy – gdzie zapewniamy ekspertów cyberbezpieczeństwa, mediatorów ds. zarządzania incydentami, radców prawnych oraz specjalistów ds. komunikacji kryzysowej i zarządzania reputacją online.', img: pomocImg, imgAlt: 'Natychmiastowa pomoc' },
-  { id: 'ubezpieczenie', icon: '/img/ico-ubezpieczenie-od-kar-roszczen-i-strat.svg', title: 'Ubezpieczenie od kar, roszczeń i strat', desc: 'Ubezpieczenie pokryje kary finansowe nałożone przez urzędy, odszkodowania w wyniku naruszenia danych, jak również utracone korzyści z powodu paraliżu działania.', img: ubezpieczenieImg, imgAlt: 'Ubezpieczenie' },
+  { id: 'ocena-bezpieczenstwa', href: '/ocena-bezpieczenstwa-i-zalecenia', icon: '/img/ico-ocena-bezpieczenstwa.svg', title: 'Ocena bezpieczeństwa i zalecenia', desc: 'Przeprowadzamy cykliczny przegląd bezpieczeństwa, dajemy ocenę i rekomendacje, dostajesz gotowy plan działania dla twojego zespołu i zawsze możesz się z nami skonsultować jeśli potrzebujesz dodatkowego wsparcia.', img: ocenaImg, imgAlt: 'Ocena bezpieczeństwa' },
+  { id: 'konsultacje', href: '/konsultacje-z-ekspertami', icon: '/img/ico-konsultacje-z-ekspertami.svg', title: 'Konsultacje z ekspertami', desc: 'Dajemy dostęp do doświadczonych specjalistów od cyberbezpieczeństwa i RODO, odpowiadamy na pytania i wątpliwości dotyczące ochrony danych w firmie.', img: konsultacjeImg, imgAlt: 'Konsultacje' },
+  { id: 'monitoring', href: '/ciagly-monitoring-zagrozen', icon: '/img/ico-ciagly-monitoring-zagrozen.svg', title: 'Ciągły monitoring zagrożeń', desc: 'Automatycznie monitorujemy twoje dane firmowe oraz systemy IT w poszukiwaniu zagrożeń zewnętrznych, a gdy wykryjemy problem, od razu informujemy co trzeba zrobić.', img: monitoringImg, imgAlt: 'Monitoring zagrożeń' },
+  { id: 'pomoc-247', href: '/natychmiastowa-pomoc-24-7', icon: '/img/ico-natychmiastowa-pomoc-24-7.svg', title: 'Natychmiastowa pomoc 24/7', desc: 'W razie problemów masz przycisk alarmowy – gdzie zapewniamy ekspertów cyberbezpieczeństwa, mediatorów ds. zarządzania incydentami, radców prawnych oraz specjalistów ds. komunikacji kryzysowej i zarządzania reputacją online.', img: pomocImg, imgAlt: 'Natychmiastowa pomoc' },
+  { id: 'ubezpieczenie', href: '/ubezpieczenie-od-kar-roszczen-i-strat', icon: '/img/ico-ubezpieczenie-od-kar-roszczen-i-strat.svg', title: 'Ubezpieczenie od kar, roszczeń i strat', desc: 'Ubezpieczenie pokryje kary finansowe nałożone przez urzędy, odszkodowania w wyniku naruszenia danych, jak również utracone korzyści z powodu paraliżu działania.', img: ubezpieczenieImg, imgAlt: 'Ubezpieczenie' },
 ]
 
 const steps = [
@@ -77,6 +77,16 @@ const steps = [
           </div>
         ))}
       </div>
+      <div class="flex justify-center mt-10 lg:mt-14">
+        <a href="/zagrozenia-i-mity" class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors">
+          Więcej o zagrożeniach
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+        </a>
+      </div>
     </div>
   </section>
 
@@ -94,6 +104,16 @@ const steps = [
             <h3 class="text-[22px] font-semibold text-black leading-snug max-w-[87%]">{c}</h3>
           </div>
         ))}
+      </div>
+      <div class="flex justify-center mt-10 lg:mt-14">
+        <a href="/komu-pomagamy" class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors">
+          Zobacz komu pomagamy
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+        </a>
       </div>
     </div>
   </section>
@@ -150,7 +170,13 @@ const steps = [
             <div class="lg:w-1/2">
               <img src={s.icon} alt="" width="49" height="59" class="mb-4" loading="lazy" />
               <h3 id={s.id} class="text-2xl lg:text-[32px] font-semibold text-black leading-snug mb-4">{s.title}</h3>
-              <p class="text-body-lg leading-relaxed">{s.desc}</p>
+              <p class="text-body-lg leading-relaxed mb-6">{s.desc}</p>
+              <a href={s.href} class="inline-flex items-center gap-2 text-black font-semibold text-body-lg hover:text-brand-navy transition-colors">
+                Czytaj więcej
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </a>
             </div>
             <div class="lg:w-1/2">
               <Image src={s.img} alt={s.imgAlt} class="w-full rounded-card" loading="lazy" />

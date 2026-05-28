@@ -1,0 +1,347 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/Hero.astro'
+import Section from '../components/Section.astro'
+import CtaReady from '../components/CtaReady.astro'
+import ubezpieczenieHero from '../assets/img/Ubezpieczenie-portal.jpg'
+
+const dlaczego = [
+  {
+    icon: '/img/ico-koszty-obslugi.svg',
+    title: 'Trudno przewidzieć koszty obsługi cyberataku',
+    desc: 'Koszty mogą wynosić od kilku tysięcy do milionów złotych. Ciężko zaplanować takie wydatki w budżecie rocznym.',
+  },
+  {
+    icon: '/img/ico-kary.svg',
+    title: 'Kary, odszkodowania i roszczenia mogą być bardzo wysokie',
+    desc: 'Kary administracyjne, odszkodowania i roszczenia osób trzecich mogą być ogromne. Ich zapłata jest nieunikniona po incydencie.',
+  },
+  {
+    icon: '/img/ico-koszty-specjalistow.svg',
+    title: 'Koszty specjalistów mogą przerosnąć Twoje możliwości',
+    desc: 'Informatycy śledczy, prawnicy i specjaliści PR kosztują bardzo drogo. W kryzysie ich dostępność jest ograniczona, a ceny jeszcze wyższe.',
+  },
+]
+
+const pokrywa = [
+  {
+    title: 'Koszty związane z wymuszeniami',
+    example: 'Hakerzy zaszyfrowali system firmy i żądają okupu — ubezpieczenie może pokryć koszty związane z tym wymuszeniem.',
+  },
+  {
+    title: 'Koszty utraty korzyści majątkowych',
+    example: 'Atak sparaliżował sklep internetowy na kilka dni — ubezpieczenie zrekompensuje utracony zysk ze sprzedaży w tym okresie.',
+  },
+  {
+    title: 'Koszty wizerunkowe i komunikacyjne',
+    example: 'Po wycieku danych firma potrzebuje kampanii PR, aby odbudować zaufanie klientów — ubezpieczenie pokryje koszty agencji PR i działań komunikacyjnych.',
+  },
+  {
+    title: 'Koszty reagowania i naprawy szkód',
+    example: 'Firma padła ofiarą ataku z wymuszeniem okupu — ubezpieczenie pokryje koszty informatyków śledczych, którzy będą analizować sposób włamania i zakres szkód.',
+  },
+  {
+    title: 'Koszty prawno-administracyjne',
+    example: 'Po wycieku danych osobowych klientów firma musi wypełnić obowiązek informacyjny wobec UODO — ubezpieczenie pokryje koszty prawników przygotowujących odpowiednie zawiadomienia.',
+  },
+  {
+    title: 'Koszty roszczeń i odpowiedzialności',
+    example: 'Klient pozwał firmę o odszkodowanie po wycieku jego danych osobowych — ubezpieczenie pokryje koszty postępowania i ewentualne odszkodowanie.',
+  },
+  {
+    title: 'Koszty monitorowania i prewencji',
+    example: 'Po kradzieży danych kart płatniczych klientów firma musi monitorować ich transakcje przez 12 miesięcy, aby wykryć potencjalne nadużycia — ubezpieczenie pokryje te koszty.',
+  },
+  {
+    title: 'Koszty związane ze standardami PCI',
+    example: 'Sklep internetowy naruszył standardy bezpieczeństwa PCI DSS podczas przetwarzania płatności kartami — ubezpieczenie pokryje karę nałożoną przez organizację kart płatniczych.',
+  },
+]
+
+const pomagamy = [
+  'Ocenią aktualny stan zabezpieczeń Twojej firmy',
+  'Wskażą konkretne kroki do spełnienia wymagań',
+  'Polecą sprawdzone rozwiązania techniczne',
+  'a jeśli trzeba, to także pomogą w implementacji niezbędnych zabezpieczeń',
+]
+
+const wymagania = [
+  {
+    title: 'Kopie zapasowe danych',
+    desc: 'Posiadasz kopie zapasowe najważniejszych danych i przechowujesz je w innym miejscu niż oryginały — np. w chmurze lub na zewnętrznym dysku.',
+  },
+  {
+    title: 'Aktualizacje oprogramowania',
+    desc: 'Regularnie aktualizujesz systemy operacyjne oraz kluczowe oprogramowanie.',
+  },
+]
+
+const faq = [
+  {
+    q: 'Dlaczego tradycyjne OC nie wystarczy?',
+    a: 'Tradycyjne polisy firmowe nie są przystosowane do współczesnych zagrożeń cybernetycznych i pozostawiają znaczące luki w ochronie. To ubezpieczenie zostało stworzone właśnie po to, aby wypełnić te braki. Największe problemy z konwencjonalnymi polisami to brak zabezpieczenia finansowego na wypadek unieruchomienia systemów IT, brak możliwości pokrycia kosztów związanych z atakami i wymuszeniami, niewłączenie wydatków na śledztwa informatyczne oraz brak ochrony przed sankcjami wynikającymi z naruszenia RODO.',
+  },
+  {
+    q: 'Dla jakiej wielkości firm to ma sens?',
+    a: 'Zagrożenia cybernetyczne nie wybierają swoich ofiar ze względu na rozmiar czy sektor działalności — dotykają zarówno małe przedsiębiorstwa, jak i wielkie korporacje. Decydującym czynnikiem nie jest skala biznesu, lecz stopień narażenia na cyberataki. Nawet niewielka firma może stać się atrakcyjnym celem dla cyberprzestępców, jeśli posiada słabe zabezpieczenia lub przetwarza cenne dane.',
+  },
+  {
+    q: 'Jakie są inne ograniczenia ochrony ubezpieczeniowej?',
+    a: 'Ubezpieczenie od ryzyk cybernetycznych zawiera określone wyłączenia i ograniczenia ochrony. Polisa nie obejmuje szkód powstałych w wyniku działań wojennych, operacji cybernetycznych państw oraz awarii infrastruktury zewnętrznej jak przerwy w dostawie prądu czy internetu. Wyłączone są także szkody z zagrożeń naturalnych, zgubienia niezabezpieczonych urządzeń przenośnych oraz umyślnych działań członków władz firmy.',
+  },
+  {
+    q: 'Czego nie pokrywa ubezpieczenie?',
+    a: 'Znane wcześniej problemy i zaniedbania: nielegalne oprogramowanie, incydenty znane przed podpisaniem polisy, sprawy w toku przed rozpoczęciem ubezpieczenia, zgubione urządzenia bez szyfrowania. Transakcje finansowe i kary kryminalne: kradzieże przy przelewach elektronicznych, problemy z płatnościami internetowymi, utrata gotówki, grzywny sądowe, sankcje karnoskarbowe.',
+  },
+  {
+    q: 'Jaki jest profil organizacji, które podlegają ubezpieczeniu?',
+    a: 'Nasza oferta jest dostępna dla organizacji poza branżami: rozrywka dla dorosłych, kryptowaluty, gry komputerowe i hazard online, płatności elektroniczne, zbieranie i analizowanie danych dla innych firm, linie lotnicze, organizacje religijne, wydobycie ropy i gazu, poszukiwanie źródeł energii w Arktyce. Dodatkowe wymagania: nie więcej niż 25% przychodów z USA, przetwarzanie nie więcej niż 250 000 rekordów danych osobowych rocznie, brak współpracy z firmami z Rosji/Białorusi.',
+  },
+]
+---
+
+<BaseLayout
+  title="Ubezpieczenie od kar, roszczeń i strat – CyberCover"
+  description="Ubezpieczenie pokryje kary urzędowe, odszkodowania, koszty okupu, roszczenia firm i osób, jak również utracone korzyści. Zawarte w cenie usługi."
+>
+  <Hero
+    badge="Ochrona 360"
+    title="Ubezpieczenie od kar, roszczeń i strat"
+    intro="Ubezpieczenie pokryje kary urzędowe, odszkodowania, koszty okupu, roszczenia firm i osób, jak również utracone korzyści."
+    subtitle="Ubezpieczenie zawarte w cenie usługi."
+    introSize="xl"
+    bg="white"
+    image={ubezpieczenieHero}
+    imageAlt="Ubezpieczenie od kar, roszczeń i strat — ilustracja"
+  >
+    <a
+      slot="cta"
+      href="/cennik"
+      class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
+    >
+      Wykup Ochronę 360
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+    </a>
+  </Hero>
+
+  <!-- ======== SEKCJA: Dlaczego ochrona finansowa jest ważna? ======== -->
+  <Section>
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-[#FFF5E0] border border-[#FFF5E0] px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Ubezpieczenie
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Dlaczego ochrona finansowa jest ważna?
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-3 gap-5 list-none p-0">
+      {dlaczego.map((item) => (
+        <li
+          class="relative bg-white rounded-card overflow-hidden min-h-[270px] p-7 lg:p-8 flex flex-col gap-6"
+          style="background-image:url('/img/tlo-box-szersze.svg'); background-repeat:no-repeat; background-position:top right; background-size:cover;"
+        >
+          <img src={item.icon} alt="" aria-hidden="true" class="w-10 h-12 lg:w-12 lg:h-14 -mt-7 lg:-mt-8" />
+          <h3 class="text-[22px] font-semibold leading-snug text-black">
+            {item.title}
+          </h3>
+          <p class="text-base leading-cozy text-brand-text">
+            {item.desc}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA: Co pokrywa ubezpieczenie ======== -->
+  <Section padding="tight">
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Zakres
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Co pokrywa ubezpieczenie
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 gap-5 list-none p-0">
+      {pokrywa.map((p) => (
+        <li class="bg-brand-bg border border-brand-border rounded-card p-7 lg:p-8 flex flex-col gap-4">
+          <h3 class="text-xl lg:text-2xl font-semibold leading-snug text-black">
+            {p.title}
+          </h3>
+          <p class="font-medium uppercase text-xs tracking-wide">
+            <span class="inline-flex items-center gap-2 bg-brand-blue-light border border-brand-blue-light px-3 py-1.5 rounded-full text-black">
+              <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[15px] h-auto" />
+              Przykład
+            </span>
+          </p>
+          <p class="text-base leading-cozy text-brand-text">
+            {p.example}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA: Dokumenty (full-bleed blue) ======== -->
+  <Section bg="bg-[#EAF4FB]">
+    <div
+      class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start"
+      style="background-image:url('/img/tlo-niebieskie-1920.svg'); background-repeat:no-repeat; background-position:right center; background-size:contain;"
+    >
+      <div class="flex flex-col gap-5">
+        <h3 class="text-2xl lg:text-card-title font-semibold leading-tight text-black max-w-[500px]">
+          Dokładne informacje znajdziesz w tych dokumentach
+        </h3>
+        <p class="font-medium uppercase text-xs tracking-wide">
+          <span class="inline-flex items-center gap-2 border border-brand-border px-3 py-1.5 rounded-full text-black">
+            <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[15px] h-auto" />
+            dokumenty
+          </span>
+        </p>
+      </div>
+      <div class="flex flex-col gap-6 max-w-[500px]">
+        <p class="text-base lg:text-body-lg leading-relaxed text-brand-text">
+          Jeśli zależy Ci na pełnym zrozumieniu wszystkich aspektów ubezpieczenia, zachęcamy do zapoznania się z tymi materiałami.
+        </p>
+        <div class="flex">
+          <a
+            href="#"
+            class="inline-flex items-center gap-2 bg-white border border-brand-border hover:bg-brand-bg text-black font-semibold text-base px-6 py-3 rounded-full transition-colors"
+          >
+            Ogólne Warunki Ubezpieczenia
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <!-- ======== SEKCJA: Wymagania ======== -->
+  <Section padding="tight" class="relative">
+    <img
+      src="/img/tlo-biale-kulki.svg"
+      alt=""
+      aria-hidden="true"
+      class="pointer-events-none select-none hidden lg:block absolute left-[220px] top-16 w-[480px] max-w-none -z-10"
+    />
+    <div class="relative grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start mb-10 lg:mb-14">
+      <div>
+        <p class="font-medium uppercase text-sm tracking-wide mb-4">
+          <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
+            <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+            wymagania
+          </span>
+        </p>
+        <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+          Jakie standardy należy spełniać, aby ubezpieczenie zadziałało?
+        </h2>
+      </div>
+      <div class="flex flex-col gap-6">
+        <p class="text-base lg:text-body-lg leading-relaxed text-brand-text">
+          Wymagania są proste — to dwie standardowe praktyki bezpieczeństwa, które warto stosować w każdej firmie. Bez audytów technicznych ani skomplikowanej dokumentacji.
+        </p>
+        {wymagania.map((w) => (
+          <div class="flex flex-col gap-2">
+            <h3 class="text-xl lg:text-2xl font-semibold leading-snug text-black">
+              {w.title}
+            </h3>
+            <p class="text-base leading-cozy text-brand-text">
+              {w.desc}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="relative bg-brand-navy text-white rounded-card p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+      <div class="flex flex-col gap-6 lg:justify-between">
+        <h3 class="text-2xl lg:text-[28px] font-semibold leading-tight">
+          Pomagamy w spełnieniu tych wymagań
+        </h3>
+        <div>
+          <a
+            href="/cennik"
+            class="inline-flex items-center gap-2 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-base px-6 py-3 rounded-full transition-colors"
+          >
+            Wykup ochronę on-line
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div class="flex flex-col gap-4">
+        <h4 class="text-lg lg:text-card-heading font-medium leading-snug">
+          Po wykupieniu naszej oferty otrzymujesz konsultacje z ekspertami cyberbezpieczeństwa, którzy:
+        </h4>
+        <ul class="list-disc ml-5 space-y-2 text-base lg:text-body-lg leading-relaxed text-white/90 marker:text-white">
+          {pomagamy.map((p) => <li>{p}</li>)}
+        </ul>
+      </div>
+    </div>
+  </Section>
+
+  <!-- ======== SEKCJA: FAQ ======== -->
+  <Section padding="tight">
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-[#FFF2E0] border border-[#FFF2E0] px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          FAQ
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Najczęściej zadawane pytania
+      </h2>
+    </div>
+
+    <div class="max-w-[890px] mx-auto flex flex-col gap-3">
+      {faq.map((item, i) => (
+        <details
+          class="group bg-brand-bg border border-brand-border rounded-card overflow-hidden"
+          open={i === 0}
+        >
+          <summary
+            class="flex items-center justify-between gap-4 p-5 lg:px-7 lg:py-5 cursor-pointer select-none list-none"
+          >
+            <span class="text-base lg:text-card-heading font-semibold leading-snug text-black">
+              {item.q}
+            </span>
+            <span
+              class="inline-flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full border border-brand-border shrink-0 transition-transform group-open:rotate-45"
+              aria-hidden="true"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 2v14M2 9h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </span>
+          </summary>
+          <div class="px-5 pb-6 lg:px-7 lg:pb-7 text-base leading-cozy text-brand-text">
+            <p>{item.a}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  </Section>
+
+  <CtaReady />
+</BaseLayout>
+
+<style>
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary { list-style: none; }
+</style>
