@@ -1,15 +1,21 @@
 ---
 const serviceLinks = [
-  { label: 'Ocena bezpieczeństwa', href: '/#ocena-bezpieczenstwa' },
-  { label: 'Konsultacje', href: '/#konsultacje' },
-  { label: 'Monitoring', href: '/#monitoring' },
-  { label: 'Pomoc 24/7', href: '/#pomoc-247' },
-  { label: 'Ubezpieczenie', href: '/#ubezpieczenie' },
+  { label: 'Ocena bezpieczeństwa', href: '/ocena-bezpieczenstwa-i-zalecenia' },
+  { label: 'Konsultacje', href: '/konsultacje-z-ekspertami' },
+  { label: 'Monitoring', href: '/ciagly-monitoring-zagrozen' },
+  { label: 'Pomoc 24/7', href: '/natychmiastowa-pomoc-24-7' },
+  { label: 'Ubezpieczenie', href: '/ubezpieczenie-od-kar-roszczen-i-strat' },
 ]
 
+const portalBase = (import.meta.env.PUBLIC_PORTAL_URL ?? 'https://dev-portal.cybercover.pl').replace(/\/$/, '')
+
 const supportLinks = [
-  { label: 'Zagrożenia', href: '/#cyberzagrozenia' },
-  { label: 'Komu pomagamy', href: '/#wyzwania' },
+  { label: 'Zagrożenia', href: '/zagrozenia-i-mity' },
+  { label: 'Komu pomagamy', href: '/komu-pomagamy' },
+  { label: 'O nas', href: '/o-nas' },
+  { label: 'Kontakt', href: '/kontakt' },
+  { label: 'Portal Klienta', href: `${portalBase}/auth` },
+  { label: 'Sprawdź cenę', href: '/cennik' },
 ]
 
 const legalLinks = [
@@ -36,6 +42,11 @@ const socialLinks = [
       <div>
         <h3 class="text-white font-semibold text-footer-title mb-3">Adres</h3>
         <p>Cyber Cover Sp. z o.o.<br />ul. Gen. Jana Henryka Dąbrowskiego 2<br />87-100 Toruń</p>
+        <p class="mt-4">
+          NIP: 5342506260<br />
+          REGON: 362024974<br />
+          KRS: 0000566636
+        </p>
         <h3 class="text-white font-semibold text-footer-title mt-6 mb-3">Kontakt</h3>
         <p>
           <a href="tel:222472418" class="text-white hover:text-brand-blue-light transition-colors">22 247 24 18</a><br />

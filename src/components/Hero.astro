@@ -13,6 +13,8 @@ interface Props {
   subtitle?: string
   /** Obraz (raster) po prawej stronie — split layout 50/50, wyklucza się z bgImage */
   image?: ImageMetadata
+  /** Obraz po prawej stronie jako URL (np. SVG z public/img/). Alternatywa do `image` dla SVG ilustracji. */
+  imageSrc?: string
   imageAlt?: string
   /** Tło SVG na całym hero (np. dekoracyjne strzałki, bg-position: center bottom). Wyklucza się z image. */
   bgImage?: string
@@ -33,6 +35,7 @@ const {
   intro,
   subtitle,
   image,
+  imageSrc,
   imageAlt = '',
   bgImage,
   bg = 'white',
@@ -41,7 +44,7 @@ const {
 } = Astro.props
 
 const bgClass = bg === 'yellow' ? 'bg-brand-tag-yellow' : 'bg-white'
-const hasImage = !!image
+const hasImage = !!image || !!imageSrc
 const introClass =
   introSize === 'xl'
     ? 'text-xl lg:text-2xl font-medium leading-snug text-brand-text'
@@ -58,7 +61,7 @@ const heroMinH = minHeight ?? (bgImage ? 'min-h-[480px] lg:min-h-[608px]' : '')
   style={bgStyle}
 >
   <div class="relative max-w-container mx-auto px-6">
-    <div class={hasImage ? 'flex flex-col-reverse lg:flex-row items-center gap-10 lg:gap-16' : ''}>
+    <div class={hasImage ? 'flex flex-col lg:flex-row items-center gap-10 lg:gap-16' : ''}>
       <div class={hasImage ? 'lg:w-1/2' : 'max-w-[600px]'}>
         {badge && (
           <p class="font-medium uppercase text-sm tracking-wide mb-4">
@@ -86,6 +89,12 @@ const heroMinH = minHeight ?? (bgImage ? 'min-h-[480px] lg:min-h-[608px]' : '')
       {image && (
         <div class="lg:w-[48%]">
           <Image src={image} alt={imageAlt} width={1400} class="w-full rounded-xl" loading="eager" />
+        </div>
+      )}
+
+      {!image && imageSrc && (
+        <div class="lg:w-[40%] flex justify-center">
+          <img src={imageSrc} alt={imageAlt} class="w-full max-w-[460px] h-auto" loading="eager" />
         </div>
       )}
     </div>

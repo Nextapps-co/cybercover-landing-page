@@ -18,6 +18,10 @@ const menuItems: MenuItem[] = [
   { label: 'O nas', href: '/o-nas' },
   { label: 'Kontakt', href: '/kontakt' },
 ]
+
+// Portal Klienta — baza z env (PUBLIC_PORTAL_URL, bez trailing slash), fallback na dev.
+const portalBase = (import.meta.env.PUBLIC_PORTAL_URL ?? 'https://dev-portal.cybercover.pl').replace(/\/$/, '');
+const portalAuthUrl = `${portalBase}/auth`;
 ---
 
 <header
@@ -62,7 +66,7 @@ const menuItems: MenuItem[] = [
           </a>
         ))}
         <a
-          href="https://dev-portal.cybercover.pl/auth"
+          href={portalAuthUrl}
           target="_blank"
           rel="noopener"
           class="ml-2 bg-black hover:bg-black/85 text-white font-semibold text-body-lg px-7 py-3 rounded-full transition-colors"
@@ -215,7 +219,7 @@ const menuItems: MenuItem[] = [
         </svg>
       </a>
       <a
-        href="https://dev-portal.cybercover.pl/auth"
+        href={portalAuthUrl}
         target="_blank"
         rel="noopener"
         class="mt-3 bg-black hover:bg-black/85 text-white font-semibold text-lg px-7 py-4 rounded-full text-center transition-colors mobile-link"
