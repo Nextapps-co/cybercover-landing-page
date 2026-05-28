@@ -1,0 +1,380 @@
+---
+import { Image } from 'astro:assets'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Hero from '../components/Hero.astro'
+import Section from '../components/Section.astro'
+import CtaReady from '../components/CtaReady.astro'
+import pomocHero from '../assets/img/Natychmiastowa-pomoc-portal.jpg'
+import placeholderImg from '../assets/img/Image.jpg'
+import teamItImg from '../assets/img/team-it.jpg'
+
+const sytuacje = [
+  {
+    icon: '/img/ico-incydenty-rodo.svg',
+    title: 'Incydenty RODO',
+    items: [
+      'Konieczność zgłoszenia naruszenia do PUODO (w ciągu 72h)',
+      'Potrzeba powiadomienia osób, których dane dotyczą',
+      'Podejrzenie naruszenia przepisów o ochronie danych',
+    ],
+    imagePosition: 'right' as const,
+  },
+  {
+    icon: '/img/ico-awarie-systemow-it.svg',
+    title: 'Awarie systemów IT',
+    items: [
+      'Nieplanowane przerwy w działaniu systemów',
+      'Uszkodzenie infrastruktury IT w wyniku ataku',
+      'Problemy z dostępem do kluczowych aplikacji',
+    ],
+    imagePosition: 'left' as const,
+  },
+  {
+    icon: '/img/ico-naruszenia-bezpieczenstwa.svg',
+    title: 'Naruszenia bezpieczeństwa danych',
+    items: [
+      'Podejrzenie wycieku danych osobowych',
+      'Nieuprawniony dostęp do systemów',
+      'Kradzież lub utrata urządzeń z danymi',
+    ],
+    subTitle: 'Oszustwa z wyłudzeniem danych',
+    subItems: [
+      'Podejrzenie kompromitacji kont e-mail',
+      'Wykrycie fałszywych wiadomości w imieniu firmy',
+      'Próby wyłudzenia danych lub środków finansowych',
+      'Podejrzenie podszywania się pod zaufane instytucje',
+    ],
+    imagePosition: 'right' as const,
+  },
+]
+
+const specjalisci = [
+  {
+    title: 'Zabezpieczamy IT',
+    items: [
+      'Przeprowadzamy analizę sposobu ataku i zakresu naruszenia',
+      'Odzyskujemy utracone lub zaszyfrowane dane oraz zabezpieczamy dowody cyfrowe',
+      'Pomagamy w odtworzeniu infrastruktury IT i wzmocnieniu zabezpieczeń po incydencie',
+    ],
+  },
+  {
+    title: 'Obsługujemy aspekty prawne',
+    items: [
+      'Zapewniamy doradztwo w zakresie prawa cybernetycznego i przepisów RODO',
+      'Przygotowujemy zgłoszenia do organów nadzoru oraz reprezentujemy organizację w postępowaniach',
+      'Minimalizujemy ryzyka kar administracyjnych i konsekwencji prawnych incydentu',
+    ],
+  },
+  {
+    title: 'Wspieramy PR-owo w kryzysie',
+    items: [
+      'Koordynujemy komunikację z klientami i partnerami biznesowymi w czasie kryzysu',
+      'Opracowujemy strategię komunikacyjną minimalizującą szkody wizerunkowe firmy',
+      'Przygotowujemy komunikaty prasowe dla mediów tradycyjnych i elektronicznych',
+    ],
+  },
+]
+
+const reakcja = [
+  {
+    icon: '/img/ico-zgloszenie.svg',
+    title: 'Zgłoszenie incydentu',
+    desc: 'Jesteśmy dostępni 24/7. Wyznaczamy dedykowanego specjalistę i nawiązujemy od razu kontakt w ciągu pierwszych minut od zgłoszenia.',
+    time: 'Natychmiast',
+  },
+  {
+    icon: '/img/ico-czas-1.svg',
+    title: 'Mobilizacja zasobów',
+    desc: 'Angażujemy najlepszych ekspertów dostosowanych do sytuacji, działamy za Twoją zgodą w pełnej transparentności i rozpoczynamy ograniczanie szkód.',
+    time: 'W ciągu 5h',
+  },
+  {
+    icon: '/img/ico-dochodzenie-i-ocena.svg',
+    title: 'Dochodzenie i ocena',
+    desc: 'Prowadzimy dochodzenie dla ustalenia pełnego zakresu sytuacji, regularnie informujemy o postępach i podejmujemy pierwsze kroki naprawcze.',
+    time: 'W ciągu 24h',
+  },
+  {
+    icon: '/img/ico-stablilizacja.svg',
+    title: 'Stabilizacja i planowanie',
+    desc: 'Przejmujemy pełną kontrolę nad sytuacją, przedstawiamy jasny plan dalszych działań z terminami i zapewniamy ciągłe wsparcie do pełnego rozwiązania.',
+    time: 'W ciągu 72h',
+  },
+]
+
+const kroki = [
+  { n: '01', text: 'Zaloguj się do Portalu Klienta i wybierz numer alarmowy' },
+  { n: '02', text: 'Podaj wszystkie najważniejsze dane i opisz problem' },
+  {
+    n: '03',
+    text: 'Przygotujemy plan działania i zapewnimy pomoc',
+    image: '/img/krok-3.png',
+  },
+]
+
+const wyzwania = [
+  {
+    title: 'Poszukiwanie ekspertów wśród znajomych w trybie pilnym',
+    desc: 'Właściciele firm muszą w panice szukać specjalistów IT, prawników i firm PR, często płacąc wielokrotnie wyższe stawki za pomoc w trybie natychmiastowym.',
+  },
+  {
+    title: 'Konieczność koordynacji wielu zespołów',
+    desc: 'Zarządzanie różnymi specjalistami działającymi niezależnie, co wymaga dodatkowych zasobów i może prowadzić do chaosu komunikacyjnego oraz konfliktów w ustalaniu priorytetów.',
+  },
+  {
+    title: 'Ryzyko błędów proceduralnych',
+    desc: 'Bez doświadczenia w zarządzaniu kryzysem łatwo o pominięcie kluczowych terminów prawnych, niewłaściwe zgłoszenia do PUODO czy błędy w komunikacji z mediami.',
+  },
+  {
+    title: 'Dłuższy czas reakcji',
+    desc: 'Dłuższy czas reakcji oznacza większe straty finansowe, pogorszenie wizerunku firmy oraz ryzyko utraty klientów i partnerów biznesowych.',
+  },
+  {
+    title: 'Stres i przeciążenie zarządu',
+    desc: 'Kierownictwo firmy musi jednocześnie zarządzać kryzysem i prowadzić bieżące operacje, co często prowadzi do błędnych decyzji biznesowych.',
+  },
+  {
+    title: 'Nieoptymalne rozwiązania',
+    desc: 'Brak dostępu do sprawdzonych procedur i narzędzi prowadzi do prowizorycznych rozwiązań, które nie eliminują źródła problemu i mogą generować nowe ryzyka.',
+  },
+]
+---
+
+<BaseLayout
+  title="Natychmiastowa pomoc 24/7 w przypadku incydentu – CyberCover"
+  description="W razie problemów masz przycisk alarmowy i natychmiastową reakcję specjalistów. Zapewniamy rozwiązywanie problemów IT, pomoc prawną i komunikację kryzysową."
+>
+  <Hero
+    badge="Ochrona 360"
+    title="Natychmiastowa pomoc 24/7 w przypadku incydentu"
+    intro="W razie problemów masz przycisk alarmowy i natychmiastową reakcję specjalistów."
+    subtitle="Zapewniamy rozwiązywanie problemów IT, pomoc prawną i komunikację kryzysową."
+    introSize="xl"
+    bg="white"
+    image={pomocHero}
+    imageAlt="Natychmiastowa pomoc 24/7 — ilustracja"
+  >
+    <a
+      slot="cta"
+      href="/cennik"
+      class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
+    >
+      Uruchom pomoc 24/7
+      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+    </a>
+  </Hero>
+
+  <!-- ======== SEKCJA: W jakich sytuacjach pomagamy? ======== -->
+  <Section>
+    <div class="text-center mb-12 lg:mb-16">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-[#FFF5E0] border border-[#FFF5E0] px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Pomoc 24/7
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        W jakich sytuacjach pomagamy?
+      </h2>
+    </div>
+
+    <div class="flex flex-col gap-12 lg:gap-16">
+      {sytuacje.map((s) => (
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+          <div class={`flex flex-col gap-5 ${s.imagePosition === 'left' ? 'lg:order-2' : ''}`}>
+            <img src={s.icon} alt="" aria-hidden="true" class="w-10 h-12 lg:w-12 lg:h-14" />
+            <h3 class="text-xl lg:text-2xl font-semibold leading-snug text-black">
+              {s.title}
+            </h3>
+            <ul class="list-disc ml-5 space-y-1.5 text-base leading-cozy text-brand-text marker:text-brand-text">
+              {s.items.map((i) => <li>{i}</li>)}
+            </ul>
+            {s.subTitle && (
+              <h3 class="text-xl lg:text-2xl font-semibold leading-snug text-black mt-3">
+                {s.subTitle}
+              </h3>
+            )}
+            {s.subItems && (
+              <ul class="list-disc ml-5 space-y-1.5 text-base leading-cozy text-brand-text marker:text-brand-text">
+                {s.subItems.map((i) => <li>{i}</li>)}
+              </ul>
+            )}
+          </div>
+          <div
+            class={`relative bg-white border border-brand-border rounded-card overflow-hidden min-h-[300px] lg:min-h-[366px] ${s.imagePosition === 'left' ? 'lg:order-1' : ''}`}
+            style="background-image:url('/img/tlo-box-szersze.svg'); background-repeat:no-repeat; background-position:top right; background-size:cover;"
+          >
+            <Image
+              src={placeholderImg}
+              alt=""
+              width={900}
+              class="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <!-- ======== SEKCJA: Dostarczamy zespół specjalistów ======== -->
+  <Section padding="tight">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-start">
+      <div>
+        <p class="font-medium uppercase text-sm tracking-wide mb-4">
+          <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
+            <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+            Specjaliści
+          </span>
+        </p>
+        <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-8 lg:mb-10">
+          Dostarczamy zespół specjalistów i koordynujemy ich działania
+        </h2>
+
+        <div class="flex flex-col gap-8">
+          {specjalisci.map((s) => (
+            <div class="flex flex-col gap-3">
+              <h3 class="text-xl lg:text-2xl font-semibold leading-snug text-black">
+                {s.title}
+              </h3>
+              <ul class="list-disc ml-5 space-y-1.5 text-base leading-cozy text-brand-text marker:text-brand-text">
+                {s.items.map((i) => <li>{i}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div class="relative rounded-card overflow-hidden min-h-[400px] lg:min-h-[600px] lg:sticky lg:top-32">
+        <Image
+          src={teamItImg}
+          alt="Zespół specjalistów IT"
+          width={900}
+          class="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  </Section>
+
+  <!-- ======== SEKCJA: Jak wygląda reakcja na zgłoszenie? ======== -->
+  <Section padding="tight">
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-[#E8E8FF] border border-[#E8E8FF] px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Czas
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Jak wygląda reakcja na zgłoszenie?
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 list-none p-0">
+      {reakcja.map((r) => (
+        <li class="flex flex-col gap-5">
+          <img src={r.icon} alt="" aria-hidden="true" class="w-12 h-14 lg:w-14 lg:h-16" />
+          <h3 class="text-xl lg:text-2xl font-semibold leading-snug text-black">
+            {r.title}
+          </h3>
+          <p class="text-base leading-cozy text-brand-text">
+            {r.desc}
+          </p>
+          <p class="font-medium uppercase text-xs tracking-wide mt-auto">
+            <span class="inline-flex items-center gap-2 border border-brand-border px-3 py-1.5 rounded-full text-black">
+              {r.time}
+            </span>
+          </p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA: Pod jaki numer dzwonić (full-bleed orange-light) ======== -->
+  <Section bg="bg-[#FFF2E0]">
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Start
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-4">
+        Pod jaki numer dzwonić w razie incydentu?
+      </h2>
+      <p class="text-base lg:text-body-lg text-brand-text">
+        Numer alarmowy jest dostępny w Portalu klienta, po wykupieniu Ochrony 360.
+      </p>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_2fr] gap-5 list-none p-0">
+      {kroki.map((k) => (
+        <li class="bg-white rounded-card p-7 lg:p-8 flex flex-col gap-5">
+          <div class="flex items-start justify-between gap-4">
+            <span class="text-sm font-medium uppercase tracking-wide text-brand-text mt-2">KROK</span>
+            <span class="text-5xl lg:text-[58px] font-medium leading-none text-black">{k.n}</span>
+          </div>
+
+          {!k.image && (
+            <p class="text-base lg:text-body-lg font-medium leading-snug text-black min-h-[3em]">
+              {k.text}
+            </p>
+          )}
+
+          {k.image && (
+            <div class="flex items-start gap-5 flex-1">
+              <div class="flex-1 flex flex-col gap-3">
+                <p class="text-base lg:text-body-lg font-medium leading-snug text-black">
+                  {k.text}
+                </p>
+              </div>
+              <img src={k.image} alt="" aria-hidden="true" class="w-24 lg:w-[155px] h-auto shrink-0 hidden md:block" />
+            </div>
+          )}
+
+          <span class="inline-flex items-center justify-center w-[62px] h-[62px] rounded-full bg-brand-yellow text-black mt-auto shrink-0" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14" />
+              <path d="M13 5l7 7-7 7" />
+            </svg>
+          </span>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <!-- ======== SEKCJA: Samodzielne zarządzanie kryzysem - wyzwania ======== -->
+  <Section padding="tight">
+    <div class="text-center mb-10 lg:mb-14">
+      <p class="font-medium uppercase text-sm tracking-wide mb-4">
+        <span class="inline-flex items-center gap-2 bg-[#FFF5E0] border border-[#FFF5E0] px-4 py-1.5 rounded-full">
+          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
+          Zagrożenia
+        </span>
+      </p>
+      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
+        Samodzielne zarządzanie kryzysem — wyzwania i konsekwencje
+      </h2>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-2 gap-5 list-none p-0">
+      {wyzwania.map((w) => (
+        <li class="bg-brand-bg border border-brand-border rounded-card p-7 lg:p-8 flex flex-col gap-4">
+          <img src="/img/ico-wykrzyknik.svg" alt="" aria-hidden="true" class="w-10 h-12 lg:w-12 lg:h-14" />
+          <h3 class="text-xl lg:text-2xl font-semibold leading-snug text-black">
+            {w.title}
+          </h3>
+          <p class="text-base leading-cozy text-brand-text">
+            {w.desc}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <CtaReady />
+</BaseLayout>
