@@ -211,7 +211,7 @@ export function CompanyDataStep() {
         <CheckoutProgressBar currentStep={1} osSkipped={osSkipped} />
 
         <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-4xl text-black mb-12">
-          Dane firmy
+          Dane organizacji
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

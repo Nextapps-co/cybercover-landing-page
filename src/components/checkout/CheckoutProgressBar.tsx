@@ -12,7 +12,7 @@ interface CheckoutProgressBarProps {
 }
 
 const STEPS: Step[] = [
-  { number: 1, label: 'Dane firmy',          path: '/checkout/company-data' },
+  { number: 1, label: 'Dane organizacji',          path: '/checkout/company-data' },
   { number: 2, label: 'Dane osobiste',       path: '/checkout/personal-data' },
   { number: 3, label: 'Standardy',           path: '/checkout/operational-standards' },
   { number: 4, label: 'Płatność',            path: '/checkout/payment-method' },

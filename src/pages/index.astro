@@ -15,21 +15,21 @@ import nis2Img from '../assets/img/wymagania-nis2x2.jpg'
 
 const threats = [
   { icon: '/img/ico-kradziez-danych.svg', title: 'Kradzież danych osobowych przez pracownika', desc: 'Nieuczciwy członek zespołu wykradł 700 rekordów z danymi klientów. Incydent wymagał natychmiastowego powiadomienia UODO.' },
-  { icon: '/img/ico-podszywanie-sie-pod-prezesa-firmy.svg', title: 'Podszywanie się pod prezesa firmy', desc: 'W pilnej wiadomości „prezes" prosił o pilny przelew dla ważnego partnera. Księgowa, nie weryfikując tożsamości nadawcy, przelała środki na wskazane konto przestępców.' },
-  { icon: '/img/ico-wyludzenie-danych-logowania.svg', title: 'Wyłudzenie danych logowania', desc: 'Pracownik otrzymał wiarygodną wiadomość od działu IT z prośbą o weryfikację konta na nowej platformie. Przestępcy uzyskali dostęp do firmowej skrzynki pocztowej z poufnymi informacjami o klientach.' },
+  { icon: '/img/ico-podszywanie-sie-pod-prezesa-firmy.svg', title: 'Podszywanie się pod prezesa organizacji', desc: 'W pilnej wiadomości „prezes" prosił o pilny przelew dla ważnego partnera. Księgowa, nie weryfikując tożsamości nadawcy, przelała środki na wskazane konto przestępców.' },
+  { icon: '/img/ico-wyludzenie-danych-logowania.svg', title: 'Wyłudzenie danych logowania', desc: 'Pracownik otrzymał wiarygodną wiadomość od działu IT z prośbą o weryfikację konta na nowej platformie. Przestępcy uzyskali dostęp do służbowej skrzynki pocztowej z poufnymi informacjami o klientach.' },
   { icon: '/img/ico-paraliz-dzialania.svg', title: 'Paraliż działania z żądaniem okupu', desc: 'Hakerzy zaszyfrowali systemy informatyczne szpitala, blokując dostęp do maszyn obsługujących diagnostykę obrazową. Atak sparaliżował część usług wpływając na bezpieczeństwo pacjentów.' },
 ]
 
 const challenges = [
-  'Brak wiedzy jak w pełni zabezpieczyć się przed wyciekiem danych i atakami na firmę.',
+  'Brak wiedzy jak w pełni zabezpieczyć się przed wyciekiem danych i atakami na organizację.',
   'Odpowiedzialność osobista za kary urzędowe, roszczenia, okup i pozwy sądowe',
   'Jeśli coś się stanie, to nie wiadomo do kogo się zgłosić po wsparcie.',
 ]
 
 const services = [
   { id: 'ocena-bezpieczenstwa', href: '/ocena-bezpieczenstwa-i-zalecenia', icon: '/img/ico-ocena-bezpieczenstwa.svg', title: 'Ocena bezpieczeństwa i zalecenia', desc: 'Przeprowadzamy cykliczny przegląd bezpieczeństwa, dajemy ocenę i rekomendacje, dostajesz gotowy plan działania dla twojego zespołu i zawsze możesz się z nami skonsultować jeśli potrzebujesz dodatkowego wsparcia.', img: ocenaImg, imgAlt: 'Ocena bezpieczeństwa' },
-  { id: 'konsultacje', href: '/konsultacje-z-ekspertami', icon: '/img/ico-konsultacje-z-ekspertami.svg', title: 'Konsultacje z ekspertami', desc: 'Dajemy dostęp do doświadczonych specjalistów od cyberbezpieczeństwa i RODO, odpowiadamy na pytania i wątpliwości dotyczące ochrony danych w firmie.', img: konsultacjeImg, imgAlt: 'Konsultacje' },
-  { id: 'monitoring', href: '/ciagly-monitoring-zagrozen', icon: '/img/ico-ciagly-monitoring-zagrozen.svg', title: 'Ciągły monitoring zagrożeń', desc: 'Automatycznie monitorujemy twoje dane firmowe oraz systemy IT w poszukiwaniu zagrożeń zewnętrznych, a gdy wykryjemy problem, od razu informujemy co trzeba zrobić.', img: monitoringImg, imgAlt: 'Monitoring zagrożeń' },
+  { id: 'konsultacje', href: '/konsultacje-z-ekspertami', icon: '/img/ico-konsultacje-z-ekspertami.svg', title: 'Konsultacje z ekspertami', desc: 'Dajemy dostęp do doświadczonych specjalistów od cyberbezpieczeństwa i RODO, odpowiadamy na pytania i wątpliwości dotyczące ochrony danych w organizacji.', img: konsultacjeImg, imgAlt: 'Konsultacje' },
+  { id: 'monitoring', href: '/ciagly-monitoring-zagrozen', icon: '/img/ico-ciagly-monitoring-zagrozen.svg', title: 'Ciągły monitoring zagrożeń', desc: 'Automatycznie monitorujemy dane Twojej organizacji oraz systemy IT w poszukiwaniu zagrożeń zewnętrznych, a gdy wykryjemy problem, od razu informujemy co trzeba zrobić.', img: monitoringImg, imgAlt: 'Monitoring zagrożeń' },
   { id: 'pomoc-247', href: '/natychmiastowa-pomoc-24-7', icon: '/img/ico-natychmiastowa-pomoc-24-7.svg', title: 'Natychmiastowa pomoc 24/7', desc: 'W razie problemów masz przycisk alarmowy – gdzie zapewniamy ekspertów cyberbezpieczeństwa, mediatorów ds. zarządzania incydentami, radców prawnych oraz specjalistów ds. komunikacji kryzysowej i zarządzania reputacją online.', img: pomocImg, imgAlt: 'Natychmiastowa pomoc' },
   { id: 'ubezpieczenie', href: '/ubezpieczenie-od-kar-roszczen-i-strat', icon: '/img/ico-ubezpieczenie-od-kar-roszczen-i-strat.svg', title: 'Ubezpieczenie od kar, roszczeń i strat', desc: 'Ubezpieczenie pokryje kary finansowe nałożone przez urzędy, odszkodowania w wyniku naruszenia danych, jak również utracone korzyści z powodu paraliżu działania.', img: ubezpieczenieImg, imgAlt: 'Ubezpieczenie' },
 ]
@@ -43,13 +43,13 @@ const steps = [
 ---
 
 <BaseLayout
-  title="Cyber Cover – Ochrona firmy przed cyberatakami i wyciekami danych"
+  title="Cyber Cover – Ochrona organizacji przed cyberatakami i wyciekami danych"
   description="CyberCover dostarcza zalecenia, monitoring zagrożeń i pomoc ekspertów. Ubezpieczenie pokrywa kary RODO, roszczenia i straty."
 >
   <!-- ======== HERO ======== -->
   <Hero
     badge="Jedna usługa, pełna ochrona"
-    title="Ochrona Twojej firmy przed wyciekami danych i atakami hackerskimi."
+    title="Ochrona Twojej organizacji przed wyciekami danych i atakami hackerskimi."
     intro="CyberCover dostarcza zalecenia, monitoring zagrożeń i pomoc ekspertów, a ubezpieczenie pokrywa kary RODO, roszczenia i straty."
     image={heroImg}
     imageAlt="Cyber Cover baner grafika główna"
@@ -66,7 +66,7 @@ const steps = [
     <div class="max-w-container mx-auto px-6">
       <SectionTag label="Cyberzagrożenia" />
       <h2 id="cyberzagrozenia" class="text-center text-2xl lg:text-section-title font-semibold leading-tight text-black mt-4 mb-10 lg:mb-16">
-        Czego doświadczają firmy
+        Czego doświadczają organizacje
       </h2>
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         {threats.map(t => (
@@ -137,9 +137,9 @@ const steps = [
             Organizacje z branż IT, zdrowie, transport, administracja publiczna, bankowość, energetyka muszą spełniać surowe wymogi cyberbezpieczeństwa.
           </p>
           <ul class="space-y-2 text-lg text-white/80">
-            <li class="flex items-start gap-2"><span class="text-brand-yellow mt-1">&#x2022;</span> zarządzanie ryzykiem cybernetycznym</li>
-            <li class="flex items-start gap-2"><span class="text-brand-yellow mt-1">&#x2022;</span> zgłaszanie incydentów 24-72h</li>
-            <li class="flex items-start gap-2"><span class="text-brand-yellow mt-1">&#x2022;</span> Kontrola bezpieczeństwa dostawców</li>
+            <li class="flex items-start gap-2.5"><span class="flex h-7 shrink-0 items-center"><span class="h-1.5 w-1.5 rounded-full bg-brand-yellow"></span></span>zarządzanie ryzykiem cybernetycznym</li>
+            <li class="flex items-start gap-2.5"><span class="flex h-7 shrink-0 items-center"><span class="h-1.5 w-1.5 rounded-full bg-brand-yellow"></span></span>zgłaszanie incydentów 24-72h</li>
+            <li class="flex items-start gap-2.5"><span class="flex h-7 shrink-0 items-center"><span class="h-1.5 w-1.5 rounded-full bg-brand-yellow"></span></span>Kontrola bezpieczeństwa dostawców</li>
           </ul>
         </div>
       </div>
