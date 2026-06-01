@@ -2,6 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/Hero.astro'
 import Section from '../components/Section.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import ArrowButton from '../components/ArrowButton.astro'
 import CtaReady from '../components/CtaReady.astro'
 import ubezpieczenieHero from '../assets/img/Ubezpieczenie-portal.jpg'
 
@@ -114,33 +116,12 @@ const faq = [
     image={ubezpieczenieHero}
     imageAlt="Ubezpieczenie od kar, roszczeń i strat — ilustracja"
   >
-    <a
-      slot="cta"
-      href="/cennik"
-      class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
-    >
-      Wykup Ochronę 360
-      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </span>
-    </a>
+    <ArrowButton slot="cta" label="Wykup Ochronę 360" class="mt-2" />
   </Hero>
 
   <!-- ======== SEKCJA: Dlaczego ochrona finansowa jest ważna? ======== -->
   <Section>
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-[#FFF5E0] border border-[#FFF5E0] px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Ubezpieczenie
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Dlaczego ochrona finansowa jest ważna?
-      </h2>
-    </div>
+    <SectionHeading tag="Ubezpieczenie" title="Dlaczego ochrona finansowa jest ważna?" tagColor="cream" />
 
     <ul class="grid grid-cols-1 md:grid-cols-3 gap-5 list-none p-0">
       {dlaczego.map((item) => (
@@ -162,17 +143,7 @@ const faq = [
 
   <!-- ======== SEKCJA: Co pokrywa ubezpieczenie ======== -->
   <Section padding="tight">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Zakres
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Co pokrywa ubezpieczenie
-      </h2>
-    </div>
+    <SectionHeading tag="Zakres" title="Co pokrywa ubezpieczenie" tagColor="yellow" />
 
     <ul class="grid grid-cols-1 md:grid-cols-2 gap-5 list-none p-0">
       {pokrywa.map((p) => (
@@ -300,17 +271,7 @@ const faq = [
 
   <!-- ======== SEKCJA: FAQ ======== -->
   <Section padding="tight">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-[#FFF2E0] border border-[#FFF2E0] px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          FAQ
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Najczęściej zadawane pytania
-      </h2>
-    </div>
+    <SectionHeading tag="FAQ" title="Najczęściej zadawane pytania" tagColor="peach" />
 
     <div class="max-w-[890px] mx-auto flex flex-col gap-3">
       {faq.map((item, i) => (

@@ -3,6 +3,7 @@ import { Image } from 'astro:assets'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/Hero.astro'
 import Section from '../components/Section.astro'
+import ArrowButton from '../components/ArrowButton.astro'
 import CtaReady from '../components/CtaReady.astro'
 import nis2Img from '../assets/img/wymagania-nis2x2.jpg'
 
@@ -147,18 +148,7 @@ const reasons = [
     bg="yellow"
     bgImage="/img/tlo-zolte-kulki.svg"
   >
-    <a
-      slot="cta"
-      href="/cennik"
-      class="inline-flex items-center gap-3 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
-    >
-      Wykup Ochronę 360
-      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white shrink-0">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </span>
-    </a>
+    <ArrowButton slot="cta" label="Wykup Ochronę 360" variant="yellow" class="mt-2" />
   </Hero>
 
   <!-- ======== SEKCJA: Branże ======== -->

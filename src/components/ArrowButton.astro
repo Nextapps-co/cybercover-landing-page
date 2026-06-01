@@ -1,0 +1,33 @@
+---
+// Przycisk-pigułka z etykietą + strzałka w kółku. Dwa warianty kolorystyczne.
+// Zastępuje powtarzany inline blok CTA (Hero slot="cta" + przyciski sekcyjne).
+interface Props {
+  /** Etykieta przycisku */
+  label: string
+  /** Link (domyślnie /cennik) */
+  href?: string
+  /** Wariant: dark (czarny + żółte kółko) lub yellow (żółty + białe kółko) */
+  variant?: 'dark' | 'yellow'
+  /** Dodatkowe klasy na <a> (np. mt-2) */
+  class?: string
+}
+
+const { label, href = '/cennik', variant = 'dark', class: className } = Astro.props
+
+const styles = {
+  dark: { btn: 'bg-black hover:bg-brand-navy text-white', circle: 'bg-brand-yellow', stroke: 'black' },
+  yellow: { btn: 'bg-brand-yellow hover:bg-brand-yellow-hover text-black', circle: 'bg-white', stroke: 'currentColor' },
+}[variant]
+---
+
+<a
+  href={href}
+  class:list={['inline-flex items-center gap-3', styles.btn, 'font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors', className]}
+>
+  {label}
+  <span class:list={['inline-flex items-center justify-center w-7 h-7 rounded-full', styles.circle, 'shrink-0']}>
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke={styles.stroke} stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </span>
+</a>

@@ -3,6 +3,9 @@ import { Image } from 'astro:assets'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/Hero.astro'
 import Section from '../components/Section.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import StepsGrid from '../components/StepsGrid.astro'
+import ArrowButton from '../components/ArrowButton.astro'
 import CtaReady from '../components/CtaReady.astro'
 import monitoringHero from '../assets/img/Monitoring-zagrozen-portal.jpg'
 import sectionImg from '../assets/img/Image.jpg'
@@ -124,33 +127,12 @@ const kroki = [
     image={monitoringHero}
     imageAlt="Ciągły monitoring zagrożeń — ilustracja"
   >
-    <a
-      slot="cta"
-      href="/cennik"
-      class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
-    >
-      Włącz monitoring zagrożeń
-      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </span>
-    </a>
+    <ArrowButton slot="cta" label="Włącz monitoring zagrożeń" class="mt-2" />
   </Hero>
 
   <!-- ======== SEKCJA: Dlaczego skanowanie zagrożeń jest ważne? ======== -->
   <Section>
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-brand-blue-light border border-brand-blue-light px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Monitoring
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Dlaczego skanowanie zagrożeń jest ważne?
-      </h2>
-    </div>
+    <SectionHeading tag="Monitoring" title="Dlaczego skanowanie zagrożeń jest ważne?" tagColor="blue-light" />
 
     <ul class="grid grid-cols-1 md:grid-cols-3 gap-5 list-none p-0">
       {dlaczego.map((item) => (
@@ -172,17 +154,7 @@ const kroki = [
 
   <!-- ======== SEKCJA: Jakie dane monitorujemy ======== -->
   <Section padding="tight">
-    <div class="text-center mb-12 lg:mb-16">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Zakres
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Co monitorujemy?
-      </h2>
-    </div>
+    <SectionHeading tag="Zakres" title="Co monitorujemy?" tagColor="yellow" margin="mb-12 lg:mb-16" />
 
     <div class="flex flex-col gap-12 lg:gap-16">
       {monitoringSections.map((s) => (
@@ -228,17 +200,7 @@ const kroki = [
 
   <!-- ======== SEKCJA: Jakie są korzyści z monitoringu? ======== -->
   <Section padding="tight">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Korzyści
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Jakie są korzyści z monitoringu?
-      </h2>
-    </div>
+    <SectionHeading tag="Korzyści" title="Jakie są korzyści z monitoringu?" tagColor="blue" />
 
     <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 list-none p-0">
       {korzysci.map((k) => (
@@ -267,60 +229,14 @@ const kroki = [
 
   <!-- ======== SEKCJA: Jak włączyć monitoring (full-bleed blue) ======== -->
   <Section bg="bg-brand-blue-light">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Start
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-4">
-        Jak włączyć monitoring?
-      </h2>
-      <p class="text-base lg:text-body-lg text-brand-text">
-        Monitoring jest dostępny po wykupieniu Ochrony 360
-      </p>
-    </div>
+    <SectionHeading
+      tag="Start"
+      title="Jak włączyć monitoring?"
+      lead="Monitoring jest dostępny po wykupieniu Ochrony 360"
+      tagColor="blue"
+    />
 
-    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_2fr] gap-5 list-none p-0">
-      {kroki.map((k) => (
-        <li class="bg-white rounded-card p-7 lg:p-8 flex flex-col gap-5">
-          <div class="flex items-start justify-between gap-4">
-            <span class="text-sm font-medium uppercase tracking-wide text-brand-text mt-2">KROK</span>
-            <span class="text-5xl lg:text-[58px] font-medium leading-none text-black">{k.n}</span>
-          </div>
-
-          {!k.image && (
-            <p class="text-base lg:text-body-lg font-medium leading-snug text-black min-h-[3em]">
-              {k.text}
-            </p>
-          )}
-
-          {k.image && (
-            <div class="flex items-start gap-5 flex-1">
-              <div class="flex-1 flex flex-col gap-3">
-                <p class="text-base lg:text-body-lg font-medium leading-snug text-black">
-                  {k.text}
-                </p>
-                {k.note && (
-                  <p class="text-sm leading-cozy text-brand-text">
-                    {k.note}
-                  </p>
-                )}
-              </div>
-              <img src={k.image} alt="" aria-hidden="true" class="w-24 lg:w-[155px] h-auto shrink-0 hidden md:block" />
-            </div>
-          )}
-
-          <span class="inline-flex items-center justify-center w-[62px] h-[62px] rounded-full bg-brand-yellow text-black mt-auto shrink-0" aria-hidden="true">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14" />
-              <path d="M13 5l7 7-7 7" />
-            </svg>
-          </span>
-        </li>
-      ))}
-    </ul>
+    <StepsGrid steps={kroki} />
   </Section>
 
   <CtaReady />

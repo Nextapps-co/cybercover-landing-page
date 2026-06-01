@@ -3,6 +3,7 @@ import { Image } from 'astro:assets'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/Hero.astro'
 import SectionTag from '../components/SectionTag.astro'
+import ArrowButton from '../components/ArrowButton.astro'
 import Ochrona360 from '../components/Ochrona360.astro'
 
 import heroImg from '../assets/img/ochrona-twojej-firmy-cena.jpg'
@@ -78,14 +79,7 @@ const steps = [
         ))}
       </div>
       <div class="flex justify-center mt-10 lg:mt-14">
-        <a href="/zagrozenia-i-mity" class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors">
-          Więcej o zagrożeniach
-          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </span>
-        </a>
+        <ArrowButton href="/zagrozenia-i-mity" label="Więcej o zagrożeniach" />
       </div>
     </div>
   </section>
@@ -106,14 +100,7 @@ const steps = [
         ))}
       </div>
       <div class="flex justify-center mt-10 lg:mt-14">
-        <a href="/komu-pomagamy" class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors">
-          Zobacz komu pomagamy
-          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </span>
-        </a>
+        <ArrowButton href="/komu-pomagamy" label="Zobacz komu pomagamy" />
       </div>
     </div>
   </section>

@@ -1,16 +1,29 @@
 ---
+// Pill „mini-sygnet + etykieta" (uppercase). Atom — używany standalone (np. index.astro)
+// oraz wewnątrz SectionHeading.astro. Jedyne źródło prawdy dla stylu pilla.
 interface Props {
   label: string
-  variant?: 'blue' | 'yellow'
+  /** Kolor pilla */
+  variant?: 'cream' | 'yellow' | 'blue' | 'blue-light' | 'lavender' | 'peach'
+  /** Dodatkowe klasy na <p> wrapperze (np. mb-4 gdy w SectionHeading) */
+  class?: string
 }
 
-const { label, variant = 'yellow' } = Astro.props
-const bgClass = variant === 'blue' ? 'bg-brand-tag-blue' : 'bg-brand-tag-yellow'
+const { label, variant = 'yellow', class: className } = Astro.props
+
+const pill = {
+  cream: { bg: 'bg-[#FFF5E0]', border: 'border-[#FFF5E0]' },
+  yellow: { bg: 'bg-brand-tag-yellow', border: 'border-brand-tag-yellow' },
+  blue: { bg: 'bg-brand-tag-blue', border: 'border-brand-tag-blue' },
+  'blue-light': { bg: 'bg-brand-blue-light', border: 'border-brand-blue-light' },
+  lavender: { bg: 'bg-[#E8E8FF]', border: 'border-[#E8E8FF]' },
+  peach: { bg: 'bg-[#FFF2E0]', border: 'border-[#FFF2E0]' },
+}[variant]
 ---
 
-<p class="text-center font-medium uppercase text-sm tracking-wide">
-  <span class:list={["inline-flex items-center gap-1.5 px-4 py-1 rounded-full border", bgClass, variant === 'blue' ? 'border-brand-tag-blue' : 'border-brand-tag-yellow']}>
-    <img src="/img/mini-sygnet.svg" alt="" width="19" height="20" class="w-[19px]" />
+<p class:list={['text-center font-medium uppercase text-sm tracking-wide', className]}>
+  <span class:list={['inline-flex items-center gap-2 px-4 py-1.5 rounded-full border', pill.bg, pill.border]}>
+    <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" width="19" height="20" class="w-[19px] h-auto" />
     {label}
   </span>
 </p>

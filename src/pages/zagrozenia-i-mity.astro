@@ -2,6 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/Hero.astro'
 import Section from '../components/Section.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import ArrowButton from '../components/ArrowButton.astro'
 import CtaReady from '../components/CtaReady.astro'
 
 const myths = [
@@ -178,33 +180,12 @@ const catalog = [
     bg="yellow"
     bgImage="/img/tlo-zolte-kulki.svg"
   >
-    <a
-      slot="cta"
-      href="/cennik"
-      class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
-    >
-      Wykup Ochronę 360
-      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </span>
-    </a>
+    <ArrowButton slot="cta" label="Wykup Ochronę 360" class="mt-2" />
   </Hero>
 
   <!-- ======== SEKCJA: Mity ======== -->
   <Section>
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Mity
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Największe mity o cyberbezpieczeństwie
-      </h2>
-    </div>
+    <SectionHeading tag="Mity" title="Największe mity o cyberbezpieczeństwie" tagColor="blue" />
 
     <ul class="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-7 list-none p-0">
       {myths.map((m) => (
@@ -242,20 +223,13 @@ const catalog = [
 
   <!-- ======== SEKCJA: Katalog zagrożeń (full-bleed gray) ======== -->
   <Section bg="bg-brand-bg">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Zakres
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-3">
-        Katalog zagrożeń
-      </h2>
-      <p class="text-base lg:text-body-lg text-brand-text">
-        Zobacz jakie zagrożenia są obecnie najczęściej spotykane
-      </p>
-    </div>
+    <SectionHeading
+      tag="Zakres"
+      title="Katalog zagrożeń"
+      lead="Zobacz jakie zagrożenia są obecnie najczęściej spotykane"
+      tagColor="yellow"
+      leadGap="mb-3"
+    />
 
     <div class="max-w-[1170px] mx-auto flex flex-col gap-4" data-catalog-accordion>
       {catalog.map((group, gi) => (
