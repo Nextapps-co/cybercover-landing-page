@@ -141,6 +141,7 @@ Wszystkie `PUBLIC_*` są dostępne w client islandach przez `import.meta.env.*`.
 ## Conventions
 
 - UI language: Polish
+- **Język treści: pisz prosto, dla właścicieli firm bez działu IT.** Unikaj żargonu (VPN, RDP, MFA, API, itp.). Jeśli termin jest konieczny, wyjaśnij go w nawiasie zrozumiałym przykładem — np. „dodatkowe potwierdzenie tożsamości (kod SMS lub aplikacja)", „pulpit zdalny".
 - `noindex, nofollow` w obu layoutach (pre-launch)
 - Site URL: `https://cybercover.pl`
 - Money: zawsze grosze (minor units) jako `number` + `currency: 'PLN'`

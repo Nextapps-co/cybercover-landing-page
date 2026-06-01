@@ -27,42 +27,40 @@ const dlaczego = [
 
 const monitoringSections = [
   {
-    title: 'Twoje dane osobowe i służbowe w podejrzanych miejscach',
-    items: [
-      'Imię i nazwisko właścicieli, zarządzających i pracowników',
-      'Adresy e-mail, numery telefonów i ujawnione hasła',
-      'Nazwa organizacji',
-      'Adresy internetowe',
-    ],
-    subTitle: 'Gdzie szukamy tych informacji',
+    title: 'Monitoring wycieków danych',
+    desc: 'Podajesz adresy e-mail (właścicieli i pracowników), a my cyklicznie sprawdzamy, czy nie pojawiły się w wyciekach danych z zewnętrznych serwisów.',
+    items: [],
+    subTitle: 'Co pokazujemy',
     subItems: [
-      'Dark Web — ukryte części internetu gdzie handluje się skradzionymi danymi',
-      'Nielegalne marketplace — platformy sprzedaży danych hakerskich',
-      'Fora hakerskie — miejsca wymiany skompromitowanych informacji',
+      'w którym serwisie doszło do wycieku i kiedy',
+      'skalę wycieku — ile kont zostało ujawnionych',
+      'co wyciekło — np. hasła, adresy e-mail, imiona i nazwiska, daty urodzenia',
+      'czy to nowy wyciek, czy znaleziony już we wcześniejszym skanie',
     ],
     image: sectionImg,
-    imageAlt: 'Monitoring danych osobowych — placeholder',
+    imageAlt: 'Monitoring wycieków danych — placeholder',
     imagePosition: 'right' as const,
   },
   {
-    title: 'Podatność Twojego środowiska IT na ataki i wyłudzenia',
-    items: [
-      'Domeny i subdomeny powiązane z organizacją — co jest aktywne, kiedy wygasa, czy jest zablokowane.',
-      'Adresy serwerów, otwarte porty — sprawdzanie nieautoryzowanego dostępu lub niewłaściwej konfiguracji',
-      'Wykorzystywane technologie — ich aktualność i otwartość na ataki',
-    ],
-    subTitle: 'Jak to sprawdzamy',
+    title: 'Monitoring strony',
+    desc: 'Podajesz adres swojej strony www, a my cyklicznie sprawdzamy jej stan i bezpieczeństwo.',
+    items: [],
+    subTitle: 'Co sprawdzamy',
     subItems: [
-      'przeszukujemy rejestry domen',
-      'wpisy w bazach WHOIS',
-      'używamy specjalistycznych narzędzi monitoringu cyberbezpieczeństwa',
+      'Dostępność — czy serwer działa nieprzerwanie; gdy strona nie działa, tracisz klientów',
+      'Szybkość ładowania — jak szybko strona uruchamia się u klienta',
+      'Jakość strony — wydajność, dostępność, widoczność w wyszukiwarkach (SEO) i standardy, osobno na komputerze i telefonie',
+      'Ważność domeny — kiedy wygasa; wygaśnięcie zablokuje stronę i pocztę e-mail',
+      'Certyfikat bezpieczeństwa (SSL) — po jego wygaśnięciu przeglądarki oznaczą stronę jako niebezpieczną',
+      'Szczegółowy raport — gotowy do przekazania osobie odpowiedzialnej za IT',
     ],
     image: sectionImg,
-    imageAlt: 'Monitoring środowiska IT — placeholder',
+    imageAlt: 'Monitoring strony — placeholder',
     imagePosition: 'left' as const,
   },
   {
-    title: 'Co się dzieje gdy wykryjemy zagrożenie?',
+    title: 'Co robimy, gdy wykryjemy zagrożenie?',
+    desc: '',
     items: [],
     subTitle: 'Otrzymujesz natychmiastowy alert i plan działania',
     subItems: [
@@ -81,21 +79,21 @@ const korzysci = [
     bg: '/img/tlo-zolte-kula-1.svg',
     title: 'Wczesne ostrzeżenie',
     desc: 'dowiadujesz się o zagrożeniu zanim hakerzy zaatakują',
-    tag: 'Działania',
+    tag: 'Prewencja',
     tagBg: 'bg-white',
   },
   {
     bg: '/img/tlo-zolte-kula-2.svg',
     title: 'Bezpieczeństwo właścicieli i pracowników',
     desc: 'chronisz dane osobowe i służbowe swojego zespołu',
-    tag: 'Ograniczenia',
+    tag: 'Bezpieczeństwo',
     tagBg: 'bg-[#FFF5E0]',
   },
   {
     bg: '/img/tlo-zolte-strzalka-w-dol.svg',
     title: 'Unikanie kar prawnych',
     desc: 'proaktywne działanie chroni przed karami za wycieki danych',
-    tag: 'Efekty',
+    tag: 'Zgodność z RODO',
     tagBg: 'bg-brand-tag-blue',
   },
 ]
@@ -114,12 +112,12 @@ const kroki = [
 
 <BaseLayout
   title="Ciągły monitoring zagrożeń – CyberCover"
-  description="Automatycznie monitorujemy Twoje dane osobiste i służbowe oraz systemy IT w poszukiwaniu zagrożeń zewnętrznych."
+  description="Sprawdzamy, czy Twoje dane nie wyciekły w zewnętrznych serwisach, oraz monitorujemy stan i bezpieczeństwo Twojej strony www."
 >
   <Hero
     badge="Ochrona 360"
     title="Ciągły monitoring zagrożeń"
-    intro="Automatycznie monitorujemy Twoje dane osobiste i służbowe oraz systemy IT w poszukiwaniu zagrożeń zewnętrznych."
+    intro="Sprawdzamy, czy Twoje dane nie wyciekły, oraz monitorujemy stan i bezpieczeństwo Twojej strony www."
     subtitle="Gdy wykryjemy problem, od razu informujemy co trzeba zrobić."
     introSize="xl"
     bg="white"
@@ -178,11 +176,11 @@ const kroki = [
       <p class="font-medium uppercase text-sm tracking-wide mb-4">
         <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
           <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Twoje dane
+          Zakres
         </span>
       </p>
       <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Jakie dane monitorujemy?
+        Co monitorujemy?
       </h2>
     </div>
 
@@ -193,6 +191,11 @@ const kroki = [
             <h3 class="text-2xl lg:text-card-title font-semibold leading-tight text-black">
               {s.title}
             </h3>
+            {s.desc && (
+              <p class="text-base lg:text-body-lg leading-relaxed text-brand-text">
+                {s.desc}
+              </p>
+            )}
             {s.items.length > 0 && (
               <ul class="list-disc ml-5 space-y-2 text-base lg:text-body-lg leading-cozy text-brand-text marker:text-brand-text">
                 {s.items.map((i) => <li>{i}</li>)}
