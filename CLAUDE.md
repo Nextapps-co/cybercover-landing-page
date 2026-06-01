@@ -168,5 +168,5 @@ Per `docs/superpowers/specs/2026-05-15-marketing-fe-auth-aware-integration-desig
 
 ## Repo
 
-- GitHub: https://github.com/CC-radek/CC-Page-Astro-Cennik (konto CC-radek, private)
-- Aktualna gałąź feature: `feature/CC-353`
+- Bitbucket: `git@bitbucket.org:nextappspl/cybercover-landing-page.git` (Nextapps) — **jedyne** repo
+- Workflow gałęzi: feature branch z `develop`, PR target → `develop` (per strona = osobny branch + PR)
