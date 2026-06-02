@@ -1,44 +1,54 @@
 ---
-// Primary button (design system) — etykieta + strzałka w kółku. Dwa warianty:
-// - yellow = PRIMARY 1 (żółty, duży; spec 1:1 z Figmy node 1663-28849)
-// - dark   = PRIMARY 2 (czarny; do osobnej modyfikacji)
+// Primary button (design system) — etykieta + opcjonalny biały okrąg z czarną strzałką.
+// Geometria 1:1 z Figmy. Trzy osie:
+//   variant: kolor powierzchni
+//     - yellow = żółte tło, czarny tekst — Figma 1663-28849 / 5758-22103
+//     - dark   = czarne tło, biały tekst — Figma 5758-22093
+//   size: rozmiar (lg 85px / sm 60px)
+//   showArrow: czy renderować kółko ze strzałką
+// Kombinacje nazewnictwo z designu:
+//   PRIMARY 1 = yellow + strzałka | PRIMARY 2 = dark + strzałka | PRIMARY 3 = dark, BEZ strzałki (Figma 5758-22135)
 interface Props {
   /** Etykieta przycisku */
   label: string
   /** Link (domyślnie /cennik) */
   href?: string
-  /** Wariant: yellow (Primary 1) lub dark (Primary 2) */
+  /** Wariant koloru: yellow lub dark */
   variant?: 'dark' | 'yellow'
+  /** Rozmiar: lg (duży) lub sm (mały) */
+  size?: 'lg' | 'sm'
+  /** Czy pokazać kółko ze strzałką (false = Primary 3) */
+  showArrow?: boolean
   /** Dodatkowe klasy na <a> (np. mt-2) */
   class?: string
 }
 
-const { label, href = '/cennik', variant = 'dark', class: className } = Astro.props
+const { label, href = '/cennik', variant = 'dark', size = 'sm', showArrow = true, class: className } = Astro.props
+
+const surface =
+  variant === 'yellow'
+    ? 'bg-brand-yellow hover:bg-brand-yellow-hover text-black'
+    : 'bg-black hover:bg-brand-navy text-white'
+
+const s = {
+  lg: { h: 'h-[85px]', pad: 'pl-5 pr-2.5', padNoArrow: 'px-5', gap: 'gap-[52px]', circle: 'size-[62px]', arrow: 28, sw: '2.2' },
+  sm: { h: 'h-[60px]', pad: 'px-2.5', padNoArrow: 'px-2.5', gap: 'gap-[25px]', circle: 'size-[40px]', arrow: 19, sw: '2' },
+}[size]
+
+const pad = showArrow ? s.pad : s.padNoArrow
 ---
 
-{variant === 'yellow' ? (
-  <a
-    href={href}
-    class:list={['inline-flex items-center gap-[52px] bg-brand-yellow hover:bg-brand-yellow-hover h-[85px] pl-5 pr-2.5 rounded-[50px] transition-colors', className]}
-  >
-    <span class="px-2.5 text-[19px] font-semibold leading-[1.1] tracking-[-0.19px] text-black whitespace-nowrap">{label}</span>
-    <span class="inline-flex items-center justify-center size-[62px] rounded-full bg-white shrink-0">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<a
+  href={href}
+  class:list={['inline-flex items-center w-fit rounded-[50px] transition-colors', s.h, pad, showArrow && s.gap, surface, className]}
+>
+  <span class="px-2.5 text-[19px] font-semibold leading-[1.1] tracking-[-0.19px] whitespace-nowrap">{label}</span>
+  {showArrow && (
+    <span class:list={['inline-flex items-center justify-center rounded-full bg-white shrink-0', s.circle]}>
+      <svg width={s.arrow} height={s.arrow} viewBox="0 0 24 24" fill="none" stroke="black" stroke-width={s.sw} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M5 12h14" />
         <path d="M13 5l7 7-7 7" />
       </svg>
     </span>
-  </a>
-) : (
-  <a
-    href={href}
-    class:list={['inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors', className]}
-  >
-    {label}
-    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    </span>
-  </a>
-)}
+  )}
+</a>
