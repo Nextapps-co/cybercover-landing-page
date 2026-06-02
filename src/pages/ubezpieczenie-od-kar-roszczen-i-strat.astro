@@ -4,6 +4,7 @@ import Hero from '../components/Hero.astro'
 import Section from '../components/Section.astro'
 import SectionHeading from '../components/SectionHeading.astro'
 import ArrowButton from '../components/ArrowButton.astro'
+import ActionButton from '../components/ActionButton.astro'
 import CtaReady from '../components/CtaReady.astro'
 import ubezpieczenieHero from '../assets/img/Ubezpieczenie-portal.jpg'
 
@@ -247,15 +248,7 @@ const faq = [
           Pomagamy w spełnieniu tych wymagań
         </h3>
         <div>
-          <a
-            href="/cennik"
-            class="inline-flex items-center gap-2 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-base px-6 py-3 rounded-full transition-colors"
-          >
-            Wykup ochronę on-line
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
+          <ActionButton variant="yellow" label="Wykup ochronę on-line" href="/cennik" />
         </div>
       </div>
       <div class="flex flex-col gap-4">
