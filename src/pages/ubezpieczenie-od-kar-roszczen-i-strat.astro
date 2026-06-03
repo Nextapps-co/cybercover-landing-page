@@ -2,6 +2,9 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/Hero.astro'
 import Section from '../components/Section.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import ArrowButton from '../components/ArrowButton.astro'
+import ActionButton from '../components/ActionButton.astro'
 import CtaReady from '../components/CtaReady.astro'
 import ubezpieczenieHero from '../assets/img/Ubezpieczenie-portal.jpg'
 
@@ -26,7 +29,7 @@ const dlaczego = [
 const pokrywa = [
   {
     title: 'Koszty związane z wymuszeniami',
-    example: 'Hakerzy zaszyfrowali system firmy i żądają okupu — ubezpieczenie może pokryć koszty związane z tym wymuszeniem.',
+    example: 'Hakerzy zaszyfrowali system organizacji i żądają okupu — ubezpieczenie może pokryć koszty związane z tym wymuszeniem.',
   },
   {
     title: 'Koszty utraty korzyści majątkowych',
@@ -34,32 +37,32 @@ const pokrywa = [
   },
   {
     title: 'Koszty wizerunkowe i komunikacyjne',
-    example: 'Po wycieku danych firma potrzebuje kampanii PR, aby odbudować zaufanie klientów — ubezpieczenie pokryje koszty agencji PR i działań komunikacyjnych.',
+    example: 'Po wycieku danych organizacja potrzebuje kampanii PR, aby odbudować zaufanie klientów — ubezpieczenie pokryje koszty agencji PR i działań komunikacyjnych.',
   },
   {
     title: 'Koszty reagowania i naprawy szkód',
-    example: 'Firma padła ofiarą ataku z wymuszeniem okupu — ubezpieczenie pokryje koszty informatyków śledczych, którzy będą analizować sposób włamania i zakres szkód.',
+    example: 'Organizacja padła ofiarą ataku z wymuszeniem okupu — ubezpieczenie pokryje koszty informatyków śledczych, którzy będą analizować sposób włamania i zakres szkód.',
   },
   {
     title: 'Koszty prawno-administracyjne',
-    example: 'Po wycieku danych osobowych klientów firma musi wypełnić obowiązek informacyjny wobec UODO — ubezpieczenie pokryje koszty prawników przygotowujących odpowiednie zawiadomienia.',
+    example: 'Po wycieku danych osobowych klientów organizacja musi wypełnić obowiązek informacyjny wobec UODO — ubezpieczenie pokryje koszty prawników przygotowujących odpowiednie zawiadomienia.',
   },
   {
     title: 'Koszty roszczeń i odpowiedzialności',
-    example: 'Klient pozwał firmę o odszkodowanie po wycieku jego danych osobowych — ubezpieczenie pokryje koszty postępowania i ewentualne odszkodowanie.',
+    example: 'Klient pozwał organizację o odszkodowanie po wycieku jego danych osobowych — ubezpieczenie pokryje koszty postępowania i ewentualne odszkodowanie.',
   },
   {
-    title: 'Koszty monitorowania i prewencji',
-    example: 'Po kradzieży danych kart płatniczych klientów firma musi monitorować ich transakcje przez 12 miesięcy, aby wykryć potencjalne nadużycia — ubezpieczenie pokryje te koszty.',
+    title: 'Koszty odtworzenia danych i systemów',
+    example: 'Atak uszkodził dane i oprogramowanie organizacji — ubezpieczenie pokryje koszty odzyskania i odtworzenia danych, ponownej instalacji oprogramowania, a gdy naprawa się nie opłaca, także wymiany systemów na sprawne.',
   },
   {
-    title: 'Koszty związane ze standardami PCI',
-    example: 'Sklep internetowy naruszył standardy bezpieczeństwa PCI DSS podczas przetwarzania płatności kartami — ubezpieczenie pokryje karę nałożoną przez organizację kart płatniczych.',
+    title: 'Koszty odpowiedzialności multimedialnej',
+    example: 'Treść opublikowana w kanałach cyfrowych organizacji naruszyła cudze prawa autorskie lub dobre imię — ubezpieczenie pokryje odszkodowanie i koszty obrony w związku z takim roszczeniem.',
   },
 ]
 
 const pomagamy = [
-  'Ocenią aktualny stan zabezpieczeń Twojej firmy',
+  'Ocenią aktualny stan zabezpieczeń Twojej organizacji',
   'Wskażą konkretne kroki do spełnienia wymagań',
   'Polecą sprawdzone rozwiązania techniczne',
   'a jeśli trzeba, to także pomogą w implementacji niezbędnych zabezpieczeń',
@@ -79,23 +82,23 @@ const wymagania = [
 const faq = [
   {
     q: 'Dlaczego tradycyjne OC nie wystarczy?',
-    a: 'Tradycyjne polisy firmowe nie są przystosowane do współczesnych zagrożeń cybernetycznych i pozostawiają znaczące luki w ochronie. To ubezpieczenie zostało stworzone właśnie po to, aby wypełnić te braki. Największe problemy z konwencjonalnymi polisami to brak zabezpieczenia finansowego na wypadek unieruchomienia systemów IT, brak możliwości pokrycia kosztów związanych z atakami i wymuszeniami, niewłączenie wydatków na śledztwa informatyczne oraz brak ochrony przed sankcjami wynikającymi z naruszenia RODO.',
+    a: 'Tradycyjne polisy dla organizacji nie są przystosowane do współczesnych zagrożeń cybernetycznych i pozostawiają znaczące luki w ochronie. To ubezpieczenie zostało stworzone właśnie po to, aby wypełnić te braki. Największe problemy z konwencjonalnymi polisami to brak zabezpieczenia finansowego na wypadek unieruchomienia systemów IT, brak możliwości pokrycia kosztów związanych z atakami i wymuszeniami, niewłączenie wydatków na śledztwa informatyczne oraz brak ochrony przed sankcjami wynikającymi z naruszenia RODO.',
   },
   {
-    q: 'Dla jakiej wielkości firm to ma sens?',
-    a: 'Zagrożenia cybernetyczne nie wybierają swoich ofiar ze względu na rozmiar czy sektor działalności — dotykają zarówno małe przedsiębiorstwa, jak i wielkie korporacje. Decydującym czynnikiem nie jest skala biznesu, lecz stopień narażenia na cyberataki. Nawet niewielka firma może stać się atrakcyjnym celem dla cyberprzestępców, jeśli posiada słabe zabezpieczenia lub przetwarza cenne dane.',
+    q: 'Dla jakiej wielkości organizacji to ma sens?',
+    a: 'Zagrożenia cybernetyczne nie wybierają swoich ofiar ze względu na rozmiar czy sektor działalności — dotykają zarówno małe przedsiębiorstwa, jak i wielkie korporacje. Decydującym czynnikiem nie jest skala biznesu, lecz stopień narażenia na cyberataki. Nawet niewielka organizacja może stać się atrakcyjnym celem dla cyberprzestępców, jeśli posiada słabe zabezpieczenia lub przetwarza cenne dane.',
+  },
+  {
+    q: 'Kiedy ubezpieczenie i natychmiastowa pomoc 24/7 są aktywne?',
+    a: 'Ubezpieczenie oraz natychmiastowa pomoc 24/7 uruchamiają się, gdy spełnisz dwa proste wymagania bezpieczeństwa: kopie zapasowe danych oraz regularne aktualizacje oprogramowania. Jeśli na starcie ich nie spełniasz, usługa CyberCover — ocena bezpieczeństwa, monitoring zagrożeń i konsultacje — działa od razu, a po spełnieniu wymagań aktywują się również ubezpieczenie i pomoc 24/7. Pomagamy je spełnić w ramach konsultacji z ekspertami lub dodatkowego wsparcia.',
   },
   {
     q: 'Jakie są inne ograniczenia ochrony ubezpieczeniowej?',
-    a: 'Ubezpieczenie od ryzyk cybernetycznych zawiera określone wyłączenia i ograniczenia ochrony. Polisa nie obejmuje szkód powstałych w wyniku działań wojennych, operacji cybernetycznych państw oraz awarii infrastruktury zewnętrznej jak przerwy w dostawie prądu czy internetu. Wyłączone są także szkody z zagrożeń naturalnych, zgubienia niezabezpieczonych urządzeń przenośnych oraz umyślnych działań członków władz firmy.',
+    a: 'Ubezpieczenie od ryzyk cybernetycznych zawiera określone wyłączenia i ograniczenia ochrony. Polisa nie obejmuje szkód powstałych w wyniku działań wojennych, strajków, terroryzmu i podobnych zdarzeń — z wyłączeniem aktów cyberterroryzmu, które pozostają objęte ochroną. Wyłączone są także szkody wynikające z awarii zewnętrznych sieci (energetycznych, telekomunikacyjnych, w tym internetu), na przykład przerw w dostawie prądu, szkody na osobie i w mieniu materialnym (innym niż dane), a także umyślne działania członków władz organizacji.',
   },
   {
     q: 'Czego nie pokrywa ubezpieczenie?',
-    a: 'Znane wcześniej problemy i zaniedbania: nielegalne oprogramowanie, incydenty znane przed podpisaniem polisy, sprawy w toku przed rozpoczęciem ubezpieczenia, zgubione urządzenia bez szyfrowania. Transakcje finansowe i kary kryminalne: kradzieże przy przelewach elektronicznych, problemy z płatnościami internetowymi, utrata gotówki, grzywny sądowe, sankcje karnoskarbowe.',
-  },
-  {
-    q: 'Jaki jest profil organizacji, które podlegają ubezpieczeniu?',
-    a: 'Nasza oferta jest dostępna dla organizacji poza branżami: rozrywka dla dorosłych, kryptowaluty, gry komputerowe i hazard online, płatności elektroniczne, zbieranie i analizowanie danych dla innych firm, linie lotnicze, organizacje religijne, wydobycie ropy i gazu, poszukiwanie źródeł energii w Arktyce. Dodatkowe wymagania: nie więcej niż 25% przychodów z USA, przetwarzanie nie więcej niż 250 000 rekordów danych osobowych rocznie, brak współpracy z firmami z Rosji/Białorusi.',
+    a: 'Ochrona nie obejmuje m.in.: okoliczności, roszczeń i incydentów znanych lub zgłoszonych przed zawarciem umowy oraz zdarzeń sprzed daty wstecznej; strat z błędnych elektronicznych przelewów i transakcji finansowych (środki utracone, sfałszowane lub uszkodzone podczas transferu); kar i grzywien o charakterze cywilnym, karnym oraz karnoskarbowym; a także szkód związanych z kryptowalutami. Koszty obrony są pokrywane do czasu prawomocnego potwierdzenia, że doszło do czynu przestępczego lub umyślnego naruszenia prawa.',
   },
 ]
 ---
@@ -114,33 +117,12 @@ const faq = [
     image={ubezpieczenieHero}
     imageAlt="Ubezpieczenie od kar, roszczeń i strat — ilustracja"
   >
-    <a
-      slot="cta"
-      href="/cennik"
-      class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
-    >
-      Wykup Ochronę 360
-      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </span>
-    </a>
+    <ArrowButton slot="cta" label="Wykup Ochronę 360" class="mt-2" />
   </Hero>
 
   <!-- ======== SEKCJA: Dlaczego ochrona finansowa jest ważna? ======== -->
   <Section>
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-[#FFF5E0] border border-[#FFF5E0] px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Ubezpieczenie
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Dlaczego ochrona finansowa jest ważna?
-      </h2>
-    </div>
+    <SectionHeading tag="Ubezpieczenie" title="Dlaczego ochrona finansowa jest ważna?" tagColor="cream" />
 
     <ul class="grid grid-cols-1 md:grid-cols-3 gap-5 list-none p-0">
       {dlaczego.map((item) => (
@@ -162,17 +144,7 @@ const faq = [
 
   <!-- ======== SEKCJA: Co pokrywa ubezpieczenie ======== -->
   <Section padding="tight">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Zakres
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Co pokrywa ubezpieczenie
-      </h2>
-    </div>
+    <SectionHeading tag="Zakres" title="Co pokrywa ubezpieczenie" tagColor="yellow" />
 
     <ul class="grid grid-cols-1 md:grid-cols-2 gap-5 list-none p-0">
       {pokrywa.map((p) => (
@@ -252,7 +224,7 @@ const faq = [
       </div>
       <div class="flex flex-col gap-6">
         <p class="text-base lg:text-body-lg leading-relaxed text-brand-text">
-          Wymagania są proste — to dwie standardowe praktyki bezpieczeństwa, które warto stosować w każdej firmie. Bez audytów technicznych ani skomplikowanej dokumentacji.
+          Wymagania są proste — to dwie standardowe praktyki bezpieczeństwa, które warto stosować w każdej organizacji. Bez audytów technicznych ani skomplikowanej dokumentacji.
         </p>
         {wymagania.map((w) => (
           <div class="flex flex-col gap-2">
@@ -264,6 +236,9 @@ const faq = [
             </p>
           </div>
         ))}
+        <p class="text-base leading-cozy text-brand-text">
+          Jeśli jeszcze nie spełniasz tych wymagań — nic straconego. Usługa CyberCover (ocena bezpieczeństwa, monitoring i konsultacje) działa od razu, a ubezpieczenie oraz natychmiastowa pomoc 24/7 uruchamiają się po ich spełnieniu. <strong>Pomożemy Ci je spełnić</strong> — w ramach konsultacji z ekspertami lub dodatkowego wsparcia.
+        </p>
       </div>
     </div>
 
@@ -273,15 +248,7 @@ const faq = [
           Pomagamy w spełnieniu tych wymagań
         </h3>
         <div>
-          <a
-            href="/cennik"
-            class="inline-flex items-center gap-2 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-base px-6 py-3 rounded-full transition-colors"
-          >
-            Wykup ochronę on-line
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
+          <ActionButton variant="yellow" label="Wykup ochronę on-line" href="/cennik" />
         </div>
       </div>
       <div class="flex flex-col gap-4">
@@ -297,17 +264,7 @@ const faq = [
 
   <!-- ======== SEKCJA: FAQ ======== -->
   <Section padding="tight">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-[#FFF2E0] border border-[#FFF2E0] px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          FAQ
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Najczęściej zadawane pytania
-      </h2>
-    </div>
+    <SectionHeading tag="FAQ" title="Najczęściej zadawane pytania" tagColor="peach" />
 
     <div class="max-w-[890px] mx-auto flex flex-col gap-3">
       {faq.map((item, i) => (

@@ -34,7 +34,7 @@ export const NipLookupField = forwardRef<HTMLInputElement, Props>(function NipLo
       if (response.found && response.company) {
         onLookupSuccess(response.company);
       } else {
-        setLookupError('Nie znaleziono firmy w CEIDG/KRS. Wypełnij dane ręcznie.');
+        setLookupError('Nie znaleziono organizacji w CEIDG/KRS. Wypełnij dane ręcznie.');
       }
     } catch (err) {
       const t = translateApiError(err);

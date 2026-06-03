@@ -41,7 +41,9 @@ const jsonLd = {
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" />
+  <!-- Non-blocking font load: media-swap trick + <noscript> fallback. `display=swap` w URL → tekst od razu w foncie systemowym. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" /></noscript>
 
   <link rel="canonical" href={Astro.url.href} />
 
@@ -57,7 +59,10 @@ const jsonLd = {
   <link rel="icon" href="/img/cropped-favicon-4-32x32.png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/img/cropped-favicon-4-32x32.png" />
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.1.0/dist/cookieconsent.css" />
+  <!-- cookieconsent.css nie jest potrzebny do first paint (baner uruchamia JS z końca <body>) → non-blocking. -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.1.0/dist/cookieconsent.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.1.0/dist/cookieconsent.css" /></noscript>
   <style>
     #cc-main {
       --cc-font-family: 'Plus Jakarta Sans', sans-serif;

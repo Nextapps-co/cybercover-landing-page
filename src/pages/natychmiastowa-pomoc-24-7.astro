@@ -3,6 +3,9 @@ import { Image } from 'astro:assets'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/Hero.astro'
 import Section from '../components/Section.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import StepsGrid from '../components/StepsGrid.astro'
+import ArrowButton from '../components/ArrowButton.astro'
 import CtaReady from '../components/CtaReady.astro'
 import pomocHero from '../assets/img/Natychmiastowa-pomoc-portal.jpg'
 import placeholderImg from '../assets/img/Image.jpg'
@@ -13,7 +16,7 @@ const sytuacje = [
     icon: '/img/ico-incydenty-rodo.svg',
     title: 'Incydenty RODO',
     items: [
-      'Konieczność zgłoszenia naruszenia do PUODO (w ciągu 72h)',
+      'Konieczność zgłoszenia naruszenia do UODO (w ciągu 72h)',
       'Potrzeba powiadomienia osób, których dane dotyczą',
       'Podejrzenie naruszenia przepisów o ochronie danych',
     ],
@@ -40,7 +43,7 @@ const sytuacje = [
     subTitle: 'Oszustwa z wyłudzeniem danych',
     subItems: [
       'Podejrzenie kompromitacji kont e-mail',
-      'Wykrycie fałszywych wiadomości w imieniu firmy',
+      'Wykrycie fałszywych wiadomości w imieniu organizacji',
       'Próby wyłudzenia danych lub środków finansowych',
       'Podejrzenie podszywania się pod zaufane instytucje',
     ],
@@ -69,7 +72,7 @@ const specjalisci = [
     title: 'Wspieramy PR-owo w kryzysie',
     items: [
       'Koordynujemy komunikację z klientami i partnerami biznesowymi w czasie kryzysu',
-      'Opracowujemy strategię komunikacyjną minimalizującą szkody wizerunkowe firmy',
+      'Opracowujemy strategię komunikacyjną minimalizującą szkody wizerunkowe organizacji',
       'Przygotowujemy komunikaty prasowe dla mediów tradycyjnych i elektronicznych',
     ],
   },
@@ -115,7 +118,7 @@ const kroki = [
 const wyzwania = [
   {
     title: 'Poszukiwanie ekspertów wśród znajomych w trybie pilnym',
-    desc: 'Właściciele firm muszą w panice szukać specjalistów IT, prawników i firm PR, często płacąc wielokrotnie wyższe stawki za pomoc w trybie natychmiastowym.',
+    desc: 'Właściciele organizacji muszą w panice szukać specjalistów IT, prawników i firm PR, często płacąc wielokrotnie wyższe stawki za pomoc w trybie natychmiastowym.',
   },
   {
     title: 'Konieczność koordynacji wielu zespołów',
@@ -123,15 +126,15 @@ const wyzwania = [
   },
   {
     title: 'Ryzyko błędów proceduralnych',
-    desc: 'Bez doświadczenia w zarządzaniu kryzysem łatwo o pominięcie kluczowych terminów prawnych, niewłaściwe zgłoszenia do PUODO czy błędy w komunikacji z mediami.',
+    desc: 'Bez doświadczenia w zarządzaniu kryzysem łatwo o pominięcie kluczowych terminów prawnych, niewłaściwe zgłoszenia do UODO czy błędy w komunikacji z mediami.',
   },
   {
     title: 'Dłuższy czas reakcji',
-    desc: 'Dłuższy czas reakcji oznacza większe straty finansowe, pogorszenie wizerunku firmy oraz ryzyko utraty klientów i partnerów biznesowych.',
+    desc: 'Dłuższy czas reakcji oznacza większe straty finansowe, pogorszenie wizerunku organizacji oraz ryzyko utraty klientów i partnerów biznesowych.',
   },
   {
     title: 'Stres i przeciążenie zarządu',
-    desc: 'Kierownictwo firmy musi jednocześnie zarządzać kryzysem i prowadzić bieżące operacje, co często prowadzi do błędnych decyzji biznesowych.',
+    desc: 'Kierownictwo organizacji musi jednocześnie zarządzać kryzysem i prowadzić bieżące operacje, co często prowadzi do błędnych decyzji biznesowych.',
   },
   {
     title: 'Nieoptymalne rozwiązania',
@@ -154,33 +157,12 @@ const wyzwania = [
     image={pomocHero}
     imageAlt="Natychmiastowa pomoc 24/7 — ilustracja"
   >
-    <a
-      slot="cta"
-      href="/cennik"
-      class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
-    >
-      Uruchom pomoc 24/7
-      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </span>
-    </a>
+    <ArrowButton slot="cta" label="Uruchom pomoc 24/7" class="mt-2" />
   </Hero>
 
   <!-- ======== SEKCJA: W jakich sytuacjach pomagamy? ======== -->
   <Section>
-    <div class="text-center mb-12 lg:mb-16">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-[#FFF5E0] border border-[#FFF5E0] px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Pomoc 24/7
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        W jakich sytuacjach pomagamy?
-      </h2>
-    </div>
+    <SectionHeading tag="Pomoc 24/7" title="W jakich sytuacjach pomagamy?" tagColor="cream" margin="mb-12 lg:mb-16" />
 
     <div class="flex flex-col gap-12 lg:gap-16">
       {sytuacje.map((s) => (
@@ -262,17 +244,7 @@ const wyzwania = [
 
   <!-- ======== SEKCJA: Jak wygląda reakcja na zgłoszenie? ======== -->
   <Section padding="tight">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-[#E8E8FF] border border-[#E8E8FF] px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Czas
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Jak wygląda reakcja na zgłoszenie?
-      </h2>
-    </div>
+    <SectionHeading tag="Czas" title="Jak wygląda reakcja na zgłoszenie?" tagColor="lavender" />
 
     <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 list-none p-0">
       {reakcja.map((r) => (
@@ -296,70 +268,19 @@ const wyzwania = [
 
   <!-- ======== SEKCJA: Pod jaki numer dzwonić (full-bleed orange-light) ======== -->
   <Section bg="bg-[#FFF2E0]">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Start
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-4">
-        Pod jaki numer dzwonić w razie incydentu?
-      </h2>
-      <p class="text-base lg:text-body-lg text-brand-text">
-        Numer alarmowy jest dostępny w Portalu klienta, po wykupieniu Ochrony 360.
-      </p>
-    </div>
+    <SectionHeading
+      tag="Start"
+      title="Pod jaki numer dzwonić w razie incydentu?"
+      lead="Numer alarmowy jest dostępny w Portalu klienta, po wykupieniu Ochrony 360."
+      tagColor="blue"
+    />
 
-    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_2fr] gap-5 list-none p-0">
-      {kroki.map((k) => (
-        <li class="bg-white rounded-card p-7 lg:p-8 flex flex-col gap-5">
-          <div class="flex items-start justify-between gap-4">
-            <span class="text-sm font-medium uppercase tracking-wide text-brand-text mt-2">KROK</span>
-            <span class="text-5xl lg:text-[58px] font-medium leading-none text-black">{k.n}</span>
-          </div>
-
-          {!k.image && (
-            <p class="text-base lg:text-body-lg font-medium leading-snug text-black min-h-[3em]">
-              {k.text}
-            </p>
-          )}
-
-          {k.image && (
-            <div class="flex items-start gap-5 flex-1">
-              <div class="flex-1 flex flex-col gap-3">
-                <p class="text-base lg:text-body-lg font-medium leading-snug text-black">
-                  {k.text}
-                </p>
-              </div>
-              <img src={k.image} alt="" aria-hidden="true" class="w-24 lg:w-[155px] h-auto shrink-0 hidden md:block" />
-            </div>
-          )}
-
-          <span class="inline-flex items-center justify-center w-[62px] h-[62px] rounded-full bg-brand-yellow text-black mt-auto shrink-0" aria-hidden="true">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M5 12h14" />
-              <path d="M13 5l7 7-7 7" />
-            </svg>
-          </span>
-        </li>
-      ))}
-    </ul>
+    <StepsGrid steps={kroki} />
   </Section>
 
   <!-- ======== SEKCJA: Samodzielne zarządzanie kryzysem - wyzwania ======== -->
   <Section padding="tight">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-[#FFF5E0] border border-[#FFF5E0] px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Zagrożenia
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Samodzielne zarządzanie kryzysem — wyzwania i konsekwencje
-      </h2>
-    </div>
+    <SectionHeading tag="Zagrożenia" title="Samodzielne zarządzanie kryzysem — wyzwania i konsekwencje" tagColor="cream" />
 
     <ul class="grid grid-cols-1 md:grid-cols-2 gap-5 list-none p-0">
       {wyzwania.map((w) => (

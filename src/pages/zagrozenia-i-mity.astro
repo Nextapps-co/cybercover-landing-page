@@ -2,13 +2,15 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/Hero.astro'
 import Section from '../components/Section.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import ArrowButton from '../components/ArrowButton.astro'
 import CtaReady from '../components/CtaReady.astro'
 
 const myths = [
   {
     no: 'MIT 1',
     quote: '„Mojej organizacji <br>to nie dotyczy"',
-    fact: 'Cyberprzestępcy atakują firmy każdej wielkości – od jednoosobowych działalności po międzynarodowe korporacje. Małe firmy są atakowane, bo mają słabsze zabezpieczenia i mniej środków na ochronę. Duże firmy są celem, bo mają więcej cennych danych i pieniędzy. Cyberprzestępcy używają automatycznych narzędzi, które skanują wszystkie firmy w internecie bez względu na branżę czy wielkość.',
+    fact: 'Cyberprzestępcy atakują organizacje każdej wielkości – od jednoosobowych działalności po międzynarodowe korporacje. Małe organizacje są atakowane, bo mają słabsze zabezpieczenia i mniej środków na ochronę. Duże organizacje są celem, bo mają więcej cennych danych i pieniędzy. Cyberprzestępcy używają automatycznych narzędzi, które skanują wszystkie organizacje w internecie bez względu na branżę czy wielkość.',
   },
   {
     no: 'MIT 2',
@@ -22,7 +24,7 @@ const myths = [
   },
   {
     no: 'MIT 4',
-    quote: '„Cyberbezpieczeństwo to problem działu IT, nie całej firmy"',
+    quote: '„Cyberbezpieczeństwo to problem działu IT, nie całej organizacji"',
     fact: 'Wiele udanych ataków cybernetycznych zaczyna się od błędu człowieka – kliknięcia w złośliwy link, pobrania załącznika, czy podania hasła na fałszywej stronie. Najlepsze zabezpieczenia techniczne są bezużyteczne, jeśli pracownicy nie wiedzą, jak rozpoznać zagrożenia. Każdy pracownik to potencjalny punkt wejścia dla cyberprzestępców.',
   },
 ]
@@ -36,7 +38,7 @@ const catalog = [
       {
         title: 'Bezpieczeństwo danych osobowych',
         items: [
-          'Konieczność zgłoszenia naruszenia do PUODO',
+          'Konieczność zgłoszenia naruszenia do UODO',
           'Potrzeba powiadomienia osób, których dane zostały naruszone',
           'Podejrzenie naruszenia przepisów o ochronie danych',
           'Podejrzenie wycieku danych osobowych klientów/pracowników',
@@ -91,15 +93,15 @@ const catalog = [
       {
         title: 'Naruszenia kontroli dostępu',
         items: [
-          'Nieprawidłowe przetwarzanie danych osobowych',
-          'Przetwarzanie danych bez podstawy prawnej',
-          'Przekroczenie celu przetwarzania danych',
-          'Przetwarzanie danych przez okres dłuższy niż niezbędny',
-          'Naruszenie zasady minimalizacji danych',
-          'Niewypełnienie obowiązku informacyjnego względem osób fizycznych',
-          'Nieprawidłowa realizacja praw osób, których dane dotyczą',
-          'Przekazywanie danych do krajów trzecich bez odpowiednich zabezpieczeń',
-          'Automatyczne podejmowanie decyzji bez możliwości interwencji człowieka',
+          'Nieautoryzowany dostęp do systemów lub aplikacji',
+          'Przejęcie konta użytkownika lub administratora',
+          'Nadużycie uprawnień przez pracownika (dostęp poza zakresem obowiązków)',
+          'Eskalacja uprawnień do poziomu administratora',
+          'Wykorzystanie skradzionych lub wykradzionych danych logowania',
+          'Współdzielenie haseł i kont między pracownikami',
+          'Brak odebrania dostępu byłemu pracownikowi',
+          'Logowanie do kluczowych systemów bez dodatkowego potwierdzenia tożsamości (np. kodu SMS lub z aplikacji)',
+          'Nieuprawniony zdalny dostęp do systemów organizacji (np. przez pulpit zdalny)',
         ],
       },
       {
@@ -108,7 +110,7 @@ const catalog = [
           'Oszustwa z wyłudzeniem danych (phishing)',
           'Podejrzenie podszywania się pod zaufane instytucje',
           'Próby wyłudzenia danych lub środków finansowych',
-          'Wykrycie fałszywych wiadomości w imieniu firmy',
+          'Wykrycie fałszywych wiadomości w imieniu organizacji',
           'Fałszywe polecenia przelewów',
           'Oszustwa telefoniczne',
           'Oszustwa przez SMS',
@@ -178,33 +180,12 @@ const catalog = [
     bg="yellow"
     bgImage="/img/tlo-zolte-kulki.svg"
   >
-    <a
-      slot="cta"
-      href="/cennik"
-      class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
-    >
-      Wykup Ochronę 360
-      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </span>
-    </a>
+    <ArrowButton slot="cta" label="Wykup Ochronę 360" class="mt-2" />
   </Hero>
 
   <!-- ======== SEKCJA: Mity ======== -->
   <Section>
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-brand-tag-blue border border-brand-tag-blue px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Mity
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Największe mity o cyberbezpieczeństwie
-      </h2>
-    </div>
+    <SectionHeading tag="Mity" title="Największe mity o cyberbezpieczeństwie" tagColor="blue" />
 
     <ul class="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-7 list-none p-0">
       {myths.map((m) => (
@@ -242,20 +223,13 @@ const catalog = [
 
   <!-- ======== SEKCJA: Katalog zagrożeń (full-bleed gray) ======== -->
   <Section bg="bg-brand-bg">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Zakres
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-3">
-        Katalog zagrożeń
-      </h2>
-      <p class="text-base lg:text-body-lg text-brand-text">
-        Zobacz jakie zagrożenia są obecnie najczęściej spotykane
-      </p>
-    </div>
+    <SectionHeading
+      tag="Zakres"
+      title="Katalog zagrożeń"
+      lead="Zobacz jakie zagrożenia są obecnie najczęściej spotykane"
+      tagColor="yellow"
+      leadGap="mb-3"
+    />
 
     <div class="max-w-[1170px] mx-auto flex flex-col gap-4" data-catalog-accordion>
       {catalog.map((group, gi) => (
