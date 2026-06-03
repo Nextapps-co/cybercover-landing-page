@@ -141,6 +141,7 @@ Wszystkie `PUBLIC_*` są dostępne w client islandach przez `import.meta.env.*`.
 ## Conventions
 
 - UI language: Polish
+- **Język treści: pisz prosto, dla właścicieli firm bez działu IT.** Unikaj żargonu (VPN, RDP, MFA, API, itp.). Jeśli termin jest konieczny, wyjaśnij go w nawiasie zrozumiałym przykładem — np. „dodatkowe potwierdzenie tożsamości (kod SMS lub aplikacja)", „pulpit zdalny".
 - `noindex, nofollow` w obu layoutach (pre-launch)
 - Site URL: `https://cybercover.pl`
 - Money: zawsze grosze (minor units) jako `number` + `currency: 'PLN'`
@@ -167,5 +168,5 @@ Per `docs/superpowers/specs/2026-05-15-marketing-fe-auth-aware-integration-desig
 
 ## Repo
 
-- GitHub: https://github.com/CC-radek/CC-Page-Astro-Cennik (konto CC-radek, private)
-- Aktualna gałąź feature: `feature/CC-353`
+- Bitbucket: `git@bitbucket.org:nextappspl/cybercover-landing-page.git` (Nextapps) — **jedyne** repo
+- Workflow gałęzi: feature branch z `develop`, PR target → `develop` (per strona = osobny branch + PR)

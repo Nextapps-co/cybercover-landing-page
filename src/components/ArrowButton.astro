@@ -1,0 +1,54 @@
+---
+// Primary button (design system) — etykieta + opcjonalny biały okrąg z czarną strzałką.
+// Geometria 1:1 z Figmy. Trzy osie:
+//   variant: kolor powierzchni
+//     - yellow = żółte tło, czarny tekst — Figma 1663-28849 / 5758-22103
+//     - dark   = czarne tło, biały tekst — Figma 5758-22093
+//   size: rozmiar (lg 85px / sm 60px)
+//   showArrow: czy renderować kółko ze strzałką
+// Kombinacje nazewnictwo z designu:
+//   PRIMARY 1 = yellow + strzałka | PRIMARY 2 = dark + strzałka | PRIMARY 3 = dark, BEZ strzałki (Figma 5758-22135)
+interface Props {
+  /** Etykieta przycisku */
+  label: string
+  /** Link (domyślnie /cennik) */
+  href?: string
+  /** Wariant koloru: yellow lub dark */
+  variant?: 'dark' | 'yellow'
+  /** Rozmiar: lg (duży) lub sm (mały) */
+  size?: 'lg' | 'sm'
+  /** Czy pokazać kółko ze strzałką (false = Primary 3) */
+  showArrow?: boolean
+  /** Dodatkowe klasy na <a> (np. mt-2) */
+  class?: string
+}
+
+const { label, href = '/cennik', variant = 'dark', size = 'sm', showArrow = true, class: className } = Astro.props
+
+const surface =
+  variant === 'yellow'
+    ? 'bg-brand-yellow hover:bg-brand-yellow-hover text-black'
+    : 'bg-black hover:bg-brand-navy text-white'
+
+const s = {
+  lg: { h: 'h-[85px]', pad: 'pl-5 pr-2.5', padNoArrow: 'px-5', gap: 'gap-[52px]', circle: 'size-[62px]', arrow: 28, sw: '2.2' },
+  sm: { h: 'h-[60px]', pad: 'px-2.5', padNoArrow: 'px-2.5', gap: 'gap-[25px]', circle: 'size-[40px]', arrow: 19, sw: '2' },
+}[size]
+
+const pad = showArrow ? s.pad : s.padNoArrow
+---
+
+<a
+  href={href}
+  class:list={['inline-flex items-center w-fit rounded-[50px] transition-colors', s.h, pad, showArrow && s.gap, surface, className]}
+>
+  <span class="px-2.5 text-[19px] font-semibold leading-[1.1] tracking-[-0.19px] whitespace-nowrap">{label}</span>
+  {showArrow && (
+    <span class:list={['inline-flex items-center justify-center rounded-full bg-white shrink-0', s.circle]}>
+      <svg width={s.arrow} height={s.arrow} viewBox="0 0 24 24" fill="none" stroke="black" stroke-width={s.sw} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14" />
+        <path d="M13 5l7 7-7 7" />
+      </svg>
+    </span>
+  )}
+</a>

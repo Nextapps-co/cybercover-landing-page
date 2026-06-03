@@ -219,7 +219,7 @@ export function ConfirmStep() {
                 rows={[
                   { label: 'Imię', value: personal.firstName },
                   { label: 'Nazwisko', value: personal.lastName },
-                  { label: 'E-mail Firmowy', value: personal.email },
+                  { label: 'E-mail służbowy', value: personal.email },
                   { label: 'Numer telefonu', value: personal.phone },
                 ]}
               />

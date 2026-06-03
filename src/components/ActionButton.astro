@@ -1,0 +1,46 @@
+---
+// Action button (design system) — mniejszy CTA z PŁASKĄ strzałką (bez białego okręgu).
+// 1:1 z Figmy (node 1663-26800 yellow / 1663-26808 black). Inny niż ArrowButton (primary): 50px, płaska strzałka 20px.
+//   variant: yellow / dark + showArrow (currentColor — czarna na żółtym, biała na dark)
+// Nazewnictwo z designu:
+//   ACTION 1 = yellow + strzałka (np. „Sprawdź cenę")  |  ACTION 2 = dark, BEZ strzałki (np. „Portal Klienta")
+// Brak w-fit celowo: w pasku desktop (flex-row) obejmuje treść, w menu mobilnym (flex-col) full width.
+interface Props {
+  /** Etykieta przycisku */
+  label: string
+  /** Link (domyślnie /cennik) */
+  href?: string
+  /** Wariant koloru: yellow lub dark */
+  variant?: 'yellow' | 'dark'
+  /** Czy pokazać strzałkę */
+  showArrow?: boolean
+  /** target dla <a> (np. _blank) */
+  target?: string
+  /** rel dla <a> (np. noopener) */
+  rel?: string
+  /** Dodatkowe klasy na <a> */
+  class?: string
+}
+
+const { label, href = '/cennik', variant = 'yellow', showArrow = true, target, rel, class: className } = Astro.props
+
+const surface =
+  variant === 'dark'
+    ? 'bg-black hover:bg-brand-navy text-white'
+    : 'bg-brand-yellow hover:bg-brand-yellow-hover text-black'
+---
+
+<a
+  href={href}
+  target={target}
+  rel={rel}
+  class:list={['inline-flex items-center justify-center gap-[10px] h-[50px] px-5 rounded-[50px] font-semibold text-[19px] leading-[1.1] tracking-[-0.19px] whitespace-nowrap transition-colors', surface, className]}
+>
+  {label}
+  {showArrow && (
+    <svg class="shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M5 12h14" />
+      <path d="M13 5l7 7-7 7" />
+    </svg>
+  )}
+</a>

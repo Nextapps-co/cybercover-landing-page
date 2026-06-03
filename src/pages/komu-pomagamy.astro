@@ -3,6 +3,7 @@ import { Image } from 'astro:assets'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/Hero.astro'
 import Section from '../components/Section.astro'
+import ArrowButton from '../components/ArrowButton.astro'
 import CtaReady from '../components/CtaReady.astro'
 import nis2Img from '../assets/img/wymagania-nis2x2.jpg'
 
@@ -19,7 +20,7 @@ const industries = [
     icon: '/img/ico-uslugi-medyczne.svg',
     title: 'Usługi medyczne',
     bg: 'bg-brand-blue-light',
-    sub: ['Przychodnie', 'Gabinety', 'Laboratoria', 'Gabinety dentystyczne'],
+    sub: ['Przychodnie', 'Gabinety', 'Gabinety dentystyczne'],
     desc: 'Dane medyczne to najwyższa kategoria wrażliwości w RODO. Każde naruszenie wymaga natychmiastowego działania i może skutkować wysokimi karami.',
     threats: 'Wyciek dokumentacji medycznej, paraliż systemów rejestracji pacjentów, kradzież danych ubezpieczeniowych.',
   },
@@ -36,7 +37,7 @@ const industries = [
     title: 'Handel i e-commerce',
     bg: 'bg-brand-tag-yellow',
     sub: ['Sklepy internetowe', 'Hurtownie', 'Dystrybutorzy'],
-    desc: 'Przechowujesz dane płatnicze i osobowe tysięcy klientów. Atak na sklep internetowy może oznaczać przestój sprzedaży i utratę środków z kont firmowych.',
+    desc: 'Przechowujesz dane płatnicze i osobowe tysięcy klientów. Atak na sklep internetowy może oznaczać przestój sprzedaży i utratę środków z kont organizacji.',
     threats: 'Kradzież danych kart płatniczych, blokada sklepu internetowego z okupem, oszustwa na fałszywe przelewy.',
   },
   {
@@ -52,15 +53,15 @@ const industries = [
     title: 'Produkcja i przemysł',
     bg: 'bg-brand-bg',
     sub: ['Zakłady spożywcze', 'Zakłady chemiczne', 'Zakłady przetwórcze'],
-    desc: 'Twoja firma może wydawać się mało atrakcyjna dla hakerów, ale to złudzenie. Automatyczne ataki nie wybierają – testują wszystkich.',
+    desc: 'Twoja organizacja może wydawać się mało atrakcyjna dla hakerów, ale to złudzenie. Automatyczne ataki nie wybierają – testują wszystkich.',
     threats: 'Paraliż systemów zarządzania produkcją, kradzież tajemnic handlowych, oszustwa na fałszywe faktury.',
   },
 ]
 
 const roles = [
   {
-    pills: ['Właściciele firm', 'Prezesi'],
-    quote: '„Chcę spać spokojnie wiedząc, że firma jest bezpieczna"',
+    pills: ['Właściciele organizacji', 'Prezesi'],
+    quote: '„Chcę spać spokojnie wiedząc, że organizacja jest bezpieczna"',
     desc: 'Odpowiadasz za wszystko, ale cyberbezpieczeństwo to nie Twoja specjalność. Potrzebujesz prostych rozwiązań, które działają bez Twojego nadzoru.',
     benefits: 'Pełną ochronę ponad standardowe wsparcie IT, jasne procedury awaryjne, spokój, że w razie problemów masz do kogo dzwonić.',
   },
@@ -93,11 +94,11 @@ const crises = [
   },
   {
     quote: '„System nie działa, a na ekranie jest żądanie okupu"',
-    desc: 'Komputery pokazują komunikat o zaszyfrowaniu plików z żądaniem zapłaty. Firma stanęła, a Ty nie wiesz co robić.',
+    desc: 'Komputery pokazują komunikat o zaszyfrowaniu plików z żądaniem zapłaty. Organizacja stanęła, a Ty nie wiesz co robić.',
   },
   {
     quote: '„Chcę się zabezpieczyć zanim coś się stanie"',
-    desc: 'Słyszysz o atakach na inne firmy i zdajesz sobie sprawę, że Twoja może być następna. Wolisz przygotować się wcześniej.',
+    desc: 'Słyszysz o atakach na inne organizacje i zdajesz sobie sprawę, że Twoja może być następna. Wolisz przygotować się wcześniej.',
   },
 ]
 
@@ -125,7 +126,7 @@ const reasons = [
   {
     icon: '/img/ico-bezposredni-kontakt.svg',
     title: 'Bezpośredni kontakt z ekspertami',
-    body: 'W razie incydentu otrzymujesz gotowy zespół ekspertów, którego stworzenie we własnej firmie byłoby zbyt kosztowne i skomplikowane.',
+    body: 'W razie incydentu otrzymujesz gotowy zespół ekspertów, którego stworzenie we własnej organizacji byłoby zbyt kosztowne i skomplikowane.',
   },
 ]
 ---
@@ -147,18 +148,7 @@ const reasons = [
     bg="yellow"
     bgImage="/img/tlo-zolte-kulki.svg"
   >
-    <a
-      slot="cta"
-      href="/cennik"
-      class="inline-flex items-center gap-3 bg-brand-yellow hover:bg-brand-yellow-hover text-black font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
-    >
-      Wykup Ochronę 360
-      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white shrink-0">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </span>
-    </a>
+    <ArrowButton slot="cta" label="Wykup Ochronę 360" variant="dark" class="mt-2" />
   </Hero>
 
   <!-- ======== SEKCJA: Branże ======== -->

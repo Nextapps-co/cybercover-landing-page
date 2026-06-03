@@ -1,0 +1,40 @@
+---
+// Wyśrodkowany nagłówek sekcji: pill (SectionTag) + H2 + opcjonalny lead.
+// Pill renderuje SectionTag — jedyne źródło prawdy dla stylu/kolorów pilla.
+import SectionTag from './SectionTag.astro'
+
+interface Props {
+  /** Tekst pilla (uppercase) */
+  tag: string
+  /** Nagłówek H2 */
+  title: string
+  /** Opcjonalny paragraf pod H2 */
+  lead?: string
+  /** Kolor pilla */
+  tagColor?: 'cream' | 'yellow' | 'blue' | 'blue-light' | 'lavender' | 'peach'
+  /** Margines dolny wrappera (domyślnie mb-10 lg:mb-14) */
+  margin?: string
+  /** Margines dolny H2 gdy jest lead (domyślnie mb-4) */
+  leadGap?: string
+  /** Klasy paragrafu lead (domyślnie text-base lg:text-body-lg text-brand-text) */
+  leadClass?: string
+}
+
+const {
+  tag,
+  title,
+  lead,
+  tagColor = 'yellow',
+  margin = 'mb-10 lg:mb-14',
+  leadGap = 'mb-4',
+  leadClass = 'text-base lg:text-body-lg text-brand-text',
+} = Astro.props
+---
+
+<div class:list={['text-center', margin]}>
+  <SectionTag label={tag} variant={tagColor} class="mb-4" />
+  <h2 class:list={['text-3xl lg:text-section-title font-semibold leading-tight text-black', lead && leadGap]}>
+    {title}
+  </h2>
+  {lead && <p class:list={[leadClass]}>{lead}</p>}
+</div>

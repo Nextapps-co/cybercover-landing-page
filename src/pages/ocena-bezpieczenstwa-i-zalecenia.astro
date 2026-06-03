@@ -3,6 +3,8 @@ import { Image } from 'astro:assets'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/Hero.astro'
 import Section from '../components/Section.astro'
+import SectionHeading from '../components/SectionHeading.astro'
+import ArrowButton from '../components/ArrowButton.astro'
 import CtaReady from '../components/CtaReady.astro'
 import oceanHero from '../assets/img/ocena-hero.jpg'
 import zCzegoImg from '../assets/img/z-czego-sklada-sie-ocena.jpg'
@@ -29,13 +31,13 @@ const kryteria = [
     tag: 'czyli wymagania RODO',
   },
   {
-    title: 'Jak zabezpieczasz dane firmowe przed złodziejami?',
+    title: 'Jak zabezpieczasz dane organizacji przed złodziejami?',
     desc: 'Zidentyfikujesz luki w zabezpieczeniach, przez które hakerzy mogą wykraść twoje cenne dane lub zażądać okupu za ich zwrot.',
     tag: 'czyli ochrona informacji',
   },
   {
     title: 'Jak szybko wrócisz do pracy po awarii?',
-    desc: 'Ocenisz czy masz plan działania na wypadek awarii systemów, żeby firma nie straciła pieniędzy z każdą godziną przestoju.',
+    desc: 'Ocenisz czy masz plan działania na wypadek awarii systemów, żeby organizacja nie straciła pieniędzy z każdą godziną przestoju.',
     tag: 'czyli ciągłość działania',
   },
 ]
@@ -68,36 +70,18 @@ const kroki = [
     image={oceanHero}
     imageAlt="Ocena bezpieczeństwa i zalecenia — ilustracja"
   >
-    <a
-      slot="cta"
-      href="/cennik"
-      class="inline-flex items-center gap-3 bg-black hover:bg-brand-navy text-white font-semibold text-base lg:text-body-lg px-7 py-3.5 rounded-full transition-colors mt-2"
-    >
-      Uruchom ocenę bezpieczeństwa
-      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-yellow shrink-0">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 7h12m0 0L8 2m5 5L8 12" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </span>
-    </a>
+    <ArrowButton slot="cta" label="Uruchom ocenę bezpieczeństwa" class="mt-2" />
   </Hero>
 
   <!-- ======== SEKCJA: Dlaczego warto ======== -->
   <Section>
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-[#FFF5E0] border border-[#FFF5E0] px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Ocena
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black mb-4">
-        Dlaczego warto mieć ocenę bezpieczeństwa?
-      </h2>
-      <p class="text-base lg:text-body-lg leading-relaxed text-brand-text max-w-[820px] mx-auto">
-        Wiemy, że potrzebujesz zaleceń do działania tu i teraz, ale też zdajemy sobie sprawę, że często nie wiadomo od czego zacząć. Dlatego stworzyliśmy narzędzie inteligentnej samooceny bezpieczeństwa na podstawie sytuacji Twojej organizacji.
-      </p>
-    </div>
+    <SectionHeading
+      tag="Ocena"
+      title="Dlaczego warto mieć ocenę bezpieczeństwa?"
+      lead="Wiemy, że potrzebujesz zaleceń do działania tu i teraz, ale też zdajemy sobie sprawę, że często nie wiadomo od czego zacząć. Dlatego stworzyliśmy narzędzie inteligentnej samooceny bezpieczeństwa na podstawie sytuacji Twojej organizacji."
+      tagColor="cream"
+      leadClass="text-base lg:text-body-lg leading-relaxed text-brand-text max-w-[820px] mx-auto"
+    />
 
     <ul class="grid grid-cols-1 md:grid-cols-3 gap-5 list-none p-0">
       {dlaczego.map((item) => (
@@ -116,17 +100,7 @@ const kroki = [
 
   <!-- ======== SEKCJA: Z czego się składa ocena ======== -->
   <Section padding="tight">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Kryteria
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Z czego się składa ocena?
-      </h2>
-    </div>
+    <SectionHeading tag="Kryteria" title="Z czego się składa ocena?" tagColor="yellow" />
 
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_49%] gap-8 lg:gap-10 items-stretch">
       <ul class="flex flex-col gap-5 list-none p-0">
@@ -198,17 +172,7 @@ const kroki = [
 
   <!-- ======== SEKCJA: Jak działa samoocena (full-bleed gray) ======== -->
   <Section bg="bg-brand-bg">
-    <div class="text-center mb-10 lg:mb-14">
-      <p class="font-medium uppercase text-sm tracking-wide mb-4">
-        <span class="inline-flex items-center gap-2 bg-[#FFF2E0] border border-[#FFF2E0] px-4 py-1.5 rounded-full">
-          <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-[19px] h-auto" />
-          Kroki
-        </span>
-      </p>
-      <h2 class="text-3xl lg:text-section-title font-semibold leading-tight text-black">
-        Jak działa inteligentna samoocena bezpieczeństwa?
-      </h2>
-    </div>
+    <SectionHeading tag="Kroki" title="Jak działa inteligentna samoocena bezpieczeństwa?" tagColor="peach" />
 
     <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 list-none p-0">
       {kroki.map((k) => (

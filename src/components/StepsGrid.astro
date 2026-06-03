@@ -1,0 +1,56 @@
+---
+// Karty „KROK 01/02/03" — grid 3 kroków z numerem, tekstem, opcjonalnym note/obrazkiem
+// i żółtym kółkiem ze strzałką. Wspólne dla konsultacje / monitoring / natychmiastowa-pomoc.
+interface Step {
+  n: string
+  text: string
+  note?: string
+  image?: string
+}
+
+interface Props {
+  steps: Step[]
+}
+
+const { steps } = Astro.props
+---
+
+<ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_2fr] gap-5 list-none p-0">
+  {steps.map((k) => (
+    <li class="bg-white rounded-card p-7 lg:p-8 flex flex-col gap-5">
+      <div class="flex items-start justify-between gap-4">
+        <span class="text-sm font-medium uppercase tracking-wide text-brand-text mt-2">KROK</span>
+        <span class="text-5xl lg:text-[58px] font-medium leading-none text-black">{k.n}</span>
+      </div>
+
+      {!k.image && (
+        <p class="text-base lg:text-body-lg font-medium leading-snug text-black min-h-[3em]">
+          {k.text}
+        </p>
+      )}
+
+      {k.image && (
+        <div class="flex items-start gap-5 flex-1">
+          <div class="flex-1 flex flex-col gap-3">
+            <p class="text-base lg:text-body-lg font-medium leading-snug text-black">
+              {k.text}
+            </p>
+            {k.note && (
+              <p class="text-sm leading-cozy text-brand-text">
+                {k.note}
+              </p>
+            )}
+          </div>
+          <img src={k.image} alt="" aria-hidden="true" class="w-24 lg:w-[155px] h-auto shrink-0 hidden md:block" />
+        </div>
+      )}
+
+      <span class="inline-flex items-center justify-center w-[62px] h-[62px] rounded-full bg-brand-yellow text-black mt-auto shrink-0" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14" />
+          <path d="M13 5l7 7-7 7" />
+        </svg>
+      </span>
+    </li>
+  ))}
+</ul>

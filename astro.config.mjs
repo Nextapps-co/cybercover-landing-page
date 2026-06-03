@@ -12,7 +12,10 @@ export default defineConfig({
   // Adapter Node istnieje wyłącznie po to, by `/cennik` + `/checkout/*`
   // (oznaczone `prerender = false`) renderowały się on-demand, dzięki czemu
   // `src/middleware.ts` (access gate) odpala się per-request dla tych tras.
-  adapter: node({ mode: 'standalone' }),
+  // Tryb `middleware` (nie `standalone`), bo własny serwer `server.mjs` opakowuje
+  // handler Astro w `compression()` (gzip) i serwuje statyki z `dist/client`.
+  // Standalone nie kompresuje odpowiedzi — CSS 72 KB szedł nieskompresowany.
+  adapter: node({ mode: 'middleware' }),
   // CSRF origin-check Astro porównuje nagłówek `Origin` z originem `request.url`.
   // Za proxy Railway (terminacja TLS) serwer widzi request jako http, a `Origin`
   // to https → mismatch → "Cross-site POST form submissions are forbidden" na
