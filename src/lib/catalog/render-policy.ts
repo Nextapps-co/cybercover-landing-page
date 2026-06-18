@@ -180,7 +180,7 @@ const SECTIONS: SectionDef[] = [
     ],
   },
   {
-    title: 'Szkolenia z bezpieczeństwa',
+    title: 'Szkolenia z cyberbezpieczeństwa',
     icon: 'education',
     items: [
       {
@@ -188,14 +188,15 @@ const SECTIONS: SectionDef[] = [
         text: f => `On-line ${f['feature.training.online.timesPerYear']}x w roku`,
         emphasize: true,
       },
+      // Tylko Ekspert (tier 'top') — front-only, nie sterowane feature.* z API
+      { onlyIfTier: ['top'], text: 'Dedykowane szkolenie dla VIP/Zarządów', emphasize: true },
     ],
   },
   {
     title: 'Wielodostęp',
     icon: 'users',
     items: [
-      { visibleWhen: f => f['feature.multiUser.accountSwitching'] === 'true', text: 'Przełączanie się między kontami' },
-      { visibleWhen: f => f['feature.multiUser.partnerDataView'] === 'true', text: 'Wgląd w dane i konfigurację partnerów' },
+      { visibleWhen: f => f['feature.multiUser.accountSwitching'] === 'true', text: 'Nielimitowane dodawanie wielu kont użytkowników do konta głównego' },
     ],
   },
 ];
