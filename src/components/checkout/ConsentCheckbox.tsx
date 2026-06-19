@@ -23,7 +23,7 @@ export function ConsentCheckbox({ consent, checked, onChange, error }: Props) {
         className="mt-1 h-4 w-4 shrink-0 rounded border-[#E4E2DF] accent-[#FED64B] cursor-pointer"
       />
       <div className="flex-1">
-        <label htmlFor={id} className="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#0D0D0D] leading-snug cursor-pointer">
+        <label htmlFor={id} className="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#0D0D0D] leading-snug cursor-pointer [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-2 [&_a]:hover:text-black">
           {consent.isRequired && <span aria-hidden="true" className="mr-0.5 text-red-500">*</span>}
           <span dangerouslySetInnerHTML={{ __html: consent.name }} />
         </label>
