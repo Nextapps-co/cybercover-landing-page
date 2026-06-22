@@ -27,7 +27,7 @@ function readOrderIdFromUrl(): string | null {
 // Question keys that are rendered as required-acknowledgement checkboxes
 // instead of YES/NO/DONT_KNOW tiles. Checking the box submits 'YES' for that
 // key; unchecked blocks form submission.
-const HARDCODED_CHECKBOX_KEYS = new Set(['BUSINESS_NOT_HEALTHCARE', 'SWU_ACKNOWLEDGED']);
+const HARDCODED_CHECKBOX_KEYS = new Set(['BUSINESS_NOT_HEALTHCARE', 'SWU_ACKNOWLEDGED', 'ANNUAL_REVENUE_UNDER_500M_PLN']);
 
 function isCheckboxQuestion(q: StandardQuestionDto): boolean {
   return HARDCODED_CHECKBOX_KEYS.has(q.key);
