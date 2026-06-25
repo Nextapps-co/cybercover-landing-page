@@ -437,6 +437,7 @@ const MOCK_OPS_QUESTIONS: OperationalStandardsSchemaResponseDto = {
     { key: 'MFA', label: 'Korzystamy z uwierzytelniania wieloskładnikowego (MFA) w kluczowych systemach.', description: 'MFA = drugie potwierdzenie tożsamości (SMS, aplikacja, klucz USB).' },
     { key: 'TRAINING', label: 'Pracownicy przechodzą szkolenia z cyberbezpieczeństwa.', description: 'Szkolenia obejmują phishing, hasła, postępowanie z danymi.' },
     { key: 'INCIDENT_PLAN', label: 'Mamy plan reagowania na incydenty cyberbezpieczeństwa.', description: 'Plan określa kogo zawiadomić i jakie kroki podjąć w razie ataku.' },
+    { key: 'ANNUAL_REVENUE_UNDER_500M_PLN', label: 'Potwierdzam, że łączne roczne przychody mojej organizacji nie przekraczają 500 mln złotych.' },
   ],
   answerOptions: ['YES', 'NO', 'DONT_KNOW'],
 };

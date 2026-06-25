@@ -27,7 +27,7 @@ function readOrderIdFromUrl(): string | null {
 // Question keys that are rendered as required-acknowledgement checkboxes
 // instead of YES/NO/DONT_KNOW tiles. Checking the box submits 'YES' for that
 // key; unchecked blocks form submission.
-const HARDCODED_CHECKBOX_KEYS = new Set(['BUSINESS_NOT_HEALTHCARE', 'SWU_ACKNOWLEDGED']);
+const HARDCODED_CHECKBOX_KEYS = new Set(['BUSINESS_NOT_HEALTHCARE', 'SWU_ACKNOWLEDGED', 'ANNUAL_REVENUE_UNDER_500M_PLN']);
 
 function isCheckboxQuestion(q: StandardQuestionDto): boolean {
   return HARDCODED_CHECKBOX_KEYS.has(q.key);
@@ -53,9 +53,9 @@ function CheckboxAcknowledge({ question, checked, onChange, error }: CheckboxAck
         className="mt-1 h-4 w-4 shrink-0 rounded border-[#E4E2DF] accent-[#FED64B] cursor-pointer"
       />
       <div className="flex-1">
-        <label htmlFor={id} className="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#0D0D0D] leading-snug cursor-pointer">
+        <label htmlFor={id} className="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#0D0D0D] leading-snug cursor-pointer [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-2 [&_a]:hover:text-black">
           <span aria-hidden="true" className="mr-0.5 text-red-500">*</span>
-          {question.label}
+          <span dangerouslySetInnerHTML={{ __html: question.label }} />
         </label>
         {hasDescription && (
           <p className="mt-1 font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#6B6965]">{question.description}</p>
