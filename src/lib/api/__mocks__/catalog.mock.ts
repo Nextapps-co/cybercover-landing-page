@@ -36,6 +36,7 @@ const MOCK_PLANS: PlanCatalogEntryDto[] = [
       'feature.securityAssessment.report': 'general',
       'feature.monitoring.email': 'true',
       'feature.monitoring.web': 'true',
+      'feature.multiUser.maxUsers': '5',
     },
     discount: null,
   },
