@@ -1,6 +1,6 @@
 // checkout-flow.md §9.1 — Sales Order DTOs.
 
-import type { BillingCycle, MoneyDto } from './money';
+import type { BillingCycle } from './money';
 
 export type OrderStatus =
   | 'DRAFT'
@@ -84,6 +84,17 @@ export interface OrderDiscountDto {
   currency: string;
 }
 
+// Per docs/proration-changes.md (CC-353) — rozbicie proracji dla zamówień PLAN_UPGRADE.
+// Wszystkie kwoty NETTO, w groszach. `credit` jest DODATNI (FE dokłada znak minus).
+// `amountDueNow === fullPrice − credit === totalPriceNet`. Pole jest `null` dla
+// zamówień innych niż podniesienie planu (zwykły zakup / odnowienie / reaktywacja).
+export interface ProrationDto {
+  fullPrice: number;
+  credit: number;
+  amountDueNow: number;
+  currency: string;
+}
+
 export interface OrderResponseDto {
   orderId: string;
   status: OrderStatus;
@@ -96,6 +107,8 @@ export interface OrderResponseDto {
   totalPriceNet: number | null;
   currency: string;
   discount: OrderDiscountDto | null;
+  // CC-353 — jedyne źródło rozbicia proracji; null dla zamówień nie-upgrade.
+  proration: ProrationDto | null;
   eligibilityResult: EligibilityResultResponseDto | null;
   createdAt: string;
 }
@@ -285,40 +298,10 @@ export interface OrderConfirmationResponseDto {
   customerEmail: string;
 }
 
-// Per spec §5.6.1 — proration breakdown dla PLAN_UPGRADE.
-
-export type PricingBreakdownKind = 'base' | 'discount';
-
-export interface PricingBreakdownItemDto {
-  label: string;
-  /** `amount.amount` może być ujemny dla kind='discount' (np. kredyt za niewykorzystany plan). */
-  amount: MoneyDto;
-  kind: PricingBreakdownKind;
-}
-
-export interface CalculatedPricingDto {
-  kind: 'CalculatedPricing';
-  unitPrice: MoneyDto;
-  totalPrice: MoneyDto;
-  breakdown: PricingBreakdownItemDto[];
-  calculatedAt: string;
-  componentVersion: string;
-}
-
-export interface OrderLineWithPricingDto {
-  catalogEntryId: string;
-  pricing: CalculatedPricingDto;
-}
-
-/**
- * Nowy shape response z PATCH /orders/:id/payment-method (zastępuje CheckoutStateResponseDto dla tego endpointu).
- * Per spec §5.6.2.
- */
-export interface SelectPaymentMethodResponseDto {
-  orderId: string;
-  line: OrderLineWithPricingDto;
-  paymentMethod: PaymentMethod;
-}
+// CC-353 — PATCH /orders/:id/payment-method zwraca teraz tylko checkout-state
+// (CheckoutStateResponseDto), bez cen. Rozbicie proracji żyje na GET /orders/:id
+// (`OrderResponseDto.proration`). Stare typy CalculatedPricing/PricingBreakdown
+// usunięte — proracja jest teraz płaskim obiektem `ProrationDto`.
 
 /**
  * Metadata zwracana w 409 PLAN_CHANGE_PENDING response.

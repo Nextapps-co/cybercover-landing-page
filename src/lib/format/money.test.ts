@@ -27,6 +27,21 @@ describe('formatMinorUnits', () => {
   });
 });
 
+describe('proration display (CC-353 doc example)', () => {
+  // Standard → Optimum, miesięcznie: 594,00 / −147,50 / 446,50 zł
+  it('formats fullPrice 59400 grosze as "594 zł"', () => {
+    expect(formatMinorUnits(59400, 'PLN')).toBe('594 zł');
+  });
+
+  it('formats credit 14750 grosze as "147,50 zł" (FE prefixes the minus)', () => {
+    expect(formatMinorUnits(14750, 'PLN')).toBe('147,50 zł');
+  });
+
+  it('formats amountDueNow 44650 grosze as "446,50 zł"', () => {
+    expect(formatMinorUnits(44650, 'PLN')).toBe('446,50 zł');
+  });
+});
+
 describe('formatPricePerCycle', () => {
   it('formats monthly price', () => {
     expect(formatPricePerCycle({ amount: 49500, currency: 'PLN' }, 'MONTHLY')).toBe('495 zł / mies.');

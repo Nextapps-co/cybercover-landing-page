@@ -137,20 +137,9 @@ export function PaymentMethodStep() {
     try {
       const dto: { paymentMethod: PaymentMethod; discountCode?: string } = { paymentMethod };
       if (discountState.status === 'applied') dto.discountCode = discountState.code;
-      const response = await selectPaymentMethod(orderId, dto);
-
-      // Per spec §5.6.4 — zapisz pricing snapshot żeby ConfirmStep mógł wyrenderować
-      // ProrationBreakdown gdy orderType === 'PLAN_UPGRADE'.
-      if (response.line?.pricing) {
-        try {
-          window.sessionStorage.setItem(
-            'cybercover:pricing-snapshot',
-            JSON.stringify({ orderId, pricing: response.line.pricing }),
-          );
-        } catch {
-          /* quota / storage disabled — ProrationBreakdown będzie skipped, nie blokujemy flow */
-        }
-      }
+      // CC-353 — PATCH /payment-method nie zwraca już cen; rozbicie proracji bierze
+      // ConfirmStep ze świeżego getOrder (order.proration). Brak snapshotu w sessionStorage.
+      await selectPaymentMethod(orderId, dto);
 
       saveFormState('payment-method', { paymentMethod });
       if (discountState.status === 'applied') clearDiscountCode();

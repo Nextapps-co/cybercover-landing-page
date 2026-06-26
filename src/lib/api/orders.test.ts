@@ -308,26 +308,21 @@ describe('orders client', () => {
       import.meta.env.PUBLIC_USE_MOCK_ORDERS = 'false';
     });
 
-    it('PATCHes /orders/:id/payment-method with body and parses pricing breakdown response', async () => {
-      const backendResponse = {
-        orderId: 'ord_1',
-        line: {
-          catalogEntryId: 'CE-x',
-          pricing: {
-            kind: 'CalculatedPricing',
-            unitPrice: { amount: 354000, currency: 'PLN' },
-            totalPrice: { amount: 354000, currency: 'PLN' },
-            breakdown: [
-              { label: 'Plan Optimum (12 miesięcy)', amount: { amount: 354000, currency: 'PLN' }, kind: 'base' },
-            ],
-            calculatedAt: '2026-05-15T12:00:00Z',
-            componentVersion: 'v1',
-          },
-        },
-        paymentMethod: 'STRIPE_CHECKOUT',
-      };
+    const CHECKOUT_STATE = {
+      orderId: 'ord_1',
+      progress: {
+        hasCompanyData: true,
+        hasPersonalData: true,
+        hasOperationalStandards: true,
+        hasPaymentMethod: true,
+      },
+      isComplete: true,
+      nextRequiredStep: null,
+    };
+
+    it('PATCHes /orders/:id/payment-method and returns checkout-state (CC-353: no prices)', async () => {
       (globalThis.fetch as any).mockResolvedValue(
-        new Response(JSON.stringify(backendResponse), {
+        new Response(JSON.stringify(CHECKOUT_STATE), {
           status: 200,
           headers: { 'content-type': 'application/json' },
         }),
@@ -337,38 +332,73 @@ describe('orders client', () => {
         'http://localhost:3000/api/orders/ord_1/payment-method',
         expect.objectContaining({ method: 'PATCH' }),
       );
-      expect(result.line.pricing.breakdown).toHaveLength(1);
-      expect(result.line.pricing.totalPrice.amount).toBe(354000);
+      expect(result.progress.hasPaymentMethod).toBe(true);
+      expect(result.nextRequiredStep).toBeNull();
+      // Kontrakt CC-353: odpowiedź PATCH nie zawiera cen.
+      expect(result).not.toHaveProperty('line');
     });
 
-    it('parses PLAN_UPGRADE proration breakdown (2 lines)', async () => {
-      const prorationResponse = {
-        orderId: 'ord_2',
-        line: {
-          catalogEntryId: 'CE-pro',
-          pricing: {
-            kind: 'CalculatedPricing',
-            unitPrice: { amount: 10323, currency: 'PLN' },
-            totalPrice: { amount: 10323, currency: 'PLN' },
-            breakdown: [
-              { label: 'Plan target (proracja)', amount: { amount: 15484, currency: 'PLN' }, kind: 'base' },
-              { label: 'Kredyt', amount: { amount: -5161, currency: 'PLN' }, kind: 'discount' },
-            ],
-            calculatedAt: '2026-05-15T12:00:00Z',
-            componentVersion: 'v1',
-          },
-        },
-        paymentMethod: 'STRIPE_CHECKOUT',
-      };
+    it('passes discountCode in the PATCH body when applied', async () => {
       (globalThis.fetch as any).mockResolvedValue(
-        new Response(JSON.stringify(prorationResponse), {
+        new Response(JSON.stringify(CHECKOUT_STATE), {
           status: 200,
           headers: { 'content-type': 'application/json' },
         }),
       );
-      const result = await selectPaymentMethod('ord_2', { paymentMethod: 'STRIPE_CHECKOUT' });
-      expect(result.line.pricing.breakdown).toHaveLength(2);
-      expect(result.line.pricing.breakdown[1].amount.amount).toBeLessThan(0);
+      await selectPaymentMethod('ord_1', { paymentMethod: 'BANK_TRANSFER', discountCode: 'SAVE10' });
+      const [, init] = (globalThis.fetch as any).mock.calls[0];
+      expect(JSON.parse(init.body)).toEqual({ paymentMethod: 'BANK_TRANSFER', discountCode: 'SAVE10' });
+    });
+  });
+
+  describe('getOrder — proration (CC-353)', () => {
+    beforeEach(() => {
+      import.meta.env.PUBLIC_USE_MOCK_ORDERS = 'false';
+    });
+
+    function backendOrder(overrides: Record<string, unknown>) {
+      return {
+        orderId: 'ord_x',
+        status: 'DRAFT',
+        billingCycle: 'MONTHLY',
+        paymentMethod: null,
+        checkoutProgress: { hasCompanyData: true, hasPersonalData: true, hasOperationalStandards: true, hasPaymentMethod: false },
+        companyData: null,
+        personalData: null,
+        lines: [{ lineId: 'l1', catalogEntryId: 'ce', planName: 'Optimum', priceNet: 44650 }],
+        totalPriceNet: 44650,
+        currency: 'PLN',
+        discount: null,
+        proration: null,
+        eligibilityResult: null,
+        createdAt: '2026-06-26T10:00:00.000Z',
+        ...overrides,
+      };
+    }
+
+    it('parses proration for PLAN_UPGRADE (amountDueNow === totalPriceNet)', async () => {
+      (globalThis.fetch as any).mockResolvedValue(
+        new Response(
+          JSON.stringify(backendOrder({
+            proration: { fullPrice: 59400, credit: 14750, amountDueNow: 44650, currency: 'PLN' },
+          })),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
+      );
+      const result = await getOrder('ord_up');
+      expect(result.proration).toEqual({ fullPrice: 59400, credit: 14750, amountDueNow: 44650, currency: 'PLN' });
+      expect(result.proration?.amountDueNow).toBe(result.totalPriceNet);
+    });
+
+    it('proration is null for non-upgrade orders', async () => {
+      (globalThis.fetch as any).mockResolvedValue(
+        new Response(JSON.stringify(backendOrder({ proration: null })), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      );
+      const result = await getOrder('ord_init');
+      expect(result.proration).toBeNull();
     });
   });
 
