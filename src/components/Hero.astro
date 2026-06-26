@@ -87,8 +87,9 @@ const heroMinH = minHeight ?? (bgImage ? 'min-h-[480px] lg:min-h-[608px]' : '')
       </div>
 
       {image && (
-        <div class="lg:w-[48%]">
+        <div class="lg:w-[48%] relative">
           <Image src={image} alt={imageAlt} widths={[480, 768, 1024, 1400]} sizes="(min-width: 1024px) 48vw, 100vw" format="webp" quality={70} class="w-full rounded-xl" loading="eager" fetchpriority="high" />
+          <slot name="image-badge" />
         </div>
       )}
 

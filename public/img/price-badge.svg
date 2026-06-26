@@ -1,0 +1,22 @@
+<svg viewBox="0 0 140.74 157.826" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <clipPath id="ccShieldClip">
+      <path d="M109.476 0C126.746 9.34075e-05 140.74 13.1413 140.74 29.3594V89.4619C140.74 98.0063 136.795 105.659 130.648 111.014L88.1602 150.912C78.3437 160.13 62.3965 160.13 52.5801 150.912L10.0967 111.018C3.8901 105.653 8.34969e-07 97.995 0 89.4619V29.3594C5.62065e-05 13.1412 13.9949 0 31.2656 0H109.476Z"/>
+    </clipPath>
+    <linearGradient id="ccSheen1" x1="0" y1="51.4456" x2="55.4431" y2="51.4456" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="ccSheen2" x1="0" y1="51.5" x2="54.3769" y2="51.5" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- tarcza: jednolity żółty -->
+  <path d="M109.476 0C126.746 9.34075e-05 140.74 13.1413 140.74 29.3594V89.4619C140.74 98.0063 136.795 105.659 130.648 111.014L88.1602 150.912C78.3437 160.13 62.3965 160.13 52.5801 150.912L10.0967 111.018C3.8901 105.653 8.34969e-07 97.995 0 89.4619V29.3594C5.62065e-05 13.1412 13.9949 0 31.2656 0H109.476Z" fill="#FFD237"/>
+  <!-- połysk: dwa białe półkola (biały→przezroczysty), przycięte do tarczy -->
+  <g clip-path="url(#ccShieldClip)" opacity="0.55">
+    <path transform="translate(9.59 11.37)" d="M55.4431 0C24.8235 0 0 23.0581 0 51.5C0 79.9419 24.8235 103 55.4431 103V0Z" fill="url(#ccSheen1)"/>
+    <path transform="translate(57.57 11.37)" d="M54.3769 0C24.3461 0 0 23.0581 0 51.5C0 79.9419 24.3461 103 54.3769 103V0Z" fill="url(#ccSheen2)"/>
+  </g>
+</svg>

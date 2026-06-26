@@ -6,6 +6,7 @@ import type {
   OrderStatus,
   OrderType,
   PrefilledField,
+  ProrationDto,
   StartOrderDto,
   StartOrderResponseDto,
   WizardEntryStep,
@@ -23,6 +24,26 @@ interface MockAuthMeta {
   previousAnnualPrice?: number;
 }
 const orderAuthMeta = new Map<string, MockAuthMeta>();
+
+// Mock proracji per docs/proration-changes.md (CC-353):
+//   fullPrice    = pełna cena nowego planu za cykl (== totalPriceNet z cennika)
+//   credit       = prorata niewykorzystanego okresu poprzedniego planu (dodatnia)
+//   amountDueNow = fullPrice − credit
+// Zwraca null gdy zamówienie nie jest podniesieniem planu (proration == null po stronie BE).
+const MOCK_PRORATION_FACTOR = 0.33;
+function computeMockProration(
+  fullPrice: number,
+  billingCycle: BillingCycle,
+  meta: MockAuthMeta | undefined,
+): ProrationDto | null {
+  if (!meta || meta.orderType !== 'PLAN_UPGRADE') return null;
+  const prevPriceForCycle =
+    billingCycle === 'MONTHLY' ? meta.previousMonthlyPrice : meta.previousAnnualPrice;
+  if (!prevPriceForCycle) return null;
+  const credit = Math.round(prevPriceForCycle * MOCK_PRORATION_FACTOR);
+  const amountDueNow = Math.max(0, fullPrice - credit);
+  return { fullPrice, credit, amountDueNow, currency: 'PLN' };
+}
 
 // Helper — mapuje code → mock catalog prices (musi pasować do catalog.mock MOCK_PLANS).
 const PLAN_BY_CODE: Record<string, { monthly: number; annual: number }> = {
@@ -127,6 +148,7 @@ export async function startOrderMock(dto: StartOrderDto): Promise<StartOrderResp
     totalPriceNet: finalAmount,
     currency: 'PLN',
     discount,
+    proration: null, // ustawiane poniżej dla PLAN_UPGRADE (per CC-353 — już na DRAFT-cie)
     eligibilityResult: null,
     createdAt: new Date().toISOString(),
   };
@@ -160,7 +182,7 @@ export async function startOrderMock(dto: StartOrderDto): Promise<StartOrderResp
       prefilledFields = ['companyData', 'personalData', 'operationalStandards'];
     }
 
-    // Cache meta dla selectPaymentMethodMock (proration calc).
+    // Cache meta dla proration calc (start + getOrder).
     const prevPrices = PLAN_BY_CODE[authContext.planCode];
     orderAuthMeta.set(orderId, {
       orderType,
@@ -168,6 +190,15 @@ export async function startOrderMock(dto: StartOrderDto): Promise<StartOrderResp
       previousMonthlyPrice: prevPrices?.monthly,
       previousAnnualPrice: prevPrices?.annual,
     });
+
+    // Per CC-353 — proracja jest wypełniona już na DRAFT-cie, więc boks pokazuje
+    // właściwą kwotę od pierwszego ekranu. totalPriceNet == amountDueNow dla upgrade.
+    const proration = computeMockProration(finalAmount, order.billingCycle, orderAuthMeta.get(orderId));
+    if (proration) {
+      order.proration = proration;
+      order.totalPriceNet = proration.amountDueNow;
+      if (order.lines[0]) order.lines[0].priceNet = proration.amountDueNow;
+    }
 
     // Auto-populate checkoutProgress dla prefilled fields (BE robi to dla nas).
     if (prefilledFields.includes('companyData')) {
@@ -325,23 +356,15 @@ export async function submitCompanyDataMock(orderId: string, dto: SubmitCompanyD
 
 import type { ConsentDefinitionDto, SubmitPersonalDataDto } from '../types/order';
 
+// Zsynchronizowane z dev API (/orders/consent-definitions) — 3 zgody.
+// Dawne SERVICE_START_BEFORE_WITHDRAWAL i RODO_CLAUSE_ACKNOWLEDGMENT zostały usunięte po stronie backendu.
 const MOCK_CONSENT_DEFINITIONS: ConsentDefinitionDto[] = [
   {
     id: 'mock-consent-tos',
     code: 'TERMS_OF_SERVICE',
-    name: 'Zapoznałem się i akceptuję <a target="_blank" href="https://cybercover.pl/regulamin-swiadczenia-uslug/">treść Regulaminu świadczenia</a> usług drogą elektroniczną przez Cyber Cover sp. z o.o.',
+    name: 'Zapoznałem/-am się z <a target="_blank" href="https://cybercover.pl/regulamin-swiadczenia-uslug/">Regulaminem świadczenia usług</a> drogą elektroniczną i akceptuję jego postanowienia.',
     description: '',
     type: 'USER',
-    isRequired: true,
-    version: 1,
-    expandedDetails: null,
-  },
-  {
-    id: 'mock-consent-service-start',
-    code: 'SERVICE_START_BEFORE_WITHDRAWAL',
-    name: 'Wnoszę o rozpoczęcie Usługi, w tym usługi ubezpieczenia przed upływem terminu do odstąpienia od Umowy.',
-    description: '',
-    type: 'COMPANY',
     isRequired: true,
     version: 1,
     expandedDetails: null,
@@ -349,7 +372,7 @@ const MOCK_CONSENT_DEFINITIONS: ConsentDefinitionDto[] = [
   {
     id: 'mock-consent-withdrawal-waiver',
     code: 'WITHDRAWAL_RIGHT_WAIVER_ACKNOWLEDGMENT',
-    name: 'Przyjmuję do wiadomości informację o utracie prawa do odstąpienia od Umowy.',
+    name: 'Żądam rozpoczęcia świadczenia usługi przed upływem terminu do odstąpienia od umowy oraz przyjmuję do wiadomości, że po całkowitym wykonaniu usługi utracę prawo odstąpienia od umowy zgodnie z art. 38 ustawy o prawach konsumenta.',
     description: '',
     type: 'COMPANY',
     isRequired: true,
@@ -357,32 +380,14 @@ const MOCK_CONSENT_DEFINITIONS: ConsentDefinitionDto[] = [
     expandedDetails: null,
   },
   {
-    id: 'mock-consent-rodo',
-    code: 'RODO_CLAUSE_ACKNOWLEDGMENT',
-    name: 'Zapoznałam/zapoznałem się z <a target="_blank" href="https://cybercover.pl/polityka-plikow-cookies-eu/">treścią klauzuli informacyjnej RODO</a> Cyber Cover sp. z o.o.',
-    description: '',
-    type: 'USER',
-    isRequired: true,
-    version: 1,
-    expandedDetails: null,
-  },
-  {
     id: 'mock-consent-marketing',
     code: 'MARKETING_CONSENT',
-    name: 'Wyrażam zgodę na przetwarzanie moich danych osobowych w celach marketingowych przez Cyber Cover sp. z o.o.',
-    description: 'w celu otrzymywania informacji handlowych drogą elektroniczną np. newslettera.',
+    name: 'Wyrażam zgodę na otrzymywanie drogą elektroniczną informacji handlowych od Cyber Cover sp. z o.o. dotyczących produktów i usług.',
+    description: '',
     type: 'USER',
     isRequired: false,
     version: 1,
-    expandedDetails: {
-      title: 'Mam świadomość, że:',
-      items: [
-        'moja zgoda może zostać cofnięta w dowolnym momencie.',
-        'posiadam prawo dostępu do moich danych.',
-        'mam prawo wniesienia skargi do organu nadzorczego.',
-        'posiadanie danych jest dobrowolne.',
-      ],
-    },
+    expandedDetails: null,
   },
 ];
 
@@ -495,7 +500,7 @@ export async function evaluateEligibilityMock(
 
 import type {
   ValidateDiscountDto, DiscountValidationResponseDto,
-  SelectPaymentMethodDto, SelectPaymentMethodResponseDto,
+  SelectPaymentMethodDto,
   ConfirmOrderResponseDto,
   CreateCheckoutSessionResponseDto,
 } from '../types/order';
@@ -555,7 +560,7 @@ const PARTNER_DISCOUNT_KINDS: ReadonlyArray<OrderDiscountDto['kind']> = [
 export async function selectPaymentMethodMock(
   orderId: string,
   dto: SelectPaymentMethodDto,
-): Promise<SelectPaymentMethodResponseDto> {
+): Promise<CheckoutStateResponseDto> {
   const order = ordersById.get(orderId);
   if (!order) throw new ApiError('ORDER_NOT_FOUND', 404, 'Order not found (mock)');
   if (dto.discountCode) {
@@ -571,57 +576,23 @@ export async function selectPaymentMethodMock(
   order.checkoutProgress = { ...order.checkoutProgress, hasPaymentMethod: true };
   ordersById.set(orderId, order);
 
-  // Per spec §5.6.2 + §5.9.2 — proration breakdown dla PLAN_UPGRADE; single base line dla innych.
-  const baseAmount = order.totalPriceNet ?? order.lines[0]?.priceNet ?? 0;
-  const catalogEntryId = order.lines[0]?.catalogEntryId ?? '';
-  const planName = order.lines[0]?.planName ?? 'Plan';
-  const meta = orderAuthMeta.get(orderId);
-
-  if (meta?.orderType === 'PLAN_UPGRADE' && meta.previousAnnualPrice && meta.previousMonthlyPrice) {
-    // Mock proration: 33% pozostały cykl, target prorated charge - previous prorated credit.
-    const prevPriceForCycle =
-      order.billingCycle === 'MONTHLY' ? meta.previousMonthlyPrice : meta.previousAnnualPrice;
-    const PRORATION_FACTOR = 0.33;
-    const targetCharge = Math.round(baseAmount * PRORATION_FACTOR);
-    const previousCredit = Math.round(prevPriceForCycle * PRORATION_FACTOR);
-    const amountDueNow = Math.max(0, targetCharge - previousCredit);
-    return {
-      orderId,
-      line: {
-        catalogEntryId,
-        pricing: {
-          kind: 'CalculatedPricing',
-          unitPrice: { amount: amountDueNow, currency: 'PLN' },
-          totalPrice: { amount: amountDueNow, currency: 'PLN' },
-          breakdown: [
-            { label: `Plan ${planName} (proracja)`, amount: { amount: targetCharge, currency: 'PLN' }, kind: 'base' },
-            { label: 'Kredyt — niewykorzystany poprzedni plan', amount: { amount: -previousCredit, currency: 'PLN' }, kind: 'discount' },
-          ],
-          calculatedAt: new Date().toISOString(),
-          componentVersion: 'mock-v1',
-        },
-      },
-      paymentMethod: dto.paymentMethod,
-    };
-  }
-
-  // INITIAL_PURCHASE / REACTIVATION — single base line, no proration.
+  // CC-353 — PATCH /payment-method zwraca tylko checkout-state (bez cen). Proracja/kwoty
+  // żyją na GET /orders/:id; ConfirmStep robi świeży getOrder po tym kroku.
+  // (Realny BE przelicza tu amountDueNow z uwzględnieniem kodu rabatowego; mock zostawia
+  //  proracje zaseedowaną przy starcie — wystarcza do demonstracji boksu.)
   return {
     orderId,
-    line: {
-      catalogEntryId,
-      pricing: {
-        kind: 'CalculatedPricing',
-        unitPrice: { amount: baseAmount, currency: 'PLN' },
-        totalPrice: { amount: baseAmount, currency: 'PLN' },
-        breakdown: [
-          { label: `Plan ${planName} (12 miesięcy)`, amount: { amount: baseAmount, currency: 'PLN' }, kind: 'base' },
-        ],
-        calculatedAt: new Date().toISOString(),
-        componentVersion: 'mock-v1',
-      },
-    },
-    paymentMethod: dto.paymentMethod,
+    progress: order.checkoutProgress,
+    isComplete: Object.values(order.checkoutProgress).every(Boolean),
+    nextRequiredStep: !order.checkoutProgress.hasCompanyData
+      ? 'COMPANY_DATA'
+      : !order.checkoutProgress.hasPersonalData
+        ? 'PERSONAL_DATA'
+        : !order.checkoutProgress.hasOperationalStandards
+          ? 'OPERATIONAL_STANDARDS'
+          : !order.checkoutProgress.hasPaymentMethod
+            ? 'PAYMENT_METHOD'
+            : null,
   };
 }
 
