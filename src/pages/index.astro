@@ -57,7 +57,32 @@ const steps = [
     introSize="xl"
   >
     <ArrowButton slot="cta" variant="yellow" size="sm" label="Sprawdź cenę" href="/cennik" />
+    <div slot="image-badge" class="absolute left-2 lg:-left-4 top-[14%] z-10 w-[100px] lg:w-[141px] drop-shadow-[0_8px_20px_rgba(0,0,0,0.18)]">
+      <img src="/img/price-badge.svg" alt="" aria-hidden="true" class="block w-full h-auto" />
+      <div class="absolute inset-0 text-black text-center font-['Plus_Jakarta_Sans',sans-serif] select-none">
+        <span class="absolute left-1/2 -translate-x-1/2 top-[11%] text-[9px] lg:text-[12px] font-semibold tracking-[-0.04em] whitespace-nowrap">CENA OD</span>
+        <span class="absolute left-1/2 -translate-x-1/2 top-[19%] text-[35px] lg:text-[49px] font-bold leading-none tracking-[-0.04em]">295</span>
+        <span class="absolute left-1/2 -translate-x-1/2 top-[53%] text-[15px] lg:text-[20px] font-bold leading-none">PLN</span>
+        <span class="absolute left-1/2 -translate-x-1/2 top-[72%] text-[9px] lg:text-[12px] font-semibold whitespace-nowrap">za miesiąc</span>
+      </div>
+    </div>
   </Hero>
+
+  <!-- ======== PARTNERZY ======== -->
+  <section class="pb-8 lg:pb-14">
+    <div class="max-w-container mx-auto px-6">
+      <p class="text-center text-base lg:text-[19px] leading-[1.4] tracking-[-0.01em] text-brand-text mb-5 lg:mb-7">
+        Współpracujemy z liderami prawa, technologii i bezpieczeństwa ludzi
+      </p>
+      <div class="bg-brand-bg rounded-[55px] px-8 lg:px-[110px] py-7 lg:py-0 lg:h-[110px] flex flex-wrap items-center justify-center gap-x-10 gap-y-6 lg:gap-x-[70px]">
+        <img src="/img/logo-wolters-kluwer.png" alt="Wolters Kluwer" class="h-[34px] lg:h-[41px] w-auto" loading="lazy" />
+        <img src="/img/logo-colonnade.svg" alt="Colonnade" class="h-[40px] lg:h-[48px] w-auto" loading="lazy" />
+        <img src="/img/logo-resilia.png" alt="Resilia" class="h-[26px] lg:h-[31px] w-auto" loading="lazy" />
+        <img src="/img/logo-crawford.png" alt="Crawford" class="h-[33px] lg:h-[40px] w-auto" loading="lazy" />
+        <img src="/img/logo-symfonia.png" alt="Symfonia" class="h-[26px] lg:h-[31px] w-auto" loading="lazy" />
+      </div>
+    </div>
+  </section>
 
   <!-- ======== CYBERZAGROŻENIA ======== -->
   <section class="py-16 lg:py-24">
