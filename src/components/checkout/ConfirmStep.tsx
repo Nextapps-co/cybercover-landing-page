@@ -7,6 +7,7 @@ import { OrderSummaryAside } from './OrderSummaryAside';
 import { getOrderSession, resolveOsSkipped } from '../../lib/state/order-session';
 import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
 import { canAccessStep } from '../../lib/state/checkout-navigation';
+import { classifyOrder } from '../../lib/state/pending-order';
 import { getOrder, confirmOrder, createStripeCheckoutSession } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
@@ -67,6 +68,24 @@ export function ConfirmStep() {
         const [o, skipped] = await Promise.all([getOrder(id), resolveOsSkipped(id)]);
         if (cancelled) return;
         setOsSkipped(skipped);
+
+        // Zamówienie już potwierdzone (np. powrót natywnym „wstecz" ze Stripe).
+        // Zamiast pozwolić na re-confirm (→ INVALID_ORDER_STATE) kierujemy na właściwy ekran.
+        if (o.status !== 'DRAFT') {
+          switch (classifyOrder(o)) {
+            case 'resumable':
+              navigateForward(`/checkout/resume?orderId=${encodeURIComponent(id)}`);
+              return;
+            case 'paid':
+              navigateForward(`/checkout/success?orderId=${encodeURIComponent(id)}`);
+              return;
+            case 'dead':
+              window.location.assign('/cennik');
+              return;
+            // 'draft' nie wystąpi (status !== 'DRAFT')
+          }
+        }
+
         if (!canAccessStep(4, o.checkoutProgress) || !o.checkoutProgress.hasPaymentMethod) {
           const next = !o.checkoutProgress.hasCompanyData
             ? 'company-data'

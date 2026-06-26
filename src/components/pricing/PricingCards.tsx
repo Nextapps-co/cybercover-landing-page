@@ -4,7 +4,8 @@ import type { PlanCatalogEntryDto, SubscriptionStatus } from '../../lib/api/type
 import type { PlanChangePendingMetadata } from '../../lib/api/types/order';
 import { getPlans } from '../../lib/api/catalog';
 import { startOrder } from '../../lib/api/orders';
-import { setFromStartOrderResponse } from '../../lib/state/order-session';
+import { setFromStartOrderResponse, clearOrderSession } from '../../lib/state/order-session';
+import { resolvePendingOrder } from '../../lib/state/pending-order';
 import { getPartnerFromUrl } from '../../lib/format/partner';
 import { getDiscountCodeFromUrl, clearDiscountCode } from '../../lib/format/discount-code';
 import { translateApiError } from '../../lib/errors/translate';
@@ -42,6 +43,27 @@ export function PricingCards() {
     setState({ kind: 'loading' });
 
     (async () => {
+      // Resume porzuconej płatności: jeśli w tej sesji jest niedokończone zamówienie,
+      // kieruj na właściwy ekran zanim pokażemy cennik. Pomijamy dla auth-aware entry
+      // (?handoff= / ?mockAuth=), które ma własną obsługę 409 PLAN_CHANGE_PENDING w onCtaClick.
+      const entryParams = new URLSearchParams(window.location.search);
+      if (!entryParams.has('handoff') && !entryParams.has('mockAuth')) {
+        const pending = await resolvePendingOrder();
+        if (cancelled) return;
+        if (pending.kind === 'resumable') {
+          window.location.assign(`/checkout/resume?orderId=${encodeURIComponent(pending.orderId)}`);
+          return;
+        }
+        if (pending.kind === 'paid') {
+          window.location.assign(`/checkout/success?orderId=${encodeURIComponent(pending.orderId)}`);
+          return;
+        }
+        if (pending.kind === 'dead') {
+          clearOrderSession();
+        }
+        // 'draft' / 'none' → renderuj cennik normalnie (bez zmian)
+      }
+
       // 0. Dev shortcut — ?mockAuth= w URL ustawia fake auth session (przed handoff detection,
       //    bo handoff i mock-auth używają tych samych session storage keys).
       consumeMockAuthFromUrl();
