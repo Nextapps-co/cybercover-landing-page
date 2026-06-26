@@ -167,10 +167,28 @@ const faq = [
   </Section>
 
   <!-- ======== SEKCJA: Dokumenty (full-bleed blue) ======== -->
-  <Section bg="bg-[#EAF4FB]">
+  <Section bg="bg-[#EAF4FB]" class="relative overflow-hidden">
+    <!-- Dekoracyjne strzałki w tle (jak w CtaReady) -->
+    <svg
+      class="pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 h-[155%] w-auto opacity-50 select-none"
+      viewBox="0 0 700 519"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+      fill="none"
+    >
+      <defs>
+        <linearGradient id="owu-arrow-grad" x1="0.5" y1="0" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+          <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+          <stop offset="1" stop-color="#a7a7a7" stop-opacity="0.35"/>
+        </linearGradient>
+      </defs>
+      <g fill="url(#owu-arrow-grad)">
+        <path transform="translate(280 -50) rotate(90 283 340) scale(0.75)" d="M1.449,408.126q4.03,14.84,19.2,29.928l9.93,9.869,211.486,210.1q20.672,20.523,40.849,20.517t40.849-20.517l211.486-210.1,9.93-9.869q15.193-15.1,19.2-29.928a40.582,40.582,0,0,0,1.473-10.649V57.391q0-29.048-14.289-43.2Q537.309.019,508.087,0H57.775Q28.522,0,14.289,14.19.025,28.361,0,57.391V397.478a40.583,40.583,0,0,0,1.473,10.649H1.449Z"/>
+        <path transform="translate(480 -50) rotate(90 283 340) scale(0.75)" d="M1.449,408.126q4.03,14.84,19.2,29.928l9.93,9.869,211.486,210.1q20.672,20.523,40.849,20.517t40.849-20.517l211.486-210.1,9.93-9.869q15.193-15.1,19.2-29.928a40.582,40.582,0,0,0,1.473-10.649V57.391q0-29.048-14.289-43.2Q537.309.019,508.087,0H57.775Q28.522,0,14.289,14.19.025,28.361,0,57.391V397.478a40.583,40.583,0,0,0,1.473,10.649H1.449Z"/>
+      </g>
+    </svg>
     <div
-      class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start"
-      style="background-image:url('/img/tlo-niebieskie-1920.svg'); background-repeat:no-repeat; background-position:right center; background-size:contain;"
+      class="relative grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start"
     >
       <div class="flex flex-col gap-5">
         <h3 class="text-2xl lg:text-card-title font-semibold leading-tight text-black max-w-[500px]">
@@ -189,7 +207,7 @@ const faq = [
         </p>
         <div class="flex">
           <a
-            href="/docs/Ogolne-Warunki-Ubezpieczenia-Cyber-Cover-014-0426.pdf"
+            href="/docs/OWU_Cyber_0104_2026.pdf"
             target="_blank"
             rel="noopener"
             class="inline-flex items-center gap-2 bg-white border border-brand-border hover:bg-brand-bg text-black font-semibold text-base px-6 py-3 rounded-full transition-colors"
