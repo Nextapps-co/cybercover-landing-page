@@ -3,7 +3,24 @@ import { FormAlert } from './FormAlert';
 import { createStripeCheckoutSession, getOrder } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
 import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
+import { clearOrderSession } from '../../lib/state/order-session';
+import { clearFormState } from '../../lib/state/form-persistence';
 import type { OrderResponseDto } from '../../lib/api/types/order';
+
+type Variant = 'cancelled' | 'resume';
+
+const COPY: Record<Variant, { title: string; subtitle: string; primary: string }> = {
+  cancelled: {
+    title: 'Płatność anulowana',
+    subtitle: 'Możesz spróbować ponownie albo wybrać inną metodę płatności.',
+    primary: 'Spróbuj ponownie',
+  },
+  resume: {
+    title: 'Masz niedokończoną płatność',
+    subtitle: 'Twoje zamówienie czeka na opłacenie. Dokończ płatność lub zmień metodę.',
+    primary: 'Dokończ płatność',
+  },
+};
 
 function readOrderIdFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search);
@@ -21,12 +38,14 @@ function isPromoZeroOrder(order: OrderResponseDto): boolean {
   return isPartner && d.priceAfterDiscount === 0;
 }
 
-export function StripeCancelledRetry() {
+export function ResumePaymentScreen({ variant }: { variant: Variant }) {
   const [hydrating, setHydrating] = useState(true);
   const [hydrationError, setHydrationError] = useState<string | null>(null);
   const [order, setOrder] = useState<OrderResponseDto | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const copy = COPY[variant];
 
   useEffect(() => {
     let cancelled = false;
@@ -71,6 +90,12 @@ export function StripeCancelledRetry() {
   const handleSkipSetup = () => {
     const id = readOrderIdFromUrl();
     navigateForward(`/checkout/success${id ? `?orderId=${encodeURIComponent(id)}` : ''}`);
+  };
+
+  const handleStartOver = () => {
+    clearOrderSession();
+    clearFormState();
+    window.location.assign('/cennik');
   };
 
   if (hydrating) {
@@ -119,10 +144,8 @@ export function StripeCancelledRetry() {
           </>
         ) : (
           <>
-            <h1 className="text-3xl font-bold text-[#0D0D0D]">Płatność anulowana</h1>
-            <p className="text-sm text-[#6B6965]">
-              Możesz spróbować ponownie albo wybrać inną metodę płatności.
-            </p>
+            <h1 className="text-3xl font-bold text-[#0D0D0D]">{copy.title}</h1>
+            <p className="text-sm text-[#6B6965]">{copy.subtitle}</p>
             {error && <p className="text-sm text-red-500" role="alert">{error}</p>}
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               <button
@@ -131,7 +154,7 @@ export function StripeCancelledRetry() {
                 disabled={retrying}
                 className="rounded-[80px] bg-[#FED64B] px-7 py-3 text-base font-semibold text-[#0D0D0D] hover:bg-[#FFC107] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {retrying ? 'Przekierowuję…' : 'Spróbuj ponownie'}
+                {retrying ? 'Przekierowuję…' : copy.primary}
               </button>
               <button
                 type="button"
@@ -140,6 +163,15 @@ export function StripeCancelledRetry() {
               >
                 Zmień metodę płatności
               </button>
+              {variant === 'resume' && (
+                <button
+                  type="button"
+                  onClick={handleStartOver}
+                  className="rounded-[80px] px-7 py-3 text-base font-semibold text-[#6B6965] underline hover:text-[#0D0D0D]"
+                >
+                  Zacznij od nowa
+                </button>
+              )}
             </div>
           </>
         )}
