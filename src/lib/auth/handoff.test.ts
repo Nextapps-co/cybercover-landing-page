@@ -12,6 +12,7 @@ import { exchangeHandoff } from '../api/iam';
 describe('detectAndExchangeHandoff', () => {
   beforeEach(() => {
     window.sessionStorage.clear();
+    window.localStorage.clear();
     window.history.replaceState({}, '', '/cennik');
     vi.mocked(exchangeHandoff).mockReset();
   });
@@ -38,7 +39,7 @@ describe('detectAndExchangeHandoff', () => {
   it('hard-resets sessionStorage before exchange', async () => {
     window.history.replaceState({}, '', '/cennik?handoff=abc');
     setTokens('OLD-token', 'OLD-refresh');
-    window.sessionStorage.setItem('cybercover:order-session', '{"orderId":"old"}');
+    window.localStorage.setItem('cybercover:order-session', '{"orderId":"old"}');
     window.sessionStorage.setItem('cybercover:form-state:company-data', 'stale');
 
     vi.mocked(exchangeHandoff).mockResolvedValue({ accessToken: 'NEW', refreshToken: 'NEW-r' });
@@ -46,7 +47,7 @@ describe('detectAndExchangeHandoff', () => {
     await detectAndExchangeHandoff();
 
     expect(getAccessToken()).toBe('NEW');
-    expect(window.sessionStorage.getItem('cybercover:order-session')).toBeNull();
+    expect(window.localStorage.getItem('cybercover:order-session')).toBeNull();
     expect(window.sessionStorage.getItem('cybercover:form-state:company-data')).toBeNull();
   });
 

@@ -39,6 +39,7 @@ export interface OrderSession {
 }
 
 export const STORAGE_KEY = 'cybercover:order-session';
+export const ORDER_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 dni
 
 function isValidSession(value: unknown): value is OrderSession {
   if (!value || typeof value !== 'object') return false;
@@ -58,10 +59,15 @@ function isValidSession(value: unknown): value is OrderSession {
 export function loadFromStorage(): OrderSession | null {
   if (typeof window === 'undefined') return null;
   try {
-    const raw = window.sessionStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!isValidSession(parsed)) return null;
+    const createdMs = Date.parse(parsed.createdAt);
+    if (!Number.isNaN(createdMs) && Date.now() - createdMs > ORDER_SESSION_TTL_MS) {
+      clearSession();
+      return null;
+    }
     return parsed;
   } catch {
     return null;
@@ -70,12 +76,12 @@ export function loadFromStorage(): OrderSession | null {
 
 export function persistToStorage(session: OrderSession): void {
   if (typeof window === 'undefined') return;
-  window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
 }
 
 export function clearSession(): void {
   if (typeof window === 'undefined') return;
-  window.sessionStorage.removeItem(STORAGE_KEY);
+  window.localStorage.removeItem(STORAGE_KEY);
 }
 
 export interface SetFromResponseInput {

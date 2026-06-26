@@ -9,6 +9,7 @@
 // Komponenty React czytają stan przez `useAuthSession()` hook.
 
 import type { AuthSession } from './types';
+import { clearSession as clearOrderSession } from '../state/order-session';
 
 const ACCESS_KEY = 'cybercover:auth-access';
 const REFRESH_KEY = 'cybercover:auth-refresh';
@@ -80,7 +81,6 @@ export function clearAllCheckoutState(): void {
     ACCESS_KEY,
     REFRESH_KEY,
     STORED_AT_KEY,
-    'cybercover:order-session',
     'cybercover:form-state:company-data',
     'cybercover:form-state:personal-data',
     'cybercover:form-state:operational-standards',
@@ -91,5 +91,6 @@ export function clearAllCheckoutState(): void {
   for (const k of keys) {
     window.sessionStorage.removeItem(k);
   }
+  clearOrderSession(); // Clear order-session from localStorage
   setAuthAwareFlag(false);
 }
