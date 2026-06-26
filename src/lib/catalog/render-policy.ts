@@ -196,7 +196,16 @@ const SECTIONS: SectionDef[] = [
     title: 'Wielodostęp',
     icon: 'users',
     items: [
+      // Nielimitowany wielodostęp (np. Ekspert) — sterowane flagą accountSwitching.
       { visibleWhen: f => f['feature.multiUser.accountSwitching'] === 'true', text: 'Nielimitowane dodawanie wielu kont użytkowników do konta głównego' },
+      // Limitowany wielodostęp — fallback gdy brak nielimitowanego: pokaż konkretny limit z feature.multiUser.maxUsers.
+      {
+        visibleWhen: f => f['feature.multiUser.accountSwitching'] !== 'true' && Boolean(f['feature.multiUser.maxUsers']),
+        text: f => {
+          const n = Number(f['feature.multiUser.maxUsers']);
+          return `Maksymalnie ${f['feature.multiUser.maxUsers']} ${usersLabel(n)}`;
+        },
+      },
     ],
   },
 ];
@@ -221,6 +230,12 @@ function monthsLabel(n: number): string {
   if (n === 1) return 'miesiąc';
   if (n >= 2 && n <= 4) return 'miesiące';
   return 'miesięcy';
+}
+
+// Polish plural for "użytkownik" ("1 użytkownik", "2 użytkowników", "5 użytkowników").
+// Genitive plural od 2 w górę pasuje do frazy "Maksymalnie X użytkowników".
+function usersLabel(n: number): string {
+  return n === 1 ? 'użytkownik' : 'użytkowników';
 }
 
 // Format a yearly total ("3 540 zł netto/rok") from a monthly rate in grosze

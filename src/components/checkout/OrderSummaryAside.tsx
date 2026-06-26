@@ -25,8 +25,58 @@ export function OrderSummaryAside({ order }: Props = {}) {
     );
   }
 
-  const discount = order?.discount ?? null;
   const currency = (order?.currency ?? session.planSnapshot.currency) as 'PLN';
+  const proration = order?.proration ?? null;
+
+  // CC-353 — dla zamówień podniesienia planu boks pokazuje rozbicie proracji
+  // (pełna cena → −kredyt → do zapłaty teraz) zamiast ceny „z metki" z cennika.
+  // Jedyne źródło prawdy: order.proration (kwoty już za właściwy cykl, bez ×12).
+  if (proration) {
+    return (
+      <div className="bg-white border border-[#E4E2DF] rounded-[12px] p-6 lg:sticky lg:top-[110px]">
+        <h3 className="font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-base text-black mb-4 pb-4 border-b border-[#E4E2DF]">
+          Podsumowanie zamówienia
+        </h3>
+
+        <p className="font-['Plus_Jakarta_Sans',sans-serif] font-normal text-sm text-[#413f3b] mb-1">
+          Plan:
+        </p>
+        <h4 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-2xl text-black mb-4">
+          {session.planSnapshot.planName}
+        </h4>
+
+        <ul className="space-y-2">
+          <li className="flex items-start justify-between gap-2">
+            <span className="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#413f3b]">Pełna cena planu</span>
+            <span className="font-['Plus_Jakarta_Sans',sans-serif] text-sm font-medium text-black whitespace-nowrap">
+              {formatMinorUnits(proration.fullPrice, currency)}
+            </span>
+          </li>
+          <li className="flex items-start justify-between gap-2">
+            <span className="font-['Plus_Jakarta_Sans',sans-serif] text-sm text-[#413f3b]">Kredyt za obecny plan</span>
+            <span className="font-['Plus_Jakarta_Sans',sans-serif] text-sm font-medium text-green-700 whitespace-nowrap">
+              −{formatMinorUnits(proration.credit, currency)}
+            </span>
+          </li>
+        </ul>
+
+        <div className="mt-4 pt-4 border-t border-[#E4E2DF] flex items-baseline justify-between gap-2">
+          <span className="font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-base text-black">
+            Do zapłaty teraz
+          </span>
+          <span className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-2xl text-black whitespace-nowrap">
+            {formatMinorUnits(proration.amountDueNow, currency)}
+          </span>
+        </div>
+
+        <p className="mt-3 font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#6B6965]">
+          Kwoty netto. VAT 23% doliczymy na fakturze.
+        </p>
+      </div>
+    );
+  }
+
+  const discount = order?.discount ?? null;
   const isAnnual = session.billingCycle === 'ANNUAL';
 
   const monthlyGrosze = discount ? discount.priceAfterDiscount : session.planSnapshot.priceMinorUnits;

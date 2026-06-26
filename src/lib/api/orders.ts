@@ -17,7 +17,6 @@ import type {
   ValidateDiscountDto,
   DiscountValidationResponseDto,
   SelectPaymentMethodDto,
-  SelectPaymentMethodResponseDto,
   ConfirmOrderResponseDto,
   CreateCheckoutSessionResponseDto,
   OrderConfirmationResponseDto,
@@ -118,16 +117,16 @@ export async function validateDiscountCode(orderId: string, dto: ValidateDiscoun
 }
 
 /**
- * Per spec §5.6.2 — response shape rozszerzony o `line.pricing` z breakdown[].
- * Dla `orderType=PLAN_UPGRADE` breakdown zawiera 2 linie (charge + credit ujemny),
- * dla `INITIAL_PURCHASE` / `REACTIVATION` — 1 linię (base).
+ * CC-353 — PATCH /payment-method zwraca tylko checkout-state (postęp kroków), BEZ cen.
+ * Kwoty/proracja są wyłącznie na GET /orders/:id; po tym PATCH ConfirmStep robi świeży
+ * `getOrder`, który zwraca przeliczoną `proration` (np. po kodzie rabatowym).
  */
 export async function selectPaymentMethod(
   orderId: string,
   dto: SelectPaymentMethodDto,
-): Promise<SelectPaymentMethodResponseDto> {
+): Promise<CheckoutStateResponseDto> {
   if (useMock()) return selectPaymentMethodMock(orderId, dto);
-  return apiPatch<SelectPaymentMethodDto, SelectPaymentMethodResponseDto>(
+  return apiPatch<SelectPaymentMethodDto, CheckoutStateResponseDto>(
     `/orders/${encodeURIComponent(orderId)}/payment-method`,
     dto,
   );

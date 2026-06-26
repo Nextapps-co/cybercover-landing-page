@@ -6,9 +6,9 @@ import { ResumePaymentScreen } from '../../components/checkout/ResumePaymentScre
 export const prerender = false;
 ---
 <CheckoutLayout
-  title="Płatność anulowana — CyberCover"
-  description="Spróbuj ponownie lub wybierz inną metodę płatności"
+  title="Dokończ płatność — CyberCover"
+  description="Masz niedokończone zamówienie czekające na opłacenie"
   showBackButton={false}
 >
-  <ResumePaymentScreen variant="cancelled" client:load />
+  <ResumePaymentScreen variant="resume" client:load />
 </CheckoutLayout>

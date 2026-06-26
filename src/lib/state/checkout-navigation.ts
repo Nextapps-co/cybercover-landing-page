@@ -35,3 +35,15 @@ export function canAccessStep(step: CheckoutStepNumber, progress: CheckoutProgre
   if (step === 4) return progress.hasCompanyData && progress.hasPersonalData && progress.hasOperationalStandards;
   return false;
 }
+
+/**
+ * Ścieżka kroku, od którego należy wznowić wizard dla zamówienia DRAFT —
+ * pierwszy niewypełniony krok wg checkoutProgress; gdy wszystkie gotowe → confirm.
+ */
+export function resumeStepPath(progress: CheckoutProgressDto): string {
+  if (!progress.hasCompanyData) return '/checkout/company-data';
+  if (!progress.hasPersonalData) return '/checkout/personal-data';
+  if (!progress.hasOperationalStandards) return '/checkout/operational-standards';
+  if (!progress.hasPaymentMethod) return '/checkout/payment-method';
+  return '/checkout/confirm';
+}

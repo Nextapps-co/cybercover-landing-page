@@ -5,6 +5,7 @@ import {
   clearSession,
   setFromStartOrderResponse,
   STORAGE_KEY,
+  ORDER_SESSION_TTL_MS,
   type OrderSession,
 } from './order-session';
 
@@ -19,12 +20,12 @@ const fixture = (): OrderSession => ({
     currency: 'PLN',
     description: 'Optimum plan',
   },
-  createdAt: '2026-04-24T10:00:00.000Z',
+  createdAt: new Date().toISOString(),
 });
 
 describe('order-session', () => {
   beforeEach(() => {
-    sessionStorage.clear();
+    localStorage.clear();
   });
 
   describe('persistToStorage / loadFromStorage', () => {
@@ -40,17 +41,17 @@ describe('order-session', () => {
     });
 
     it('loadFromStorage returns null when stored value is invalid JSON', () => {
-      sessionStorage.setItem(STORAGE_KEY, '{not-valid}');
+      localStorage.setItem(STORAGE_KEY, '{not-valid}');
       expect(loadFromStorage()).toBeNull();
     });
 
     it('loadFromStorage returns null when stored value missing orderId', () => {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ catalogEntryId: 'x' }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ catalogEntryId: 'x' }));
       expect(loadFromStorage()).toBeNull();
     });
 
     it('loadFromStorage returns null when billingCycle is invalid', () => {
-      sessionStorage.setItem(
+      localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({ ...fixture(), billingCycle: 'WEEKLY' }),
       );
@@ -59,7 +60,7 @@ describe('order-session', () => {
   });
 
   describe('clearSession', () => {
-    it('clears sessionStorage', () => {
+    it('clears localStorage', () => {
       persistToStorage(fixture());
       clearSession();
       expect(loadFromStorage()).toBeNull();
@@ -139,6 +140,27 @@ describe('order-session', () => {
       const reloaded = loadFromStorage();
       expect(reloaded?.wizardEntryStep).toBe('payment-method');
       expect(reloaded?.orderType).toBe('PLAN_UPGRADE');
+    });
+  });
+
+  describe('TTL expiry', () => {
+    it('returns null and clears storage when createdAt older than TTL', () => {
+      const stale = { ...fixture(), createdAt: new Date(Date.now() - ORDER_SESSION_TTL_MS - 1000).toISOString() };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stale));
+      expect(loadFromStorage()).toBeNull();
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    });
+
+    it('returns the session when createdAt within TTL', () => {
+      const fresh = { ...fixture(), createdAt: new Date().toISOString() };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
+      expect(loadFromStorage()?.orderId).toBe(fresh.orderId);
+    });
+
+    it('does not expire when createdAt is unparseable', () => {
+      const weird = { ...fixture(), createdAt: 'not-a-date' };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(weird));
+      expect(loadFromStorage()?.orderId).toBe(weird.orderId);
     });
   });
 });
