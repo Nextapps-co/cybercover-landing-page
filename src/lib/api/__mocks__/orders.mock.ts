@@ -356,23 +356,15 @@ export async function submitCompanyDataMock(orderId: string, dto: SubmitCompanyD
 
 import type { ConsentDefinitionDto, SubmitPersonalDataDto } from '../types/order';
 
+// Zsynchronizowane z dev API (/orders/consent-definitions) — 3 zgody.
+// Dawne SERVICE_START_BEFORE_WITHDRAWAL i RODO_CLAUSE_ACKNOWLEDGMENT zostały usunięte po stronie backendu.
 const MOCK_CONSENT_DEFINITIONS: ConsentDefinitionDto[] = [
   {
     id: 'mock-consent-tos',
     code: 'TERMS_OF_SERVICE',
-    name: 'Zapoznałem się i akceptuję <a target="_blank" href="https://cybercover.pl/regulamin-swiadczenia-uslug/">treść Regulaminu świadczenia</a> usług drogą elektroniczną przez Cyber Cover sp. z o.o.',
+    name: 'Zapoznałem/-am się z <a target="_blank" href="https://cybercover.pl/regulamin-swiadczenia-uslug/">Regulaminem świadczenia usług</a> drogą elektroniczną i akceptuję jego postanowienia.',
     description: '',
     type: 'USER',
-    isRequired: true,
-    version: 1,
-    expandedDetails: null,
-  },
-  {
-    id: 'mock-consent-service-start',
-    code: 'SERVICE_START_BEFORE_WITHDRAWAL',
-    name: 'Wnoszę o rozpoczęcie Usługi, w tym usługi ubezpieczenia przed upływem terminu do odstąpienia od Umowy.',
-    description: '',
-    type: 'COMPANY',
     isRequired: true,
     version: 1,
     expandedDetails: null,
@@ -380,7 +372,7 @@ const MOCK_CONSENT_DEFINITIONS: ConsentDefinitionDto[] = [
   {
     id: 'mock-consent-withdrawal-waiver',
     code: 'WITHDRAWAL_RIGHT_WAIVER_ACKNOWLEDGMENT',
-    name: 'Przyjmuję do wiadomości informację o utracie prawa do odstąpienia od Umowy.',
+    name: 'Żądam rozpoczęcia świadczenia usługi przed upływem terminu do odstąpienia od umowy oraz przyjmuję do wiadomości, że po całkowitym wykonaniu usługi utracę prawo odstąpienia od umowy zgodnie z art. 38 ustawy o prawach konsumenta.',
     description: '',
     type: 'COMPANY',
     isRequired: true,
@@ -388,32 +380,14 @@ const MOCK_CONSENT_DEFINITIONS: ConsentDefinitionDto[] = [
     expandedDetails: null,
   },
   {
-    id: 'mock-consent-rodo',
-    code: 'RODO_CLAUSE_ACKNOWLEDGMENT',
-    name: 'Zapoznałam/zapoznałem się z <a target="_blank" href="https://cybercover.pl/polityka-plikow-cookies-eu/">treścią klauzuli informacyjnej RODO</a> Cyber Cover sp. z o.o.',
-    description: '',
-    type: 'USER',
-    isRequired: true,
-    version: 1,
-    expandedDetails: null,
-  },
-  {
     id: 'mock-consent-marketing',
     code: 'MARKETING_CONSENT',
-    name: 'Wyrażam zgodę na przetwarzanie moich danych osobowych w celach marketingowych przez Cyber Cover sp. z o.o.',
-    description: 'w celu otrzymywania informacji handlowych drogą elektroniczną np. newslettera.',
+    name: 'Wyrażam zgodę na otrzymywanie drogą elektroniczną informacji handlowych od Cyber Cover sp. z o.o. dotyczących produktów i usług.',
+    description: '',
     type: 'USER',
     isRequired: false,
     version: 1,
-    expandedDetails: {
-      title: 'Mam świadomość, że:',
-      items: [
-        'moja zgoda może zostać cofnięta w dowolnym momencie.',
-        'posiadam prawo dostępu do moich danych.',
-        'mam prawo wniesienia skargi do organu nadzorczego.',
-        'posiadanie danych jest dobrowolne.',
-      ],
-    },
+    expandedDetails: null,
   },
 ];
 
