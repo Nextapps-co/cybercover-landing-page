@@ -28,7 +28,10 @@ export function ConsentCheckbox({ consent, checked, onChange, error }: Props) {
           <span dangerouslySetInnerHTML={{ __html: consent.name }} />
         </label>
         {consent.description && (
-          <p className="mt-1 font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#6B6965]">{consent.description}</p>
+          <p
+            className="mt-1 font-['Plus_Jakarta_Sans',sans-serif] text-xs text-[#6B6965] [&_a]:font-medium [&_a]:text-[#0D0D0D] [&_a]:underline [&_a]:underline-offset-2 [&_a]:hover:text-black"
+            dangerouslySetInnerHTML={{ __html: consent.description }}
+          />
         )}
         {hasDetails && (
           <button
