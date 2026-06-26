@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { stepToUrl, canAccessStep, checkoutStepNumber } from './checkout-navigation';
+import { stepToUrl, canAccessStep, checkoutStepNumber, resumeStepPath } from './checkout-navigation';
 import type { CheckoutProgressDto } from '../api/types/order';
 
 const progress = (overrides: Partial<CheckoutProgressDto>): CheckoutProgressDto => ({
@@ -48,5 +48,31 @@ describe('canAccessStep', () => {
     expect(
       canAccessStep(4, progress({ hasCompanyData: true, hasPersonalData: true, hasOperationalStandards: true })),
     ).toBe(true);
+  });
+});
+
+describe('resumeStepPath', () => {
+  const p = (over: Partial<CheckoutProgressDto> = {}): CheckoutProgressDto => ({
+    hasCompanyData: false,
+    hasPersonalData: false,
+    hasOperationalStandards: false,
+    hasPaymentMethod: false,
+    ...over,
+  });
+
+  it('no company data → company-data', () => {
+    expect(resumeStepPath(p())).toBe('/checkout/company-data');
+  });
+  it('company done → personal-data', () => {
+    expect(resumeStepPath(p({ hasCompanyData: true }))).toBe('/checkout/personal-data');
+  });
+  it('company+personal → operational-standards', () => {
+    expect(resumeStepPath(p({ hasCompanyData: true, hasPersonalData: true }))).toBe('/checkout/operational-standards');
+  });
+  it('+operational-standards → payment-method', () => {
+    expect(resumeStepPath(p({ hasCompanyData: true, hasPersonalData: true, hasOperationalStandards: true }))).toBe('/checkout/payment-method');
+  });
+  it('all done → confirm', () => {
+    expect(resumeStepPath(p({ hasCompanyData: true, hasPersonalData: true, hasOperationalStandards: true, hasPaymentMethod: true }))).toBe('/checkout/confirm');
   });
 });

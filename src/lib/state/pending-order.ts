@@ -10,7 +10,8 @@ export type PendingOrderKind = 'resumable' | 'paid' | 'dead' | 'draft';
 
 export type PendingOrderResolution =
   | { kind: 'none' }
-  | { kind: PendingOrderKind; orderId: string };
+  | { kind: 'resumable' | 'paid' | 'dead'; orderId: string }
+  | { kind: 'draft'; orderId: string; order: OrderResponseDto };
 
 /**
  * Czysta klasyfikacja zamówienia po statusie + metodzie płatności.
@@ -46,7 +47,11 @@ export async function resolvePendingOrder(): Promise<PendingOrderResolution> {
 
   try {
     const order = await getOrder(session.orderId);
-    return { kind: classifyOrder(order), orderId: order.orderId };
+    const kind = classifyOrder(order);
+    if (kind === 'draft') {
+      return { kind: 'draft', orderId: order.orderId, order };
+    }
+    return { kind, orderId: order.orderId };
   } catch (err) {
     if (err instanceof ApiError && err.code === 'ORDER_NOT_FOUND') {
       clearOrderSession();

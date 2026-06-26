@@ -13,7 +13,7 @@ const session = (): OrderSession => ({
   catalogEntryId: 'ce_optimum',
   billingCycle: 'MONTHLY',
   planSnapshot: { planName: 'Optimum', priceMinorUnits: 49500, currency: 'PLN', description: 'x' },
-  createdAt: '2026-06-26T10:00:00.000Z',
+  createdAt: new Date().toISOString(),
 });
 
 const order = (over: Partial<OrderResponseDto>): OrderResponseDto => ({
@@ -79,12 +79,19 @@ describe('resolvePendingOrder', () => {
     persistToStorage(session());
     mockGetOrder.mockRejectedValue(new ApiError('ORDER_NOT_FOUND', 404, 'gone'));
     expect(await resolvePendingOrder()).toEqual({ kind: 'none' });
-    expect(window.sessionStorage.getItem('cybercover:order-session')).toBeNull();
+    expect(window.localStorage.getItem('cybercover:order-session')).toBeNull();
   });
 
   it('network error → none (fail-open)', async () => {
     persistToStorage(session());
     mockGetOrder.mockRejectedValue(new ApiError('NETWORK_ERROR', 0, 'offline'));
     expect(await resolvePendingOrder()).toEqual({ kind: 'none' });
+  });
+
+  it('draft order → draft with order attached', async () => {
+    persistToStorage(session());
+    const o = order({ status: 'DRAFT' });
+    mockGetOrder.mockResolvedValue(o);
+    expect(await resolvePendingOrder()).toEqual({ kind: 'draft', orderId: 'ord_abc', order: o });
   });
 });

@@ -12,6 +12,7 @@ import {
 describe('auth/session', () => {
   beforeEach(() => {
     window.sessionStorage.clear();
+    window.localStorage.clear();
   });
 
   it('returns null for getters when no session', () => {
@@ -42,7 +43,7 @@ describe('auth/session', () => {
 
   it('clearAllCheckoutState removes auth keys + order-session + form-state keys', () => {
     setTokens('a', 'r');
-    window.sessionStorage.setItem('cybercover:order-session', 'x');
+    window.localStorage.setItem('cybercover:order-session', 'x');
     window.sessionStorage.setItem('cybercover:form-state:company-data', 'y');
     window.sessionStorage.setItem('cybercover:form-state:payment-method', 'z');
     window.sessionStorage.setItem('cybercover:mock-auth-context', 'm');
@@ -50,7 +51,7 @@ describe('auth/session', () => {
     window.sessionStorage.setItem('cybercover:other-unrelated-key', 'keep');
     clearAllCheckoutState();
     expect(getAccessToken()).toBeNull();
-    expect(window.sessionStorage.getItem('cybercover:order-session')).toBeNull();
+    expect(window.localStorage.getItem('cybercover:order-session')).toBeNull();
     expect(window.sessionStorage.getItem('cybercover:form-state:company-data')).toBeNull();
     expect(window.sessionStorage.getItem('cybercover:form-state:payment-method')).toBeNull();
     expect(window.sessionStorage.getItem('cybercover:mock-auth-context')).toBeNull();

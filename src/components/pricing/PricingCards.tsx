@@ -4,8 +4,12 @@ import type { PlanCatalogEntryDto, SubscriptionStatus } from '../../lib/api/type
 import type { PlanChangePendingMetadata } from '../../lib/api/types/order';
 import { getPlans } from '../../lib/api/catalog';
 import { startOrder } from '../../lib/api/orders';
-import { setFromStartOrderResponse, clearOrderSession } from '../../lib/state/order-session';
+import { setFromStartOrderResponse, clearOrderSession, getOrderSession } from '../../lib/state/order-session';
 import { resolvePendingOrder } from '../../lib/state/pending-order';
+import { resumeStepPath } from '../../lib/state/checkout-navigation';
+import { clearFormState } from '../../lib/state/form-persistence';
+import { DraftResumeBanner } from './DraftResumeBanner';
+import { ResumeOrDiscardModal } from './ResumeOrDiscardModal';
 import { getPartnerFromUrl } from '../../lib/format/partner';
 import { getDiscountCodeFromUrl, clearDiscountCode } from '../../lib/format/discount-code';
 import { translateApiError } from '../../lib/errors/translate';
@@ -36,6 +40,8 @@ export function PricingCards() {
   const [state, setState] = useState<State>({ kind: 'loading' });
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
   const [ctaError, setCtaError] = useState<{ title: string; message: string } | null>(null);
+  const [draft, setDraft] = useState<{ orderId: string; planName: string; resumeHref: string } | null>(null);
+  const [pendingPlan, setPendingPlan] = useState<{ plan: PlanCatalogEntryDto; clickedPlanName: string } | null>(null);
   const authSession = useAuthSession();
 
   useEffect(() => {
@@ -61,7 +67,18 @@ export function PricingCards() {
         if (pending.kind === 'dead') {
           clearOrderSession();
         }
-        // 'draft' / 'none' → renderuj cennik normalnie (bez zmian)
+        if (pending.kind === 'draft') {
+          const planName =
+            pending.order.lines[0]?.planName ??
+            getOrderSession()?.planSnapshot.planName ??
+            'Twój plan';
+          setDraft({
+            orderId: pending.orderId,
+            planName,
+            resumeHref: `${resumeStepPath(pending.order.checkoutProgress)}?orderId=${encodeURIComponent(pending.orderId)}`,
+          });
+        }
+        // 'none' → renderuj cennik normalnie (bez zmian)
       }
 
       // 0. Dev shortcut — ?mockAuth= w URL ustawia fake auth session (przed handoff detection,
@@ -117,7 +134,24 @@ export function PricingCards() {
     };
   }, []);
 
-  const onCtaClick = async (plan: PlanCatalogEntryDto) => {
+  const onCtaClick = (plan: PlanCatalogEntryDto) => {
+    // Tryb auth-aware ma własną obsługę 409 — modal tylko dla anonimowego DRAFT.
+    if (draft && !authSession.hasToken) {
+      const authContext: AuthContext | undefined =
+        state.kind === 'ready'
+          ? {
+              currentPlanCode: state.currentPlanCode,
+              subscriptionStatus: state.subscriptionStatus,
+              currentBillingCycle: state.currentBillingCycle,
+            }
+          : undefined;
+      setPendingPlan({ plan, clickedPlanName: planToCardProps(plan, billingCycle, authContext).title });
+      return;
+    }
+    void proceedStartOrder(plan);
+  };
+
+  const proceedStartOrder = async (plan: PlanCatalogEntryDto) => {
     setLoadingPlanId(plan.planId);
     setCtaError(null);
 
@@ -283,6 +317,18 @@ export function PricingCards() {
 
       {discountBanner && <DiscountBanner {...discountBanner} />}
 
+      {draft && !pendingPlan && (
+        <DraftResumeBanner
+          planName={draft.planName}
+          resumeHref={draft.resumeHref}
+          onDiscard={() => {
+            clearOrderSession();
+            clearFormState();
+            setDraft(null);
+          }}
+        />
+      )}
+
       <div className="flex justify-center mb-12">
         <BillingCycleToggle
           value={billingCycle}
@@ -323,6 +369,22 @@ export function PricingCards() {
           );
         })}
       </div>
+
+      {pendingPlan && draft && (
+        <ResumeOrDiscardModal
+          draftPlanName={draft.planName}
+          clickedPlanName={pendingPlan.clickedPlanName}
+          onContinueDraft={() => window.location.assign(draft.resumeHref)}
+          onStartNew={() => {
+            clearOrderSession();
+            clearFormState();
+            setPendingPlan(null);
+            setDraft(null);
+            void proceedStartOrder(pendingPlan.plan);
+          }}
+          onClose={() => setPendingPlan(null)}
+        />
+      )}
     </>
   );
 }
