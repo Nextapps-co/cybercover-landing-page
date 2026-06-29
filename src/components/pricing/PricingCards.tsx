@@ -40,7 +40,12 @@ export function PricingCards() {
   const [state, setState] = useState<State>({ kind: 'loading' });
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
   const [ctaError, setCtaError] = useState<{ title: string; message: string } | null>(null);
-  const [draft, setDraft] = useState<{ orderId: string; planName: string; resumeHref: string } | null>(null);
+  const [pendingOrder, setPendingOrder] = useState<{
+    kind: 'draft' | 'resumable';
+    orderId: string;
+    planName: string;
+    resumeHref: string;
+  } | null>(null);
   const [pendingPlan, setPendingPlan] = useState<{ plan: PlanCatalogEntryDto; clickedPlanName: string } | null>(null);
   const authSession = useAuthSession();
 
@@ -50,32 +55,41 @@ export function PricingCards() {
 
     (async () => {
       // Resume porzuconej płatności: jeśli w tej sesji jest niedokończone zamówienie,
-      // kieruj na właściwy ekran zanim pokażemy cennik. Pomijamy dla auth-aware entry
-      // (?handoff= / ?mockAuth=), które ma własną obsługę 409 PLAN_CHANGE_PENDING w onCtaClick.
+      // pokazujemy cennik z banerem wznowienia (nie blokujemy — user może dokończyć
+      // ALBO zacząć nowe zamówienie). Pomijamy dla auth-aware entry (?handoff= / ?mockAuth=),
+      // które ma własną obsługę 409 PLAN_CHANGE_PENDING w onCtaClick.
       const entryParams = new URLSearchParams(window.location.search);
       if (!entryParams.has('handoff') && !entryParams.has('mockAuth')) {
-        const pending = await resolvePendingOrder();
+        const resolution = await resolvePendingOrder();
         if (cancelled) return;
-        if (pending.kind === 'resumable') {
-          window.location.assign(`/checkout/resume?orderId=${encodeURIComponent(pending.orderId)}`);
+        // 'paid' (opłacone/processing) → nie ma czego wybierać, kieruj na status zamówienia.
+        if (resolution.kind === 'paid') {
+          window.location.assign(`/checkout/success?orderId=${encodeURIComponent(resolution.orderId)}`);
           return;
         }
-        if (pending.kind === 'paid') {
-          window.location.assign(`/checkout/success?orderId=${encodeURIComponent(pending.orderId)}`);
-          return;
-        }
-        if (pending.kind === 'dead') {
+        if (resolution.kind === 'dead') {
           clearOrderSession();
         }
-        if (pending.kind === 'draft') {
+        // 'resumable' (CONFIRMED + STRIPE, porzucona płatność) → baner „Dokończ płatność"
+        // zamiast twardego redirectu na /checkout/resume, żeby cennik był dostępny.
+        if (resolution.kind === 'resumable') {
+          setPendingOrder({
+            kind: 'resumable',
+            orderId: resolution.orderId,
+            planName: getOrderSession()?.planSnapshot.planName ?? 'Twój plan',
+            resumeHref: `/checkout/resume?orderId=${encodeURIComponent(resolution.orderId)}`,
+          });
+        }
+        if (resolution.kind === 'draft') {
           const planName =
-            pending.order.lines[0]?.planName ??
+            resolution.order.lines[0]?.planName ??
             getOrderSession()?.planSnapshot.planName ??
             'Twój plan';
-          setDraft({
-            orderId: pending.orderId,
+          setPendingOrder({
+            kind: 'draft',
+            orderId: resolution.orderId,
             planName,
-            resumeHref: `${resumeStepPath(pending.order.checkoutProgress)}?orderId=${encodeURIComponent(pending.orderId)}`,
+            resumeHref: `${resumeStepPath(resolution.order.checkoutProgress)}?orderId=${encodeURIComponent(resolution.orderId)}`,
           });
         }
         // 'none' → renderuj cennik normalnie (bez zmian)
@@ -135,8 +149,8 @@ export function PricingCards() {
   }, []);
 
   const onCtaClick = (plan: PlanCatalogEntryDto) => {
-    // Tryb auth-aware ma własną obsługę 409 — modal tylko dla anonimowego DRAFT.
-    if (draft && !authSession.hasToken) {
+    // Tryb auth-aware ma własną obsługę 409 — modal tylko dla anonimowego pending order.
+    if (pendingOrder && !authSession.hasToken) {
       const authContext: AuthContext | undefined =
         state.kind === 'ready'
           ? {
@@ -317,14 +331,17 @@ export function PricingCards() {
 
       {discountBanner && <DiscountBanner {...discountBanner} />}
 
-      {draft && !pendingPlan && (
+      {pendingOrder && !pendingPlan && (
         <DraftResumeBanner
-          planName={draft.planName}
-          resumeHref={draft.resumeHref}
+          variant={pendingOrder.kind}
+          planName={pendingOrder.planName}
+          resumeHref={pendingOrder.resumeHref}
           onDiscard={() => {
+            // Czyszczenie lokalne. Dla 'resumable' zostawia zamówienie CONFIRMED
+            // osierocone na backendzie (świadoma decyzja — patrz design payment-resume).
             clearOrderSession();
             clearFormState();
-            setDraft(null);
+            setPendingOrder(null);
           }}
         />
       )}
@@ -370,16 +387,16 @@ export function PricingCards() {
         })}
       </div>
 
-      {pendingPlan && draft && (
+      {pendingPlan && pendingOrder && (
         <ResumeOrDiscardModal
-          draftPlanName={draft.planName}
+          draftPlanName={pendingOrder.planName}
           clickedPlanName={pendingPlan.clickedPlanName}
-          onContinueDraft={() => window.location.assign(draft.resumeHref)}
+          onContinueDraft={() => window.location.assign(pendingOrder.resumeHref)}
           onStartNew={() => {
             clearOrderSession();
             clearFormState();
             setPendingPlan(null);
-            setDraft(null);
+            setPendingOrder(null);
             void proceedStartOrder(pendingPlan.plan);
           }}
           onClose={() => setPendingPlan(null)}
