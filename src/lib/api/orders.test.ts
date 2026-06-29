@@ -8,6 +8,7 @@ import {
   getOrderConfirmation, buildProformaDownloadUrl,
 } from './orders';
 import { resetOrdersMock } from './__mocks__/orders.mock';
+import { ApiError } from './types/errors';
 
 describe('orders client', () => {
   beforeEach(() => {
@@ -191,6 +192,52 @@ describe('orders client', () => {
         'http://localhost:3000/api/orders/ord_1/personal-data',
         expect.objectContaining({ method: 'PATCH' }),
       );
+    });
+
+    // CC-460: BE zwraca 409 dla zajętego emaila bez pola `code` (tylko message + metadata.email).
+    // http.ts mapuje codeless 409 na INTERNAL_ERROR ("Błąd serwera"); submitPersonalData
+    // re-mapuje go na kanoniczny EMAIL_NOT_AVAILABLE, żeby step pokazał inline error pod polem email.
+    it('re-maps a codeless 409 (email already registered) to EMAIL_NOT_AVAILABLE', async () => {
+      (globalThis.fetch as any).mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            message: 'Email jan@example.com is already registered',
+            metadata: { email: 'jan@example.com' },
+          }),
+          { status: 409, headers: { 'content-type': 'application/json' } },
+        ),
+      );
+      const err = await submitPersonalData('ord_1', {
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        email: 'jan@example.com',
+        phone: '+48123456789',
+        consents: [],
+      }).catch((e) => e);
+      expect(err).toBeInstanceOf(ApiError);
+      expect(err.code).toBe('EMAIL_NOT_AVAILABLE');
+      expect(err.httpStatus).toBe(409);
+      // status, message i metadata oryginalnego błędu są zachowane
+      expect(err.metadata).toEqual({ email: 'jan@example.com' });
+    });
+
+    // Guard: 409, który JUŻ niesie rozpoznany kod, nie może zostać nadpisany na EMAIL_NOT_AVAILABLE.
+    it('does NOT re-map a 409 that already carries a recognized code', async () => {
+      (globalThis.fetch as any).mockResolvedValue(
+        new Response(
+          JSON.stringify({ code: 'INVALID_ORDER_STATE', message: 'wrong state' }),
+          { status: 409, headers: { 'content-type': 'application/json' } },
+        ),
+      );
+      const err = await submitPersonalData('ord_1', {
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        email: 'jan@example.com',
+        phone: '+48123456789',
+        consents: [],
+      }).catch((e) => e);
+      expect(err).toBeInstanceOf(ApiError);
+      expect(err.code).toBe('INVALID_ORDER_STATE');
     });
   });
 

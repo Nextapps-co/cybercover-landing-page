@@ -1,4 +1,5 @@
 import { apiGet, apiPost, apiPatch } from './http';
+import { ApiError } from './types/errors';
 import type {
   CheckoutStateResponseDto,
   CompanyLookupResponseDto,
@@ -79,10 +80,23 @@ export async function fetchConsentDefinitions(): Promise<ConsentDefinitionDto[]>
 
 export async function submitPersonalData(orderId: string, dto: SubmitPersonalDataDto) {
   if (useMock()) return submitPersonalDataMock(orderId, dto);
-  return apiPatch<SubmitPersonalDataDto, CheckoutStateResponseDto>(
-    `/orders/${encodeURIComponent(orderId)}/personal-data`,
-    dto,
-  );
+  try {
+    return await apiPatch<SubmitPersonalDataDto, CheckoutStateResponseDto>(
+      `/orders/${encodeURIComponent(orderId)}/personal-data`,
+      dto,
+    );
+  } catch (err) {
+    // BE zwraca 409 dla zajętego emaila BEZ pola `code` (tylko `message` + `metadata.email`),
+    // więc http.ts — który klasyfikuje wyłącznie po `body.code` — mapuje go na INTERNAL_ERROR
+    // ("Błąd serwera"). Jedyny konflikt biznesowy tego endpointu to zajęty email, więc
+    // nierozpoznany 409 re-mapujemy na kanoniczny EMAIL_NOT_AVAILABLE (zachowując status,
+    // message i metadata). Gdyby BE zaczął wysyłać poprawny `code`, http.ts rozpozna go sam
+    // i ten warunek (code === 'INTERNAL_ERROR') już nie zadziała — nic nie nadpiszemy.
+    if (err instanceof ApiError && err.httpStatus === 409 && err.code === 'INTERNAL_ERROR') {
+      throw new ApiError('EMAIL_NOT_AVAILABLE', err.httpStatus, err.backendMessage, err.metadata);
+    }
+    throw err;
+  }
 }
 
 export async function getOperationalStandardsSchema(orderId: string) {
