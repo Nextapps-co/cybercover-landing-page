@@ -254,6 +254,16 @@ function inferPlanCodeFromCatalogEntry(catalogEntryId: string): string {
 // (CONFIRMED → PENDING_ALLOCATION → PROCESSING → FULFILLED) for SuccessStatus polling.
 const fulfillmentCallCounts = new Map<string, number>();
 
+// Zamówienia faktycznie opłacone — tylko one awansują w kaskadzie fulfillment.
+// CONFIRMED-niepłacone (ekran cancelled/resume, /cennik resume) zostaje stabilne.
+const paidOrderIds = new Set<string>();
+// orderId -> confirmationToken (proforma), wystawiany przy przejściu na przelew.
+const confirmationTokens = new Map<string, string>();
+
+export function markOrderPaidMock(orderId: string): void {
+  paidOrderIds.add(orderId);
+}
+
 const FULFILLMENT_PROGRESSION: OrderStatus[] = [
   'CONFIRMED',
   'PENDING_ALLOCATION',
@@ -267,7 +277,7 @@ export async function getOrderMock(orderId: string): Promise<OrderResponseDto> {
     throw new ApiError('ORDER_NOT_FOUND', 404, 'Order not found (mock)');
   }
   const fulfillmentIndex = FULFILLMENT_PROGRESSION.indexOf(order.status);
-  if (fulfillmentIndex >= 0 && order.status !== 'FULFILLED') {
+  if (fulfillmentIndex >= 0 && order.status !== 'FULFILLED' && paidOrderIds.has(orderId)) {
     const next = (fulfillmentCallCounts.get(orderId) ?? 0) + 1;
     fulfillmentCallCounts.set(orderId, next);
     const targetIndex = Math.min(fulfillmentIndex + next, FULFILLMENT_PROGRESSION.length - 1);
@@ -299,6 +309,8 @@ export function resetOrdersMock(): void {
   ordersById.clear();
   fulfillmentCallCounts.clear();
   orderAuthMeta.clear();
+  paidOrderIds.clear();
+  confirmationTokens.clear();
 }
 
 import type { CompanyLookupResponseDto, SubmitCompanyDataDto } from '../types/order';
@@ -503,6 +515,9 @@ import type {
   SelectPaymentMethodDto,
   ConfirmOrderResponseDto,
   CreateCheckoutSessionResponseDto,
+  ChangePaymentMethodDto,
+  ChangePaymentMethodResponseDto,
+  CancelOrderResponseDto,
 } from '../types/order';
 
 const MOCK_DISCOUNTS: Record<string, { type: 'PERCENTAGE' | 'FIXED'; value: string }> = {
@@ -628,6 +643,40 @@ export async function confirmOrderMock(orderId: string): Promise<ConfirmOrderRes
     confirmationToken:
       !isPromoZero && order.paymentMethod === 'BANK_TRANSFER' ? generateMockToken() : null,
   };
+}
+
+export async function changePaymentMethodMock(
+  orderId: string,
+  dto: ChangePaymentMethodDto,
+): Promise<ChangePaymentMethodResponseDto> {
+  const order = ordersById.get(orderId);
+  if (!order) throw new ApiError('ORDER_NOT_FOUND', 404, 'Order not found (mock)');
+  // 400 — akceptowana tylko BANK_TRANSFER
+  if (dto.paymentMethod !== 'BANK_TRANSFER') {
+    throw new ApiError('INVALID_ORDER_STATE', 400, 'Only BANK_TRANSFER allowed (mock)');
+  }
+  // 409 — przełączalne tylko CONFIRMED + STRIPE (nie: już przelew / już opłacone / nie CONFIRMED)
+  if (order.status !== 'CONFIRMED' || order.paymentMethod !== 'STRIPE_CHECKOUT') {
+    throw new ApiError('INVALID_ORDER_STATE', 409, 'Order not switchable to bank transfer (mock)');
+  }
+  order.paymentMethod = 'BANK_TRANSFER'; // status zostaje CONFIRMED — proforma wystawiona
+  ordersById.set(orderId, order);
+  const token = generateMockToken();
+  confirmationTokens.set(orderId, token);
+  return { orderId, status: order.status, paymentMethod: 'BANK_TRANSFER', confirmationToken: token };
+}
+
+export async function cancelOrderMock(orderId: string): Promise<CancelOrderResponseDto> {
+  const order = ordersById.get(orderId);
+  if (!order) throw new ApiError('ORDER_NOT_FOUND', 404, 'Order not found (mock)');
+  if (order.status === 'CANCELLED') return { orderId, status: 'CANCELLED' }; // idempotentne
+  // 409 — opłacone (PENDING_ALLOCATION / PROCESSING / FULFILLED / CLOSED)
+  if (order.status !== 'DRAFT' && order.status !== 'CONFIRMED') {
+    throw new ApiError('INVALID_ORDER_STATE', 409, 'Order already paid (mock)');
+  }
+  order.status = 'CANCELLED';
+  ordersById.set(orderId, order);
+  return { orderId, status: 'CANCELLED' };
 }
 
 import type { OrderConfirmationResponseDto } from '../types/order';

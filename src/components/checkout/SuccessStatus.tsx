@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { SuccessAnimation } from './SuccessAnimation';
 import { FormAlert } from './FormAlert';
-import { getOrder } from '../../lib/api/orders';
+import { getOrder, markOrderPaidForMock } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
 import { clearOrderSession } from '../../lib/state/order-session';
 import { clearFormState } from '../../lib/state/form-persistence';
@@ -59,6 +59,9 @@ export function SuccessStatus() {
       setPhase('no-order-id');
       return;
     }
+
+    // Mock: symuluje potwierdzenie płatności kartą (realny tryb — no-op, sygnał daje backend).
+    if (orderId) markOrderPaidForMock(orderId);
 
     let cancelled = false;
     let intervalId: ReturnType<typeof setInterval> | null = null;
