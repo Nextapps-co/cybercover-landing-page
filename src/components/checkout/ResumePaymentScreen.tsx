@@ -17,7 +17,7 @@ const COPY: Record<Variant, { title: string; subtitle: string; primary: string }
   },
   resume: {
     title: 'Masz niedokończoną płatność',
-    subtitle: 'Twoje zamówienie czeka na opłacenie. Dokończ płatność lub zmień metodę.',
+    subtitle: 'Twoje zamówienie czeka na opłacenie.',
     primary: 'Dokończ płatność',
   },
 };
@@ -50,7 +50,10 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
   useEffect(() => {
     let cancelled = false;
     const id = readOrderIdFromUrl();
-    if (!id) { setHydrating(false); return; }
+    if (!id) {
+      setHydrating(false);
+      return;
+    }
 
     (async () => {
       try {
@@ -65,12 +68,17 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleRetry = async () => {
     const id = readOrderIdFromUrl();
-    if (!id) { window.location.assign('/cennik'); return; }
+    if (!id) {
+      window.location.assign('/cennik');
+      return;
+    }
     setRetrying(true);
     setError(null);
     try {
@@ -99,13 +107,19 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
   };
 
   if (hydrating) {
-    return <div className="min-h-screen flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif] text-[#6B6965]">Sprawdzamy status zamówienia…</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif] text-[#6B6965]">
+        Sprawdzamy status zamówienia…
+      </div>
+    );
   }
   if (hydrationError) {
     return (
       <div className="min-h-screen px-4 py-12 max-w-md mx-auto">
         <FormAlert variant="error" title="Błąd" message={hydrationError} />
-        <a href="/cennik" className="block mt-4 text-center text-sm underline text-[#6B6965]">Wróć do cennika</a>
+        <a href="/cennik" className="block mt-4 text-center text-sm underline text-[#6B6965]">
+          Wróć do cennika
+        </a>
       </div>
     );
   }
@@ -120,10 +134,14 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
             <h1 className="text-3xl font-bold text-[#0D0D0D]">Twoja subskrypcja jest aktywna</h1>
             <p className="text-sm text-[#6B6965]">
               Promocja partnerska pokrywa całą kwotę w okresie startowym, więc nie potrzebowaliśmy pobierać teraz
-              płatności. Aby kontynuować subskrypcję po okresie promocyjnym, dodaj kartę — możesz to zrobić teraz
-              albo później w Portalu Klienta.
+              płatności. Aby kontynuować subskrypcję po okresie promocyjnym, dodaj kartę — możesz to zrobić teraz albo
+              później w Portalu Klienta.
             </p>
-            {error && <p className="text-sm text-red-500" role="alert">{error}</p>}
+            {error && (
+              <p className="text-sm text-red-500" role="alert">
+                {error}
+              </p>
+            )}
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               <button
                 type="button"
@@ -146,7 +164,11 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
           <>
             <h1 className="text-3xl font-bold text-[#0D0D0D]">{copy.title}</h1>
             <p className="text-sm text-[#6B6965]">{copy.subtitle}</p>
-            {error && <p className="text-sm text-red-500" role="alert">{error}</p>}
+            {error && (
+              <p className="text-sm text-red-500" role="alert">
+                {error}
+              </p>
+            )}
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               <button
                 type="button"
@@ -156,14 +178,14 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
               >
                 {retrying ? 'Przekierowuję…' : copy.primary}
               </button>
-              <button
+              {/* <button
                 type="button"
                 onClick={handleChangeMethod}
                 className="rounded-[80px] border border-[#A2A09C] bg-white px-7 py-3 text-base font-semibold text-[#0D0D0D] hover:bg-[#F8F7F4]"
               >
                 Zmień metodę płatności
-              </button>
-              {variant === 'resume' && (
+              </button> */}
+              {/* {variant === 'resume' && (
                 <button
                   type="button"
                   onClick={handleStartOver}
@@ -171,7 +193,7 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
                 >
                   Zacznij od nowa
                 </button>
-              )}
+              )} */}
             </div>
           </>
         )}

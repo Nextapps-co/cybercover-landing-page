@@ -58,12 +58,14 @@ export function ConfirmStep() {
   useEffect(() => {
     let cancelled = false;
 
-    const id = readOrderIdFromUrl();
-    if (!id) { window.location.assign('/cennik'); return; }
-    const session = getOrderSession();
-    if (!session || session.orderId !== id) { window.location.assign('/cennik'); return; }
+    // Hydratacja + guard „zamówienie już nie jest w DRAFT". Wydzielone z mount-effectu,
+    // bo musi być re-wykonane także przy restore z bfcache (patrz listener pageshow niżej).
+    async function hydrateAndGuard() {
+      const id = readOrderIdFromUrl();
+      if (!id) { window.location.assign('/cennik'); return; }
+      const session = getOrderSession();
+      if (!session || session.orderId !== id) { window.location.assign('/cennik'); return; }
 
-    (async () => {
       try {
         const [o, skipped] = await Promise.all([getOrder(id), resolveOsSkipped(id)]);
         if (cancelled) return;
@@ -111,9 +113,28 @@ export function ConfirmStep() {
         setHydrationError(t.message);
         setHydrating(false);
       }
-    })();
+    }
 
-    return () => { cancelled = true; };
+    void hydrateAndGuard();
+
+    // Powrót natywnym „wstecz" ze Stripe przywraca tę stronę z bfcache (back/forward cache)
+    // jako zamrożony snapshot — React się NIE re-mountuje, więc guard z mountu się nie wykona
+    // i użytkownik widziałby nieaktualny ekran potwierdzenia z aktywnym CTA (klik → re-confirm
+    // → INVALID_ORDER_STATE). `pageshow` z persisted=true łapie restore z bfcache: chowamy
+    // ekran (hydrating) i ponownie sprawdzamy status → redirect na /checkout/resume.
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      setHydrating(true);
+      setHydrationError(null);
+      setSubmitError(null);
+      void hydrateAndGuard();
+    };
+    window.addEventListener('pageshow', onPageShow);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('pageshow', onPageShow);
+    };
   }, []);
 
   const handleConfirm = async () => {
@@ -143,13 +164,20 @@ export function ConfirmStep() {
         `/checkout/bank-transfer?orderId=${encodeURIComponent(orderId)}&token=${encodeURIComponent(token)}`,
       );
     } catch (err) {
-      const t = translateApiError(err);
       if (err instanceof ApiError) {
         if (err.code === 'ORDER_NOT_FOUND') {
           window.location.assign('/cennik');
           return;
         }
+        // Defense-in-depth: zamówienie nie jest już w DRAFT (np. powrót ze Stripe „wstecz"
+        // w przeglądarce, która nie odpaliła guardu na pageshow). Zamiast ślepego błędu
+        // kierujemy na ekran wznowienia płatności.
+        if (err.code === 'INVALID_ORDER_STATE') {
+          navigateForward(withOrderId('/checkout/resume', orderId));
+          return;
+        }
       }
+      const t = translateApiError(err);
       setSubmitError({ title: t.title, message: t.message });
       setConfirming(false);
     }
