@@ -9,7 +9,12 @@ import { getOrderSession, persistOsSkipped } from '../../lib/state/order-session
 import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
 import { saveFormState, getFormState } from '../../lib/state/form-persistence';
 import { canAccessStep } from '../../lib/state/checkout-navigation';
-import { getOrder, getOperationalStandardsSchema, validateDiscountCode, selectPaymentMethod } from '../../lib/api/orders';
+import {
+  getOrder,
+  getOperationalStandardsSchema,
+  validateDiscountCode,
+  selectPaymentMethod,
+} from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
 import { getDiscountCodeFromUrl, clearDiscountCode } from '../../lib/format/discount-code';
@@ -46,9 +51,15 @@ export function PaymentMethodStep() {
     let cancelled = false;
 
     const id = readOrderIdFromUrl();
-    if (!id) { window.location.assign('/cennik'); return; }
+    if (!id) {
+      window.location.assign('/cennik');
+      return;
+    }
     const session = getOrderSession();
-    if (!session || session.orderId !== id) { window.location.assign('/cennik'); return; }
+    if (!session || session.orderId !== id) {
+      window.location.assign('/cennik');
+      return;
+    }
 
     setOrderId(id);
 
@@ -57,10 +68,7 @@ export function PaymentMethodStep() {
         // §2.6 — fetch schema in parallel to detect whether OS step was
         // auto-skipped (no-insurance plan, e.g. Standard). Used for Back button
         // target. Best-effort: on schema error, default to non-skipped.
-        const [o, schema] = await Promise.all([
-          getOrder(id),
-          getOperationalStandardsSchema(id).catch(() => null),
-        ]);
+        const [o, schema] = await Promise.all([getOrder(id), getOperationalStandardsSchema(id).catch(() => null)]);
         if (cancelled) return;
         if (!canAccessStep(4, o.checkoutProgress)) {
           const next = !o.checkoutProgress.hasCompanyData
@@ -94,7 +102,9 @@ export function PaymentMethodStep() {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleApplyDiscount = async (code: string) => {
@@ -128,7 +138,10 @@ export function PaymentMethodStep() {
     if (!orderId) return;
 
     if (!paymentMethod) {
-      setSubmitError({ title: 'Wybierz metodę płatności', message: 'Zaznacz jedną z opcji płatności żeby kontynuować.' });
+      setSubmitError({
+        title: 'Wybierz metodę płatności',
+        message: 'Zaznacz jedną z opcji płatności żeby kontynuować.',
+      });
       return;
     }
 
@@ -155,7 +168,8 @@ export function PaymentMethodStep() {
         if (err.code === 'DISCOUNT_SOURCE_CONFLICT') {
           setDiscountState({
             status: 'error',
-            message: 'Zniżki partnera i kodu rabatowego nie można łączyć. Usuń kod albo wróć do cennika bez kodu partnera.',
+            message:
+              'Zniżki partnera i kodu rabatowego nie można łączyć. Usuń kod albo wróć do cennika bez kodu partnera.',
           });
           setSubmitting(false);
           return;
@@ -171,13 +185,19 @@ export function PaymentMethodStep() {
   };
 
   if (hydrating) {
-    return <div className="min-h-screen flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif] text-[#6B6965]">Ładowanie zamówienia…</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif] text-[#6B6965]">
+        Ładowanie zamówienia…
+      </div>
+    );
   }
   if (hydrationError) {
     return (
       <div className="min-h-screen px-4 py-12 max-w-md mx-auto">
         <FormAlert variant="error" title="Błąd" message={hydrationError} />
-        <a href="/cennik" className="block mt-4 text-center text-sm underline text-[#6B6965]">Wróć do cennika</a>
+        <a href="/cennik" className="block mt-4 text-center text-sm underline text-[#6B6965]">
+          Wróć do cennika
+        </a>
       </div>
     );
   }
@@ -189,16 +209,17 @@ export function PaymentMethodStep() {
     <div className="bg-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <CheckoutProgressBar currentStep={4} osSkipped={osSkipped} />
-        <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-4xl text-black mb-12">
-          Metoda płatności
-        </h1>
+        <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-4xl text-black mb-12">Metoda płatności</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             {submitError && <FormAlert variant="error" title={submitError.title} message={submitError.message} />}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div role="group" aria-labelledby="payment-method-label" className="rounded-[12px] bg-[#f8f7f4] p-6">
-                <p id="payment-method-label" className="font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-lg text-black mb-4">
+                <p
+                  id="payment-method-label"
+                  className="font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-lg text-black mb-4"
+                >
                   Wybierz metodę płatności <span className="text-red-500">*</span>
                 </p>
                 <div className="space-y-3">
@@ -210,7 +231,7 @@ export function PaymentMethodStep() {
                     onSelect={() => setPaymentMethod('STRIPE_CHECKOUT')}
                     title="Karta płatnicza"
                     description="Szybka płatność online kartą kredytową lub debetową"
-                    badges={['VISA', 'Mastercard', 'BLIK']}
+                    badges={['VISA', 'Mastercard']}
                   />
                   <PaymentMethodOption
                     id="pm-bank"
