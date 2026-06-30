@@ -73,7 +73,10 @@ const PLAN_PRICES: Record<string, { monthly: number; annual: number }> = {
 function getOriginalAmount(catalogEntryId: string, billingCycle: BillingCycle): number {
   const p = PLAN_PRICES[catalogEntryId];
   if (!p) return 0;
-  return billingCycle === 'MONTHLY' ? p.monthly : p.annual;
+  // PLAN_PRICES trzyma stawki MIESIĘCZNE (jak cennik). Endpointy zamówień zwracają kwoty
+  // ZA CAŁY CYKL (== totalPriceNet, dla ANNUAL ×12) — odwzorowujemy kontrakt realnego backendu,
+  // żeby mock nie maskował błędów jednostek (np. ×12 w OrderSummaryAside).
+  return billingCycle === 'MONTHLY' ? p.monthly : p.annual * 12;
 }
 
 function buildOrderDiscount(
@@ -188,7 +191,8 @@ export async function startOrderMock(dto: StartOrderDto): Promise<StartOrderResp
       orderType,
       previousPlanCode: authContext.planCode,
       previousMonthlyPrice: prevPrices?.monthly,
-      previousAnnualPrice: prevPrices?.annual,
+      // Per-cycle: dla ANNUAL kredyt proracji liczymy od rocznej sumy (×12), spójnie z fullPrice.
+      previousAnnualPrice: prevPrices ? prevPrices.annual * 12 : undefined,
     });
 
     // Per CC-353 — proracja jest wypełniona już na DRAFT-cie, więc boks pokazuje
@@ -702,9 +706,10 @@ export async function getOrderConfirmationMock(
   if (!token || token === 'EXPIRED') {
     throw new ApiError('INVALID_CONFIRMATION_ACCESS', 404, 'Token invalid or expired (mock)');
   }
-  const gross = order.totalPriceNet ?? order.lines[0]?.priceNet ?? 0;
-  const net = Math.round(gross / 1.23);
-  const vat = gross - net;
+  // totalPriceNet jest NETTO (zgodnie z nazwą i kontraktem DTO) — VAT doliczamy, tak jak SuccessStatus.
+  const net = order.totalPriceNet ?? order.lines[0]?.priceNet ?? 0;
+  const vat = Math.round(net * 0.23);
+  const gross = net + vat;
   const invoiceNumber = `PF/${orderId.slice(-5).toUpperCase()}/2026`;
   const customerEmail = order.personalData?.email ?? 'unknown@example.com';
   const pdfText = `Faktura pro forma (mock) — ${invoiceNumber}`;

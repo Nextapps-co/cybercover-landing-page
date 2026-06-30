@@ -4,16 +4,14 @@ import { FormActions } from './FormActions';
 import { FormAlert } from './FormAlert';
 import { SummaryDataCard } from './SummaryDataCard';
 import { OrderSummaryAside } from './OrderSummaryAside';
-import { StartOverDialog } from './StartOverDialog';
-import { getOrderSession, resolveOsSkipped, clearOrderSession } from '../../lib/state/order-session';
+import { getOrderSession, resolveOsSkipped } from '../../lib/state/order-session';
 import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
 import { canAccessStep } from '../../lib/state/checkout-navigation';
 import { classifyOrder } from '../../lib/state/pending-order';
 import { getOrder, confirmOrder, createStripeCheckoutSession } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
-import { startOverOrder, isPromoZeroOrder } from '../../lib/state/checkout-recovery';
-import { clearFormState } from '../../lib/state/form-persistence';
+import { isPromoZeroOrder } from '../../lib/state/checkout-recovery';
 import type { OrderResponseDto, OrderType } from '../../lib/api/types/order';
 
 // Per spec §5.5.4 — orderType-aware copy.
@@ -45,8 +43,6 @@ export function ConfirmStep() {
   const [osSkipped, setOsSkipped] = useState(false);
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [startOverOpen, setStartOverOpen] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -129,22 +125,6 @@ export function ConfirmStep() {
       window.removeEventListener('pageshow', onPageShow);
     };
   }, []);
-
-  const handleStartOver = () => setStartOverOpen(true);
-
-  const confirmStartOver = async () => {
-    const id = order?.orderId ?? readOrderIdFromUrl();
-    if (!id) { clearOrderSession(); clearFormState(); window.location.assign('/cennik'); return; }
-    setCancelling(true);
-    const outcome = await startOverOrder(id);
-    if (outcome.kind === 'already-paid') {
-      window.location.assign(`/checkout/success?orderId=${encodeURIComponent(id)}`);
-      return;
-    }
-    clearOrderSession();
-    clearFormState();
-    window.location.assign('/cennik');
-  };
 
   const handleConfirm = async () => {
     if (!order) return;
@@ -272,23 +252,6 @@ export function ConfirmStep() {
             submittingLabel="Potwierdzanie…"
           />
         </form>
-
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            onClick={handleStartOver}
-            disabled={confirming}
-            className="text-sm font-semibold text-[#6B6965] underline hover:text-[#0D0D0D] disabled:opacity-60"
-          >
-            Zacznij od nowa
-          </button>
-        </div>
-        <StartOverDialog
-          open={startOverOpen}
-          busy={cancelling}
-          onConfirm={confirmStartOver}
-          onCancel={() => setStartOverOpen(false)}
-        />
       </div>
     </div>
   );

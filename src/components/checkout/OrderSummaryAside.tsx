@@ -79,11 +79,17 @@ export function OrderSummaryAside({ order }: Props = {}) {
   const discount = order?.discount ?? null;
   const isAnnual = session.billingCycle === 'ANNUAL';
 
-  const monthlyGrosze = discount ? discount.priceAfterDiscount : session.planSnapshot.priceMinorUnits;
-  const originalMonthlyGrosze = discount ? discount.originalAmount : null;
-
-  const displayPriceGrosze = isAnnual ? monthlyGrosze * 12 : monthlyGrosze;
-  const displayOriginalGrosze = originalMonthlyGrosze !== null ? (isAnnual ? originalMonthlyGrosze * 12 : originalMonthlyGrosze) : null;
+  // Dwa źródła ceny mają RÓŻNE jednostki — nie wolno ich mieszać:
+  // • order.discount.* to kwoty ZA CAŁY CYKL (== totalPriceNet; dla ANNUAL już zawierają ×12)
+  //   → renderujemy as-is, BEZ ×12 (tak jak gałąź proracji wyżej i SuccessStatus).
+  // • session.planSnapshot.priceMinorUnits to stawka MIESIĘCZNA z cennika
+  //   → dla ANNUAL mnożymy ×12, żeby pokazać sumę roczną.
+  const displayPriceGrosze = discount
+    ? discount.priceAfterDiscount
+    : isAnnual
+      ? session.planSnapshot.priceMinorUnits * 12
+      : session.planSnapshot.priceMinorUnits;
+  const displayOriginalGrosze = discount ? discount.originalAmount : null;
   const displayLabel = isAnnual ? 'netto rocznie' : 'netto miesięcznie';
 
   const discountCode = discount?.code ?? session.partnerCode;
@@ -116,7 +122,7 @@ export function OrderSummaryAside({ order }: Props = {}) {
             {formatMinorUnits(displayOriginalGrosze, currency)}
           </span>
           <span className="font-['Plus_Jakarta_Sans',sans-serif] inline-flex items-center rounded-full bg-[#FED64B]/20 px-2 py-0.5 text-xs font-semibold text-[#0D0D0D]">
-            Oszczędzasz {formatMinorUnits(discount.discountAmount * (isAnnual ? 12 : 1), currency)}
+            Oszczędzasz {formatMinorUnits(discount.discountAmount, currency)}
           </span>
         </div>
       )}

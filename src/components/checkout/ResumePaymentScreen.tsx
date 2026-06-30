@@ -207,6 +207,7 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
               >
                 {retrying ? 'Przekierowuję…' : copy.primary}
               </button>
+              {/* Tymczasowo ukryty przycisk „Zapłać przelewem bankowym".
               {order && canSwitchToBankTransfer(order) && (
                 <button
                   type="button"
@@ -217,6 +218,7 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
                   {switching ? 'Przełączanie…' : 'Zapłać przelewem bankowym'}
                 </button>
               )}
+              */}
               <button
                 type="button"
                 onClick={handleStartOver}
