@@ -171,9 +171,11 @@ export function BankTransferConfirmation() {
         <div className="mt-6 text-left">
           <ProformaDownload proforma={data.proforma} customerEmail={data.customerEmail} />
         </div>
+        {/* Sekcja „Dane do przelewu" tymczasowo ukryta.
         <div className="mt-4 text-left">
           <BankTransferDetails proforma={data.proforma} payment={data.payment} />
         </div>
+        */}
         <h2 className="mt-10 text-xl font-semibold text-[#0D0D0D]">Wejdź do Portalu Klienta już teraz</h2>
         <p className="mt-2 text-xs text-[#6B6965]">
           Po zaksięgowaniu wpłaty otrzymasz dane logowania do Portalu Klienta na podany adres email.

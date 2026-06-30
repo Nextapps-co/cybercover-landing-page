@@ -10,8 +10,8 @@ export function ProformaDownload({ proforma, customerEmail }: Props) {
     <div className="rounded-[12px] border border-[#E4E2DF] bg-[#F8F7F4] p-6 font-['Plus_Jakarta_Sans',sans-serif]">
       <p className="text-sm text-[#0D0D0D]">
         Fakturę pro forma do opłacenia otrzymasz na adres <strong>{customerEmail}</strong>.
-        Możesz też pobrać od razu fakturę tutaj:
       </p>
+      {/* Tymczasowo ukryty przycisk pobierania proformy — fakturę klient dostaje mailem.
       <a
         href={proforma.pdfUrl}
         download={`${proforma.invoiceNumber}.pdf`}
@@ -28,6 +28,7 @@ export function ProformaDownload({ proforma, customerEmail }: Props) {
         </svg>
         Faktura-Pro-forma.pdf
       </a>
+      */}
     </div>
   );
 }
