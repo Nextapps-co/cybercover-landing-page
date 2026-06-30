@@ -18,7 +18,7 @@ type Variant = 'cancelled' | 'resume';
 
 const COPY: Record<Variant, { title: string; subtitle: string; primary: string }> = {
   cancelled: {
-    title: 'Płatność anulowana',
+    title: 'Zdecyduj',
     subtitle: 'Możesz spróbować ponownie albo wybrać inną metodę płatności.',
     primary: 'Spróbuj ponownie',
   },
@@ -91,7 +91,10 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
 
   const handleChangeMethod = async () => {
     const id = readOrderIdFromUrl();
-    if (!id) { window.location.assign('/cennik'); return; }
+    if (!id) {
+      window.location.assign('/cennik');
+      return;
+    }
     setSwitching(true);
     setError(null);
     const outcome = await changePaymentToBankTransfer(id);
@@ -103,11 +106,18 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
     }
     if (outcome.kind === 'not-switchable') {
       // Jednokierunkowe / już opłacone — odśwież stan, przycisk zniknie przez gating.
-      try { setOrder(await getOrder(id)); } catch { /* ignore */ }
+      try {
+        setOrder(await getOrder(id));
+      } catch {
+        /* ignore */
+      }
       setSwitching(false);
       return;
     }
-    if (outcome.kind === 'not-found') { window.location.assign('/cennik'); return; }
+    if (outcome.kind === 'not-found') {
+      window.location.assign('/cennik');
+      return;
+    }
     setError(translateApiError(outcome.error).message);
     setSwitching(false);
   };
@@ -121,7 +131,12 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
 
   const confirmStartOver = async () => {
     const id = readOrderIdFromUrl();
-    if (!id) { clearOrderSession(); clearFormState(); window.location.assign('/cennik'); return; }
+    if (!id) {
+      clearOrderSession();
+      clearFormState();
+      window.location.assign('/cennik');
+      return;
+    }
     setCancelling(true);
     const outcome = await startOverOrder(id);
     if (outcome.kind === 'already-paid') {
