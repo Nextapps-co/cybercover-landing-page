@@ -21,6 +21,9 @@ import type {
   ConfirmOrderResponseDto,
   CreateCheckoutSessionResponseDto,
   OrderConfirmationResponseDto,
+  ChangePaymentMethodDto,
+  ChangePaymentMethodResponseDto,
+  CancelOrderResponseDto,
 } from './types/order';
 import {
   getCheckoutStateMock,
@@ -38,6 +41,9 @@ import {
   confirmOrderMock,
   createStripeCheckoutSessionMock,
   getOrderConfirmationMock,
+  changePaymentMethodMock,
+  cancelOrderMock,
+  markOrderPaidMock,
 } from './__mocks__/orders.mock';
 
 function useMock(): boolean {
@@ -144,6 +150,31 @@ export async function selectPaymentMethod(
     `/orders/${encodeURIComponent(orderId)}/payment-method`,
     dto,
   );
+}
+
+export async function changePaymentMethod(
+  orderId: string,
+  dto: ChangePaymentMethodDto,
+): Promise<ChangePaymentMethodResponseDto> {
+  if (useMock()) return changePaymentMethodMock(orderId, dto);
+  return apiPatch<ChangePaymentMethodDto, ChangePaymentMethodResponseDto>(
+    `/orders/${encodeURIComponent(orderId)}/change-payment-method`,
+    dto,
+  );
+}
+
+export async function cancelOrder(orderId: string): Promise<CancelOrderResponseDto> {
+  if (useMock()) return cancelOrderMock(orderId);
+  return apiPost<undefined, CancelOrderResponseDto>(
+    `/orders/${encodeURIComponent(orderId)}/cancel`,
+    undefined,
+  );
+}
+
+// Mock-only: oznacza zamówienie jako opłacone (symulacja sukcesu płatności kartą).
+// W realnym trybie no-op — sygnał płatności daje backend. Wołane przez SuccessStatus.
+export function markOrderPaidForMock(orderId: string): void {
+  if (useMock()) markOrderPaidMock(orderId);
 }
 
 export async function confirmOrder(orderId: string): Promise<ConfirmOrderResponseDto> {

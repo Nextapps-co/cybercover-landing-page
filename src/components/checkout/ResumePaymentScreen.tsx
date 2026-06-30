@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
 import { FormAlert } from './FormAlert';
+import { StartOverDialog } from './StartOverDialog';
 import { createStripeCheckoutSession, getOrder } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
-import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
+import { navigateForward } from '../../lib/state/checkout-transition';
 import { clearOrderSession } from '../../lib/state/order-session';
 import { clearFormState } from '../../lib/state/form-persistence';
+import {
+  changePaymentToBankTransfer,
+  startOverOrder,
+  isPromoZeroOrder,
+  canSwitchToBankTransfer,
+} from '../../lib/state/checkout-recovery';
 import type { OrderResponseDto } from '../../lib/api/types/order';
 
 type Variant = 'cancelled' | 'resume';
@@ -27,23 +34,15 @@ function readOrderIdFromUrl(): string | null {
   return params.get('orderId') ?? params.get('order_id');
 }
 
-function isPromoZeroOrder(order: OrderResponseDto): boolean {
-  const d = order.discount;
-  if (!d) return false;
-  const isPartner =
-    d.kind === 'PARTNER_FLAT' ||
-    d.kind === 'PARTNER_COMPOSITE' ||
-    d.kind === 'PARTNER_TIMEBOUND' ||
-    d.kind === 'PARTNER_TIMEBOUND_COMPOSITE';
-  return isPartner && d.priceAfterDiscount === 0;
-}
-
 export function ResumePaymentScreen({ variant }: { variant: Variant }) {
   const [hydrating, setHydrating] = useState(true);
   const [hydrationError, setHydrationError] = useState<string | null>(null);
   const [order, setOrder] = useState<OrderResponseDto | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [switching, setSwitching] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [startOverOpen, setStartOverOpen] = useState(false);
 
   const copy = COPY[variant];
 
@@ -90,9 +89,27 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
     }
   };
 
-  const handleChangeMethod = () => {
+  const handleChangeMethod = async () => {
     const id = readOrderIdFromUrl();
-    navigateBackward(`/checkout/payment-method${id ? `?orderId=${encodeURIComponent(id)}` : ''}`);
+    if (!id) { window.location.assign('/cennik'); return; }
+    setSwitching(true);
+    setError(null);
+    const outcome = await changePaymentToBankTransfer(id);
+    if (outcome.kind === 'switched') {
+      navigateForward(
+        `/checkout/bank-transfer?orderId=${encodeURIComponent(id)}&token=${encodeURIComponent(outcome.confirmationToken)}`,
+      );
+      return; // nawigacja w toku — nie zwalniamy switching
+    }
+    if (outcome.kind === 'not-switchable') {
+      // Jednokierunkowe / już opłacone — odśwież stan, przycisk zniknie przez gating.
+      try { setOrder(await getOrder(id)); } catch { /* ignore */ }
+      setSwitching(false);
+      return;
+    }
+    if (outcome.kind === 'not-found') { window.location.assign('/cennik'); return; }
+    setError(translateApiError(outcome.error).message);
+    setSwitching(false);
   };
 
   const handleSkipSetup = () => {
@@ -100,7 +117,19 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
     navigateForward(`/checkout/success${id ? `?orderId=${encodeURIComponent(id)}` : ''}`);
   };
 
-  const handleStartOver = () => {
+  const handleStartOver = () => setStartOverOpen(true);
+
+  const confirmStartOver = async () => {
+    const id = readOrderIdFromUrl();
+    if (!id) { clearOrderSession(); clearFormState(); window.location.assign('/cennik'); return; }
+    setCancelling(true);
+    const outcome = await startOverOrder(id);
+    if (outcome.kind === 'already-paid') {
+      // Wyścig — zapłacono w międzyczasie. Nie wracamy na /cennik.
+      window.location.assign(`/checkout/success?orderId=${encodeURIComponent(id)}`);
+      return;
+    }
+    // cancelled / not-found / error — w każdym przypadku czyścimy i wracamy na /cennik
     clearOrderSession();
     clearFormState();
     window.location.assign('/cennik');
@@ -178,26 +207,33 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
               >
                 {retrying ? 'Przekierowuję…' : copy.primary}
               </button>
-              {/* <button
-                type="button"
-                onClick={handleChangeMethod}
-                className="rounded-[80px] border border-[#A2A09C] bg-white px-7 py-3 text-base font-semibold text-[#0D0D0D] hover:bg-[#F8F7F4]"
-              >
-                Zmień metodę płatności
-              </button> */}
-              {/* {variant === 'resume' && (
+              {order && canSwitchToBankTransfer(order) && (
                 <button
                   type="button"
-                  onClick={handleStartOver}
-                  className="rounded-[80px] px-7 py-3 text-base font-semibold text-[#6B6965] underline hover:text-[#0D0D0D]"
+                  onClick={handleChangeMethod}
+                  disabled={switching}
+                  className="rounded-[80px] border border-[#A2A09C] bg-white px-7 py-3 text-base font-semibold text-[#0D0D0D] hover:bg-[#F8F7F4] disabled:opacity-60"
                 >
-                  Zacznij od nowa
+                  {switching ? 'Przełączanie…' : 'Zapłać przelewem bankowym'}
                 </button>
-              )} */}
+              )}
+              <button
+                type="button"
+                onClick={handleStartOver}
+                className="rounded-[80px] px-7 py-3 text-base font-semibold text-[#6B6965] underline hover:text-[#0D0D0D]"
+              >
+                Zacznij od nowa
+              </button>
             </div>
           </>
         )}
       </div>
+      <StartOverDialog
+        open={startOverOpen}
+        busy={cancelling}
+        onConfirm={confirmStartOver}
+        onCancel={() => setStartOverOpen(false)}
+      />
     </div>
   );
 }
