@@ -267,6 +267,19 @@ export interface ConfirmOrderResponseDto {
   confirmationToken: string | null; // only for BANK_TRANSFER
 }
 
+// PATCH /orders/:id/change-payment-method — request body
+export interface ChangePaymentMethodDto {
+  paymentMethod: 'BANK_TRANSFER'; // jedyna akceptowana wartość per kontrakt BE
+}
+// odpowiedź 200 ma kształt identyczny z ConfirmOrderResponseDto (confirmationToken niepuste)
+export type ChangePaymentMethodResponseDto = ConfirmOrderResponseDto;
+
+// POST /orders/:id/cancel — odpowiedź 200 (request bez body)
+export interface CancelOrderResponseDto {
+  orderId: string;
+  status: 'CANCELLED';
+}
+
 // §9.2.1 create stripe checkout session
 export interface CreateCheckoutSessionResponseDto {
   sessionId: string;
