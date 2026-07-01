@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CheckoutProgressBar } from './CheckoutProgressBar';
 import { OrderSummaryAside } from './OrderSummaryAside';
 import { FormActions } from './FormActions';
@@ -13,11 +13,13 @@ import {
   getOrder,
   getOperationalStandardsSchema,
   validateDiscountCode,
+  removeDiscount,
   selectPaymentMethod,
 } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
 import { getDiscountCodeFromUrl, clearDiscountCode } from '../../lib/format/discount-code';
+import { paymentChanged, type PaymentDelta } from '../../lib/state/checkout-delta';
 import type { OrderResponseDto, PaymentMethod } from '../../lib/api/types/order';
 
 function readOrderIdFromUrl(): string | null {
@@ -44,8 +46,10 @@ export function PaymentMethodStep() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
   const [discountState, setDiscountState] = useState<DiscountState>({ status: 'idle' });
   const [storedDiscountCode, setStoredDiscountCode] = useState<string | null>(null);
+  const [discountRemoving, setDiscountRemoving] = useState(false);
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const baselineRef = useRef<PaymentDelta>({ paymentMethod: '', discountCode: null });
 
   useEffect(() => {
     let cancelled = false;
@@ -84,8 +88,20 @@ export function PaymentMethodStep() {
         setOsSkipped(skipped);
         if (schema) persistOsSkipped(skipped);
         const draft = getFormState<{ paymentMethod: PaymentMethod | '' }>('payment-method');
-        setPaymentMethod(o.paymentMethod ?? draft?.paymentMethod ?? '');
-        if (!hasPartnerDiscount(o)) {
+        const resolvedMethod = o.paymentMethod ?? draft?.paymentMethod ?? '';
+        // Rozliczenie miesięczne: dostępna tylko karta → auto-wybór (przelew ukryty w renderze).
+        setPaymentMethod(o.billingCycle === 'MONTHLY' ? 'STRIPE_CHECKOUT' : resolvedMethod);
+        baselineRef.current = { paymentMethod: o.paymentMethod ?? '', discountCode: o.discount?.code ?? null };
+        if (o.discount && o.discount.kind === 'CODE_FLAT') {
+          // Rabat kodowy już utrwalony na zamówieniu (np. po cofnij→dalej) — pokaż go jako
+          // zaaplikowany; „Usuń" zdejmie go przez DELETE /orders/:id/discount (CC-522).
+          setDiscountState({
+            status: 'applied',
+            code: o.discount.code,
+            originalPriceNet: o.discount.originalAmount,
+            discountedPriceNet: o.discount.priceAfterDiscount,
+          });
+        } else if (!hasPartnerDiscount(o)) {
           const stored = getDiscountCodeFromUrl();
           if (stored) setStoredDiscountCode(stored);
         }
@@ -127,10 +143,38 @@ export function PaymentMethodStep() {
     }
   };
 
-  const handleRemoveDiscount = () => {
-    setDiscountState({ status: 'idle' });
-    clearDiscountCode();
-    setStoredDiscountCode(null);
+  const handleRemoveDiscount = async () => {
+    // Rabat nieutrwalony (dodany lokalnie, przed „Dalej") — czyścimy tylko UI, bez requestu.
+    if (!order?.discount || !orderId) {
+      setDiscountState({ status: 'idle' });
+      clearDiscountCode();
+      setStoredDiscountCode(null);
+      return;
+    }
+    // Rabat utrwalony na zamówieniu — zdejmij na backendzie (CC-522) i podmień lokalny stan.
+    setDiscountRemoving(true);
+    setSubmitError(null);
+    try {
+      const updated = await removeDiscount(orderId);
+      setOrder(updated);
+      baselineRef.current = {
+        paymentMethod: updated.paymentMethod ?? '',
+        discountCode: updated.discount?.code ?? null,
+      };
+      setDiscountState({ status: 'idle' });
+      clearDiscountCode();
+      setStoredDiscountCode(null);
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'ORDER_NOT_FOUND') {
+        window.location.assign('/cennik');
+        return;
+      }
+      // DISCOUNT_REMOVAL_NOT_ALLOWED (rabat partnerski) / INVALID_ORDER_STATE → zostaw rabat, pokaż komunikat.
+      const t = translateApiError(err);
+      setSubmitError({ title: t.title, message: t.message });
+    } finally {
+      setDiscountRemoving(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -142,6 +186,16 @@ export function PaymentMethodStep() {
         title: 'Wybierz metodę płatności',
         message: 'Zaznacz jedną z opcji płatności żeby kontynuować.',
       });
+      return;
+    }
+
+    const desiredDiscountCode =
+      discountState.status === 'applied' ? discountState.code : baselineRef.current.discountCode;
+    const complete = order?.checkoutProgress.hasPaymentMethod ?? false;
+    if (complete && !paymentChanged(baselineRef.current, { paymentMethod, discountCode: desiredDiscountCode })) {
+      // Metoda i rabat bez zmian, a backend ma już wybraną płatność — pomiń PATCH.
+      // To eliminuje 409 „Discount already applied (H3)" przy cofnij→dalej.
+      navigateForward(`/checkout/confirm?orderId=${encodeURIComponent(orderId)}`);
       return;
     }
 
@@ -204,6 +258,8 @@ export function PaymentMethodStep() {
   if (!order) return null;
 
   const partnerActive = hasPartnerDiscount(order) && order.discount ? { code: order.discount.code } : null;
+  // Przelew bankowy jest dostępny tylko przy rozliczeniu rocznym; przy miesięcznym — tylko karta.
+  const isMonthly = order.billingCycle === 'MONTHLY';
 
   return (
     <div className="bg-white py-12 px-4">
@@ -233,15 +289,17 @@ export function PaymentMethodStep() {
                     description="Szybka płatność online kartą kredytową lub debetową"
                     badges={['VISA', 'Mastercard']}
                   />
-                  <PaymentMethodOption
-                    id="pm-bank"
-                    name="paymentMethod"
-                    value="BANK_TRANSFER"
-                    selected={paymentMethod === 'BANK_TRANSFER'}
-                    onSelect={() => setPaymentMethod('BANK_TRANSFER')}
-                    title="Przelew bankowy"
-                    description="Otrzymasz proformę PDF z numerem konta — opłać w ciągu 14 dni"
-                  />
+                  {!isMonthly && (
+                    <PaymentMethodOption
+                      id="pm-bank"
+                      name="paymentMethod"
+                      value="BANK_TRANSFER"
+                      selected={paymentMethod === 'BANK_TRANSFER'}
+                      onSelect={() => setPaymentMethod('BANK_TRANSFER')}
+                      title="Przelew bankowy"
+                      description="Otrzymasz proformę PDF z numerem konta — opłać w ciągu 14 dni"
+                    />
+                  )}
                 </div>
                 <p className="mt-3 rounded-[8px] bg-blue-50 p-3 font-['Plus_Jakarta_Sans',sans-serif] text-xs text-blue-800">
                   Po kliknięciu „Dalej" zostaniesz przekierowany do bezpiecznej finalizacji płatności.
@@ -254,6 +312,7 @@ export function PaymentMethodStep() {
                 onRemove={handleRemoveDiscount}
                 partnerActive={partnerActive}
                 initialCode={storedDiscountCode}
+                removing={discountRemoving}
               />
 
               <FormActions

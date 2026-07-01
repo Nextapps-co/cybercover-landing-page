@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPatch } from './http';
+import { apiGet, apiPost, apiPatch, apiDelete } from './http';
 import { ApiError } from './types/errors';
 import type {
   CheckoutStateResponseDto,
@@ -37,6 +37,7 @@ import {
   submitOperationalStandardsMock,
   evaluateEligibilityMock,
   validateDiscountCodeMock,
+  removeDiscountMock,
   selectPaymentMethodMock,
   confirmOrderMock,
   createStripeCheckoutSessionMock,
@@ -134,6 +135,17 @@ export async function validateDiscountCode(orderId: string, dto: ValidateDiscoun
     `/orders/${encodeURIComponent(orderId)}/validate-discount`,
     dto,
   );
+}
+
+/**
+ * CC-522 — usuwa nałożony kod rabatowy z zamówienia. Zwraca pełny, zaktualizowany
+ * `OrderResponseDto` (`discount: null`, `totalPriceNet` wraca do pełnej ceny).
+ * Idempotentny: gdy nie ma czego usuwać, backend i tak zwraca 200 z niezmienionym zamówieniem.
+ * Rabatów partnerskich/promocyjnych NIE usuwa → 409 `DISCOUNT_REMOVAL_NOT_ALLOWED`.
+ */
+export async function removeDiscount(orderId: string): Promise<OrderResponseDto> {
+  if (useMock()) return removeDiscountMock(orderId);
+  return apiDelete<OrderResponseDto>(`/orders/${encodeURIComponent(orderId)}/discount`);
 }
 
 /**
