@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import type { OrderSession } from '../../lib/state/order-session';
 import { getOrderSession } from '../../lib/state/order-session';
 import { formatMinorUnits } from '../../lib/format/money';
-import type { OrderResponseDto } from '../../lib/api/types/order';
+import type { OrderResponseDto, OrderDiscountDto } from '../../lib/api/types/order';
 
 interface Props {
   order?: OrderResponseDto | null;
+  /** Podgląd rabatu po „Zastosuj", zanim utrwali go selectPaymentMethod — pokazuje zdyskontowaną cenę od razu. */
+  previewDiscount?: { code: string; originalPriceNet: number; discountedPriceNet: number } | null;
 }
 
-export function OrderSummaryAside({ order }: Props = {}) {
+export function OrderSummaryAside({ order, previewDiscount }: Props = {}) {
   const [session, setSession] = useState<OrderSession | null>(null);
 
   useEffect(() => {
@@ -76,8 +78,21 @@ export function OrderSummaryAside({ order }: Props = {}) {
     );
   }
 
-  const discount = order?.discount ?? null;
   const isAnnual = session.billingCycle === 'ANNUAL';
+  // Rabat utrwalony na zamówieniu ma pierwszeństwo; inaczej użyj podglądu z pola (po „Zastosuj"),
+  // żeby box od razu pokazał zdyskontowaną cenę — jeszcze przed utrwaleniem na „Dalej".
+  const previewAsDiscount: OrderDiscountDto | null =
+    !order?.discount && previewDiscount
+      ? {
+          code: previewDiscount.code,
+          kind: 'CODE_FLAT',
+          originalAmount: previewDiscount.originalPriceNet,
+          priceAfterDiscount: previewDiscount.discountedPriceNet,
+          discountAmount: previewDiscount.originalPriceNet - previewDiscount.discountedPriceNet,
+          currency,
+        }
+      : null;
+  const discount = order?.discount ?? previewAsDiscount;
 
   // Dwa źródła ceny mają RÓŻNE jednostki — nie wolno ich mieszać:
   // • order.discount.* to kwoty ZA CAŁY CYKL (== totalPriceNet; dla ANNUAL już zawierają ×12)

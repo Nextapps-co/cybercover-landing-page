@@ -7,6 +7,7 @@ import {
   submitPersonalDataMock,
   submitOperationalStandardsMock,
   selectPaymentMethodMock,
+  removeDiscountMock,
   confirmOrderMock,
   getOrderMock,
   changePaymentMethodMock,
@@ -104,6 +105,42 @@ describe('cancelOrderMock', () => {
     const orderId = await seedConfirmedStripeOrder();
     const res = await cancelOrderMock(orderId);
     expect(res.status).toBe('CANCELLED');
+  });
+});
+
+describe('removeDiscountMock', () => {
+  beforeEach(() => resetOrdersMock());
+
+  it('usuwa kod klienta (CODE_FLAT) i przywraca pełną cenę', async () => {
+    const start = await startOrderMock({ catalogEntryId: 'ce_mock_optimum', billingCycle: 'MONTHLY', partnerCode: 'SUMMER10' });
+    const before = await getOrderMock(start.orderId);
+    expect(before.discount?.kind).toBe('CODE_FLAT');
+    const updated = await removeDiscountMock(start.orderId);
+    expect(updated.discount).toBeNull();
+    expect(updated.totalPriceNet).toBe(59400); // pełna cena optimum MONTHLY
+  });
+
+  it('jest idempotentny — brak rabatu zwraca 200 bez zmian', async () => {
+    const start = await startOrderMock({ catalogEntryId: 'ce_mock_optimum', billingCycle: 'MONTHLY' });
+    const updated = await removeDiscountMock(start.orderId);
+    expect(updated.discount).toBeNull();
+    expect(updated.totalPriceNet).toBe(59400);
+  });
+
+  it('nie usuwa rabatu partnerskiego → 409 DISCOUNT_REMOVAL_NOT_ALLOWED', async () => {
+    const start = await startOrderMock({ catalogEntryId: 'ce_mock_optimum', billingCycle: 'MONTHLY', partnerCode: 'VALVETECH' });
+    await expect(removeDiscountMock(start.orderId))
+      .rejects.toMatchObject({ httpStatus: 409, code: 'DISCOUNT_REMOVAL_NOT_ALLOWED' });
+  });
+
+  it('zwraca 409 INVALID_ORDER_STATE gdy zamówienie nie jest DRAFT', async () => {
+    const orderId = await seedConfirmedStripeOrder();
+    await expect(removeDiscountMock(orderId))
+      .rejects.toMatchObject({ httpStatus: 409, code: 'INVALID_ORDER_STATE' });
+  });
+
+  it('zwraca 404 dla nieznanego orderId', async () => {
+    await expect(removeDiscountMock('nope')).rejects.toMatchObject({ httpStatus: 404 });
   });
 });
 

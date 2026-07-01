@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { CheckoutProgressBar } from './CheckoutProgressBar';
 import { OrderSummaryAside } from './OrderSummaryAside';
@@ -16,6 +16,7 @@ import { fetchConsentDefinitions, getOrder, submitPersonalData } from '../../lib
 import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
 import { validatePersonalData, type PersonalDataFormValues } from '../../lib/validation/personal-data';
+import { personalChanged } from '../../lib/state/checkout-delta';
 import type { ConsentDefinitionDto, OrderResponseDto } from '../../lib/api/types/order';
 
 const INITIAL_VALUES: PersonalDataFormValues = {
@@ -45,6 +46,7 @@ export function PersonalDataStep() {
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [osSkipped, setOsSkipped] = useState(false);
+  const baselineRef = useRef<PersonalDataFormValues | null>(null);
 
   const { register, handleSubmit, control, watch, setValue, setError, clearErrors, reset, formState: { errors } } =
     useForm<PersonalDataFormValues>({
@@ -93,10 +95,13 @@ export function PersonalDataStep() {
           lastName: order.personalData?.lastName ?? '',
           email: order.personalData?.email ?? '',
           phoneDigits: order.personalData?.phone ? stripCountryPrefix(order.personalData.phone) : '',
-          consents: {},
+          // Serwer nie echo'uje zgód — odtwarzamy je z draftu (to co user ostatnio wysłał),
+          // żeby po powrocie na krok checkboxy były zaznaczone jak przed przejściem dalej.
+          consents: draft?.consents ?? {},
         };
         const initial = order.personalData ? fromOrder : (draft ?? INITIAL_VALUES);
         reset(initial);
+        baselineRef.current = initial;
 
         setHydrating(false);
       } catch (err) {
@@ -135,6 +140,14 @@ export function PersonalDataStep() {
 
   const onSubmit = async (data: PersonalDataFormValues) => {
     if (!orderId) return;
+
+    const complete = order?.checkoutProgress.hasPersonalData ?? false;
+    if (complete && baselineRef.current && !personalChanged(baselineRef.current, data)) {
+      // Serwer ma już te dane osobowe (w tym zgody) i nic nie ruszono — pomiń PATCH.
+      const target = osSkipped ? 'payment-method' : 'operational-standards';
+      navigateForward(`/checkout/${target}?orderId=${encodeURIComponent(orderId)}`);
+      return;
+    }
 
     const fieldErrors = validatePersonalData(data, consentDefinitions);
     if (Object.keys(fieldErrors).length > 0) {

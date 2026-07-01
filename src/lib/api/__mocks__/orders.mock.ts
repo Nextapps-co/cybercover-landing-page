@@ -615,6 +615,28 @@ export async function selectPaymentMethodMock(
   };
 }
 
+// CC-522 — DELETE /orders/:id/discount. Zdejmuje kod wpisany przez klienta (CODE_FLAT)
+// i przywraca pełną cenę. Idempotentny, tylko DRAFT, rabatów partnerskich nie usuwa.
+export async function removeDiscountMock(orderId: string): Promise<OrderResponseDto> {
+  const order = ordersById.get(orderId);
+  if (!order) throw new ApiError('ORDER_NOT_FOUND', 404, 'Order not found (mock)');
+  if (order.status !== 'DRAFT') {
+    throw new ApiError('INVALID_ORDER_STATE', 409, 'Order not editable (mock)');
+  }
+  // Idempotentne — brak rabatu → 200 bez zmian.
+  if (!order.discount) return order;
+  // Rabatów partnerskich/promocyjnych ten endpoint nie usuwa.
+  if (PARTNER_DISCOUNT_KINDS.includes(order.discount.kind)) {
+    throw new ApiError('DISCOUNT_REMOVAL_NOT_ALLOWED', 409, 'Partner/promotional discount cannot be removed (mock)');
+  }
+  const fullPrice = order.discount.originalAmount;
+  order.discount = null;
+  order.totalPriceNet = fullPrice;
+  if (order.lines[0]) order.lines[0].priceNet = fullPrice;
+  ordersById.set(orderId, order);
+  return order;
+}
+
 function generateMockToken(): string {
   return 'mock-token-' + Math.random().toString(36).slice(2, 11);
 }

@@ -14,6 +14,8 @@ interface Props {
   partnerActive?: { code: string } | null;
   /** Optional initial value (e.g. from ?discountCode= persisted in sessionStorage). */
   initialCode?: string | null;
+  /** Trwa request usuwania rabatu (DELETE) — blokuje przycisk „Usuń" na czas operacji. */
+  removing?: boolean;
 }
 
 function formatGrosze(grosze: number): string {
@@ -23,7 +25,7 @@ function formatGrosze(grosze: number): string {
     .replace(/ /g, ' ');
 }
 
-export function DiscountCodeField({ state, onApply, onRemove, partnerActive, initialCode }: Props) {
+export function DiscountCodeField({ state, onApply, onRemove, partnerActive, initialCode, removing }: Props) {
   const [input, setInput] = useState(initialCode ?? '');
   const isApplied = state.status === 'applied';
   const isValidating = state.status === 'validating';
@@ -77,9 +79,10 @@ export function DiscountCodeField({ state, onApply, onRemove, partnerActive, ini
           <button
             type="button"
             onClick={handleRemove}
-            className="rounded-[80px] border border-[#A2A09C] bg-white px-4 py-2 text-sm font-semibold text-[#0D0D0D] hover:bg-[#F8F7F4]"
+            disabled={removing}
+            className="rounded-[80px] border border-[#A2A09C] bg-white px-4 py-2 text-sm font-semibold text-[#0D0D0D] hover:bg-[#F8F7F4] disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Usuń
+            {removing ? 'Usuwam…' : 'Usuń'}
           </button>
         ) : (
           <button

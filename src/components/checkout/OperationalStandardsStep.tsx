@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { CheckoutProgressBar } from './CheckoutProgressBar';
 import { OrderSummaryAside } from './OrderSummaryAside';
 import { FormActions } from './FormActions';
@@ -12,6 +12,7 @@ import { getOrder, getOperationalStandardsSchema, submitOperationalStandards } f
 import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
 import { validateOperationalStandards } from '../../lib/validation/operational-standards';
+import { osChanged } from '../../lib/state/checkout-delta';
 import type {
   OperationalStandardsSchemaResponseDto,
   EligibilityContributionDto,
@@ -77,6 +78,7 @@ export function OperationalStandardsStep() {
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [eligibilityWarning, setEligibilityWarning] = useState<EligibilityContributionDto[] | null>(null);
+  const baselineRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -122,6 +124,7 @@ export function OperationalStandardsStep() {
         setSchema(schemaRes);
         const draft = getFormState<{ answers: Record<string, string> }>('operational-standards');
         if (draft?.answers) setAnswers(draft.answers);
+        baselineRef.current = draft?.answers ?? {};
         setHydrating(false);
       } catch (err) {
         if (cancelled) return;
@@ -150,6 +153,13 @@ export function OperationalStandardsStep() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!orderId || !schema) return;
+
+    const complete = order?.checkoutProgress.hasOperationalStandards ?? false;
+    if (complete && !osChanged(baselineRef.current, answers)) {
+      // Odpowiedzi bez zmian, a backend ma już wypełniony krok OS — pomiń PATCH.
+      navigateForward(`/checkout/payment-method?orderId=${encodeURIComponent(orderId)}`);
+      return;
+    }
 
     const regularQuestions = schema.questions.filter(q => !isCheckboxQuestion(q));
     const checkboxQuestions = schema.questions.filter(isCheckboxQuestion);
