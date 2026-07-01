@@ -95,7 +95,9 @@ export function PersonalDataStep() {
           lastName: order.personalData?.lastName ?? '',
           email: order.personalData?.email ?? '',
           phoneDigits: order.personalData?.phone ? stripCountryPrefix(order.personalData.phone) : '',
-          consents: {},
+          // Serwer nie echo'uje zgód — odtwarzamy je z draftu (to co user ostatnio wysłał),
+          // żeby po powrocie na krok checkboxy były zaznaczone jak przed przejściem dalej.
+          consents: draft?.consents ?? {},
         };
         const initial = order.personalData ? fromOrder : (draft ?? INITIAL_VALUES);
         reset(initial);
