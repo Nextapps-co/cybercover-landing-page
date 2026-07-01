@@ -5,13 +5,12 @@ import { FormActions } from './FormActions';
 import { FormAlert } from './FormAlert';
 import { PaymentMethodOption } from './PaymentMethodOption';
 import { DiscountCodeField, type DiscountState } from './DiscountCodeField';
-import { getOrderSession, persistOsSkipped } from '../../lib/state/order-session';
+import { getOrderSession, resolveOsSkipped } from '../../lib/state/order-session';
 import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
 import { saveFormState, getFormState } from '../../lib/state/form-persistence';
 import { canAccessStep } from '../../lib/state/checkout-navigation';
 import {
   getOrder,
-  getOperationalStandardsSchema,
   validateDiscountCode,
   removeDiscount,
   selectPaymentMethod,
@@ -69,10 +68,10 @@ export function PaymentMethodStep() {
 
     (async () => {
       try {
-        // §2.6 — fetch schema in parallel to detect whether OS step was
-        // auto-skipped (no-insurance plan, e.g. Standard). Used for Back button
-        // target. Best-effort: on schema error, default to non-skipped.
-        const [o, schema] = await Promise.all([getOrder(id), getOperationalStandardsSchema(id).catch(() => null)]);
+        // §2.6 — osSkipped potrzebne dla Back buttona i progress baru. Czytamy z cache
+        // OrderSession (resolveOsSkipped) — schema OS fetchujemy najwyżej raz na cały wizard
+        // (w kroku company/personal), NIE na każdym wejściu na payment-method.
+        const [o, skipped] = await Promise.all([getOrder(id), resolveOsSkipped(id)]);
         if (cancelled) return;
         if (!canAccessStep(4, o.checkoutProgress)) {
           const next = !o.checkoutProgress.hasCompanyData
@@ -84,9 +83,7 @@ export function PaymentMethodStep() {
           return;
         }
         setOrder(o);
-        const skipped = Boolean(schema?.skipped);
         setOsSkipped(skipped);
-        if (schema) persistOsSkipped(skipped);
         const draft = getFormState<{ paymentMethod: PaymentMethod | '' }>('payment-method');
         const resolvedMethod = o.paymentMethod ?? draft?.paymentMethod ?? '';
         // Rozliczenie miesięczne: dostępna tylko karta → auto-wybór (przelew ukryty w renderze).
@@ -328,7 +325,18 @@ export function PaymentMethodStep() {
           </div>
 
           <aside className="lg:col-span-1">
-            <OrderSummaryAside order={order} />
+            <OrderSummaryAside
+              order={order}
+              previewDiscount={
+                discountState.status === 'applied' && !order.discount
+                  ? {
+                      code: discountState.code,
+                      originalPriceNet: discountState.originalPriceNet,
+                      discountedPriceNet: discountState.discountedPriceNet,
+                    }
+                  : null
+              }
+            />
           </aside>
         </div>
       </div>
