@@ -68,6 +68,11 @@ const TRANSLATIONS: Record<ApiErrorCode, TranslatedError> = {
     message: 'Kod rabatowy nie istnieje lub wygasł.',
     actionable: true,
   },
+  DISCOUNT_REMOVAL_NOT_ALLOWED: {
+    title: 'Nie można usunąć rabatu',
+    message: 'Tego rabatu nie można usunąć — został przyznany automatycznie (np. przez partnera).',
+    actionable: false,
+  },
   COMPANY_LOOKUP_UNAVAILABLE: {
     title: 'Rejestry niedostępne',
     message: 'Rejestry firm (CEIDG/KRS) są chwilowo niedostępne. Wypełnij dane firmy ręcznie.',

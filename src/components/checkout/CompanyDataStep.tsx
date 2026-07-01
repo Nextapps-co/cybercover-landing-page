@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { CheckoutProgressBar } from './CheckoutProgressBar';
 import { OrderSummaryAside } from './OrderSummaryAside';
@@ -14,6 +14,7 @@ import { getOrder, submitCompanyData } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
 import { validateCompanyData, type CompanyDataFormValues } from '../../lib/validation/company-data';
+import { companyChanged } from '../../lib/state/checkout-delta';
 import { normalizeNip } from '../../lib/validation/nip';
 import { INDUSTRIES } from '../../data/industries';
 import type { CompanyLookupDataDto, OrderResponseDto } from '../../lib/api/types/order';
@@ -43,6 +44,7 @@ export function CompanyDataStep() {
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [osSkipped, setOsSkipped] = useState(false);
+  const baselineRef = useRef<CompanyDataFormValues | null>(null);
 
   const form = useForm<CompanyDataFormValues>({
     mode: 'onTouched',
@@ -96,19 +98,22 @@ export function CompanyDataStep() {
         setOsSkipped(skipped);
 
         // Prefer backend's stored data; fall back to local form-persistence draft
+        let initial: CompanyDataFormValues = INITIAL_VALUES;
         if (order.companyData) {
-          reset({
+          initial = {
             nip: order.companyData.nip ?? '',
             name: order.companyData.name ?? '',
             street: order.companyData.street ?? '',
             city: order.companyData.city ?? '',
             postalCode: order.companyData.postalCode ?? '',
             industry: industryValueFromLabel(order.companyData.industry ?? '') || order.companyData.industry || '',
-          });
+          };
         } else {
           const draft = getFormState<CompanyDataFormValues>('company-data');
-          if (draft) reset(draft);
+          if (draft) initial = draft;
         }
+        reset(initial);
+        baselineRef.current = initial;
         setHydrating(false);
       } catch (err) {
         if (cancelled) return;
@@ -134,6 +139,13 @@ export function CompanyDataStep() {
 
   const onSubmit = async (data: CompanyDataFormValues) => {
     if (!orderId) return;
+
+    const complete = order?.checkoutProgress.hasCompanyData ?? false;
+    if (complete && baselineRef.current && !companyChanged(baselineRef.current, data)) {
+      // Nic się nie zmieniło od hydracji, a backend ma już te dane — pomiń PATCH.
+      navigateForward(`/checkout/personal-data?orderId=${encodeURIComponent(orderId)}`);
+      return;
+    }
 
     // Run our validators (in addition to react-hook-form's per-field rules)
     const fieldErrors = validateCompanyData(data);

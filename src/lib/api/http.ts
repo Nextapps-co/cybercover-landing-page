@@ -18,7 +18,8 @@ const BACKEND_CODES = new Set<BackendApiErrorCode>([
   'INVALID_NIP', 'INVALID_POSTAL_CODE', 'INVALID_COMPANY_DATA', 'INVALID_CONSENT',
   'INCOMPLETE_CHECKOUT', 'INVALID_ROLE_ASSIGNMENT', 'ORDER_NOT_FOUND',
   'INVALID_CONFIRMATION_ACCESS', 'INVALID_ORDER_STATE', 'EMAIL_NOT_AVAILABLE',
-  'DISCOUNT_SOURCE_CONFLICT', 'DISCOUNT_CODE_NOT_FOUND', 'COMPANY_LOOKUP_UNAVAILABLE',
+  'DISCOUNT_SOURCE_CONFLICT', 'DISCOUNT_CODE_NOT_FOUND', 'DISCOUNT_REMOVAL_NOT_ALLOWED',
+  'COMPANY_LOOKUP_UNAVAILABLE',
   'HANDOFF_TOKEN_INVALID_OR_EXPIRED', 'USER_INACTIVE', 'PLAN_CHANGE_PENDING',
   'DOWNGRADE_NOT_ALLOWED', 'REACTIVATION_DOWNGRADE_NOT_ALLOWED',
   'DISCOUNT_NOT_ALLOWED_FOR_ORDER_TYPE', 'OPERATIONAL_STANDARDS_REQUIRED',
@@ -133,4 +134,8 @@ export function apiPatch<TBody, TResponse>(path: string, body: TBody, options?: 
     },
     options,
   );
+}
+
+export function apiDelete<TResponse>(path: string, options?: RequestOptions): Promise<TResponse> {
+  return request<TResponse>(path, { method: 'DELETE', headers: { Accept: 'application/json', ...(options?.headers ?? {}) } }, options);
 }
