@@ -39,13 +39,19 @@ export function DiscountCodeField({ state, onApply, onRemove, partnerActive, ini
 
   if (partnerActive) {
     return (
-      <div className="rounded-[12px] border border-amber-200 bg-amber-50 p-4 font-['Plus_Jakarta_Sans',sans-serif]" role="status">
+      <div
+        className="rounded-[12px] border border-amber-200 bg-amber-50 p-4 font-['Plus_Jakarta_Sans',sans-serif]"
+        role="status"
+      >
         <p className="text-sm font-medium text-amber-900">
           Masz aktywną zniżkę partnerską <span className="font-mono font-semibold">{partnerActive.code}</span>.
         </p>
         <p className="mt-1 text-xs text-amber-900">
           Zniżki partnerskiej i kodu rabatowego nie można łączyć. Aby wpisać własny kod, najpierw przejdź na{' '}
-          <a href="/cennik" className="underline">cennik bez kodu partnera</a>.
+          <a href="/cennik" className="underline">
+            cennik bez kodu partnera
+          </a>
+          .
         </p>
       </div>
     );
@@ -71,7 +77,7 @@ export function DiscountCodeField({ state, onApply, onRemove, partnerActive, ini
           type="text"
           value={value}
           disabled={isApplied || isValidating}
-          onChange={e => setInput(e.currentTarget.value)}
+          onChange={(e) => setInput(e.currentTarget.value)}
           placeholder="Wpisz kod rabatowy"
           className="flex-1 rounded-[8px] border border-[#E4E2DF] bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FED64B] disabled:opacity-60"
         />
@@ -95,13 +101,10 @@ export function DiscountCodeField({ state, onApply, onRemove, partnerActive, ini
           </button>
         )}
       </div>
-      {state.status === 'applied' && (
-        <p className="mt-2 text-xs text-green-700" role="status">
-          Rabat zaaplikowany. Zaoszczędzisz {formatGrosze(state.originalPriceNet - state.discountedPriceNet)} zł.
-        </p>
-      )}
       {state.status === 'error' && (
-        <p className="mt-2 text-xs text-red-500" role="alert">{state.message}</p>
+        <p className="mt-2 text-xs text-red-500" role="alert">
+          {state.message}
+        </p>
       )}
     </div>
   );
