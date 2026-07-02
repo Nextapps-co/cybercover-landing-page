@@ -10,8 +10,10 @@
 # więc po wdrożeniu nie trzeba ręcznie zmieniać start command.
 #
 # Sekrety/zmienne NIE są w tym pliku — ustaw je w dashboardzie per środowisko:
-#   - CHECKOUT_ACCESS_KEY=<klucz>   → TYLKO na prod (włącza bramkę /dostep);
-#                                     brak na dev = bramka wyłączona (fail-open)
+#   - CHECKOUT_ACCESS_KEY=<klucz>   → ustaw na środowisku TESTOWYM/preview:
+#                                     włącza bramkę /dostep na CAŁEJ stronie
+#                                     (zero crawlingu/indeksacji + X-Robots-Tag
+#                                     noindex). Brak na LIVE = strona otwarta.
 #   - PUBLIC_* (API base, portal, mocki) — jak dotychczas
 
 [build]
@@ -20,6 +22,6 @@ buildCommand = "npm run build"
 
 [deploy]
 startCommand = "HOST=0.0.0.0 node ./server.mjs"
-healthcheckPath = "/"
+healthcheckPath = "/healthz"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
