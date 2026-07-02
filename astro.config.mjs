@@ -23,7 +23,12 @@ export default defineConfig({
   // stanu usera = brak realnej powierzchni CSRF), reszta ruchu to statyki albo
   // fetch do zewnętrznego backendu.
   security: { checkOrigin: false },
-  integrations: [sitemap(), react()],
+  integrations: [
+    // Sitemap tylko dla stron indeksowalnych — checkout i bramka dostępu
+    // są `noindex` + zablokowane w robots.txt, więc nie powinny tu trafiać.
+    sitemap({ filter: (page) => !page.includes('/checkout/') && !page.includes('/dostep') }),
+    react(),
+  ],
   vite: {
     plugins: [tailwindcss()],
     optimizeDeps: {

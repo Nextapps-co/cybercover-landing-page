@@ -10,6 +10,8 @@ interface Props {
   fullBleed?: boolean
   /** Dodatkowe klasy na <section> */
   class?: string
+  /** Id sekcji — kotwica do linkowania (#anchor) */
+  id?: string
 }
 
 const {
@@ -18,6 +20,7 @@ const {
   narrow = false,
   fullBleed = false,
   class: extraClass = '',
+  id,
 } = Astro.props
 
 const padClass =
@@ -28,6 +31,6 @@ const containerClass = narrow
   : 'max-w-container mx-auto px-6'
 ---
 
-<section class={`${padClass} ${bg ?? ''} ${extraClass}`.trim()}>
+<section id={id} class={`${padClass} ${bg ?? ''} ${extraClass}`.trim()}>
   {fullBleed ? <slot /> : <div class={containerClass}><slot /></div>}
 </section>
