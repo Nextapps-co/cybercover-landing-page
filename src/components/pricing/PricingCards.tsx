@@ -13,7 +13,7 @@ import { ResumeOrDiscardModal } from './ResumeOrDiscardModal';
 import { getPartnerFromUrl } from '../../lib/format/partner';
 import { getDiscountCodeFromUrl, clearDiscountCode } from '../../lib/format/discount-code';
 import { translateApiError } from '../../lib/errors/translate';
-import { planToCardProps, type AuthContext } from '../../lib/catalog/render-policy';
+import { planToCardProps, discountAppliesToCycle, type AuthContext } from '../../lib/catalog/render-policy';
 import { ApiError } from '../../lib/api/types/errors';
 import { detectAndExchangeHandoff } from '../../lib/auth/handoff';
 import { redirectToPortal } from '../../lib/auth/portal-redirect';
@@ -171,12 +171,13 @@ export function PricingCards() {
 
     try {
       // Resolve which value to send as `partnerCode` to /orders/start.
-      // - ?partner= URL param is canonical partner channel — always treated as partnerCode.
-      // - ?discountCode= preview tells us actual kind via plan.discount.kind:
-      //     PARTNER_FLAT / PARTNER_COMPOSITE / PARTNER_TIMEBOUND / PARTNER_TIMEBOUND_COMPOSITE
-      //         → must auto-attach as partnerCode (otherwise previewed price disappears at /start).
-      //     CODE_FLAT → stays in sessionStorage and pre-fills Step 4 input.
-      //     null → don't auto-attach.
+      // WYSIWYG: kod partnerski (z któregokolwiek kanału) doklejamy TYLKO gdy wybrany
+      // plan+cykl faktycznie pokazuje tę zniżkę (discountAppliesToCycle). Inaczej — np. kod
+      // promocyjny ważny tylko dla MONTHLY, a user wybrał ANNUAL — flow idzie bez zniżki,
+      // zamiast wysyłać kod, który BE odrzuci ("requires billing cycle MONTHLY, but order has ANNUAL").
+      // - ?partner= URL param — kanoniczny kanał partnerski (traktowany jako partnerCode).
+      // - ?discountCode= — preview.kind rozróżnia: PARTNER_* → doklejamy jako partnerCode;
+      //     CODE_FLAT → zostaje w sessionStorage i pre-fill'uje input w kroku 4; null → nie doklejamy.
       const partnerFromUrl = getPartnerFromUrl();
       const discountCodeFromUrl = getDiscountCodeFromUrl();
       const previewKind = plan.discount?.kind ?? null;
@@ -185,9 +186,12 @@ export function PricingCards() {
         previewKind === 'PARTNER_COMPOSITE' ||
         previewKind === 'PARTNER_TIMEBOUND' ||
         previewKind === 'PARTNER_TIMEBOUND_COMPOSITE';
+      const appliesToCycle = discountAppliesToCycle(plan.discount, billingCycle);
 
-      let partnerCode: string | undefined = partnerFromUrl ?? undefined;
-      if (!partnerCode && discountCodeFromUrl && isPartnerKindPreview) {
+      let partnerCode: string | undefined;
+      if (partnerFromUrl && appliesToCycle) {
+        partnerCode = partnerFromUrl;
+      } else if (discountCodeFromUrl && isPartnerKindPreview && appliesToCycle) {
         partnerCode = discountCodeFromUrl;
         clearDiscountCode();
       }
