@@ -14,6 +14,11 @@ import pomocImg from '../assets/img/Natychmiastowa-pomoc-portal.jpg'
 import ubezpieczenieImg from '../assets/img/Ubezpieczenie-portal.jpg'
 import nis2Img from '../assets/img/wymagania-nis2x2.jpg'
 
+import logoWoltersImg from '../assets/img/logo-wolters-kluwer.png'
+import logoCrawfordImg from '../assets/img/logo-crawford.png'
+import logoResiliaImg from '../assets/img/logo-resilia.png'
+import logoSymfoniaImg from '../assets/img/logo-symfonia.png'
+
 const threats = [
   { icon: '/img/ico-kradziez-danych.svg', title: 'Kradzież danych osobowych przez pracownika', desc: 'Nieuczciwy członek zespołu wykradł 700 rekordów z danymi klientów. Incydent wymagał natychmiastowego powiadomienia UODO.' },
   { icon: '/img/ico-podszywanie-sie-pod-prezesa-firmy.svg', title: 'Podszywanie się pod prezesa organizacji', desc: 'W pilnej wiadomości „prezes" prosił o pilny przelew dla ważnego partnera. Księgowa, nie weryfikując tożsamości nadawcy, przelała środki na wskazane konto przestępców.' },
@@ -23,7 +28,7 @@ const threats = [
 
 const challenges = [
   'Brak wiedzy jak w pełni zabezpieczyć się przed wyciekiem danych i atakami na organizację.',
-  'Odpowiedzialność osobista za kary urzędowe, roszczenia, okup i pozwy sądowe',
+  'Odpowiedzialność osobista za kary administracyjne, roszczenia, okup i pozwy sądowe',
   'Jeśli coś się stanie, to nie wiadomo do kogo się zgłosić po wsparcie.',
 ]
 
@@ -32,7 +37,7 @@ const services = [
   { id: 'konsultacje', href: '/konsultacje-z-ekspertami', icon: '/img/ico-konsultacje-z-ekspertami.svg', title: 'Konsultacje z ekspertami', desc: 'Dajemy dostęp do doświadczonych specjalistów od cyberbezpieczeństwa i RODO, odpowiadamy na pytania i wątpliwości dotyczące ochrony danych w organizacji.', img: konsultacjeImg, imgAlt: 'Konsultacje' },
   { id: 'monitoring', href: '/ciagly-monitoring-zagrozen', icon: '/img/ico-ciagly-monitoring-zagrozen.svg', title: 'Ciągły monitoring zagrożeń', desc: 'Sprawdzamy, czy dane Twojej organizacji nie wyciekły w zewnętrznych serwisach, oraz monitorujemy stan i bezpieczeństwo Twojej strony www. Gdy wykryjemy problem, od razu informujemy co trzeba zrobić.', img: monitoringImg, imgAlt: 'Monitoring zagrożeń' },
   { id: 'pomoc-247', href: '/natychmiastowa-pomoc-24-7', icon: '/img/ico-natychmiastowa-pomoc-24-7.svg', title: 'Natychmiastowa pomoc 24/7', desc: 'W razie problemów masz przycisk alarmowy – gdzie zapewniamy ekspertów cyberbezpieczeństwa, mediatorów ds. zarządzania incydentami, radców prawnych oraz specjalistów ds. komunikacji kryzysowej i zarządzania reputacją online.', img: pomocImg, imgAlt: 'Natychmiastowa pomoc' },
-  { id: 'ubezpieczenie', href: '/ubezpieczenie-od-kar-roszczen-i-strat', icon: '/img/ico-ubezpieczenie-od-kar-roszczen-i-strat.svg', title: 'Ubezpieczenie od kar, roszczeń i strat', desc: 'Ubezpieczenie pokryje kary finansowe nałożone przez urzędy, odszkodowania w wyniku naruszenia danych, jak również utracone korzyści z powodu paraliżu działania.', img: ubezpieczenieImg, imgAlt: 'Ubezpieczenie' },
+  { id: 'ubezpieczenie', href: '/ubezpieczenie-od-kar-roszczen-i-strat', icon: '/img/ico-ubezpieczenie-od-kar-roszczen-i-strat.svg', title: 'Ubezpieczenie od kar, roszczeń i strat', desc: 'Ubezpieczenie pokryje kary finansowe nałożone przez organy administracji, odszkodowania w wyniku naruszenia danych, jak również utracone korzyści z powodu paraliżu działania.', img: ubezpieczenieImg, imgAlt: 'Ubezpieczenie' },
 ]
 
 const steps = [
@@ -58,7 +63,7 @@ const steps = [
   >
     <ArrowButton slot="cta" variant="yellow" size="sm" label="Sprawdź cenę" href="/cennik" />
     <div slot="image-badge" class="absolute left-2 lg:-left-4 top-[14%] z-10 w-[100px] lg:w-[141px] drop-shadow-[0_8px_20px_rgba(0,0,0,0.18)]">
-      <img src="/img/price-badge.svg" alt="" aria-hidden="true" class="block w-full h-auto" />
+      <img src="/img/price-badge.svg" alt="" aria-hidden="true" width="141" height="158" class="block w-full h-auto" />
       <div class="absolute inset-0 text-black text-center font-['Plus_Jakarta_Sans',sans-serif] select-none">
         <span class="absolute left-1/2 -translate-x-1/2 top-[11%] text-[9px] lg:text-[12px] font-semibold tracking-[-0.04em] whitespace-nowrap">CENA OD</span>
         <span class="absolute left-1/2 -translate-x-1/2 top-[19%] text-[35px] lg:text-[49px] font-bold leading-none tracking-[-0.04em]">295</span>
@@ -75,11 +80,11 @@ const steps = [
         Współpracujemy z liderami prawa, technologii i bezpieczeństwa ludzi
       </p>
       <div class="bg-brand-bg rounded-[55px] px-8 lg:px-[110px] py-7 lg:py-0 lg:h-[110px] flex flex-wrap items-center justify-center gap-x-10 gap-y-6 lg:gap-x-[70px]">
-        <img src="/img/logo-wolters-kluwer.png" alt="Wolters Kluwer" class="h-[34px] lg:h-[41px] w-auto" loading="lazy" />
-        <img src="/img/logo-colonnade.svg" alt="Colonnade" class="h-[40px] lg:h-[48px] w-auto" loading="lazy" />
-        <img src="/img/logo-resilia.png" alt="Resilia" class="h-[26px] lg:h-[31px] w-auto" loading="lazy" />
-        <img src="/img/logo-crawford.png" alt="Crawford" class="h-[33px] lg:h-[40px] w-auto" loading="lazy" />
-        <img src="/img/logo-symfonia.png" alt="Symfonia" class="h-[26px] lg:h-[31px] w-auto" loading="lazy" />
+        <Image src={logoWoltersImg} alt="Wolters Kluwer" height={82} format="webp" class="h-[34px] lg:h-[41px] w-auto" loading="lazy" />
+        <img src="/img/logo-colonnade.svg" alt="Colonnade" width="323" height="86" class="h-[40px] lg:h-[48px] w-auto" loading="lazy" />
+        <Image src={logoResiliaImg} alt="Resilia" height={62} format="webp" class="h-[26px] lg:h-[31px] w-auto" loading="lazy" />
+        <Image src={logoCrawfordImg} alt="Crawford" height={80} format="webp" class="h-[33px] lg:h-[40px] w-auto" loading="lazy" />
+        <Image src={logoSymfoniaImg} alt="Symfonia" height={62} format="webp" class="h-[26px] lg:h-[31px] w-auto" loading="lazy" />
       </div>
     </div>
   </section>

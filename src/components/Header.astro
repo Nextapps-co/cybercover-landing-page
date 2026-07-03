@@ -32,7 +32,7 @@ const portalAuthUrl = `${portalBase}/auth`;
   data-site-header
 >
   <div class="relative max-w-[1480px] mx-auto px-5 py-4" id="header-wrapper">
-    <div class="flex items-center justify-between bg-brand-bg border border-brand-border rounded-[55px] px-[25px] py-[21px]" id="header-pill">
+    <div class="relative z-50 flex items-center justify-between gap-3 bg-brand-bg border border-brand-border rounded-full px-4 sm:px-6 h-[70px]" id="header-pill">
       <!-- Logo -->
       <a href="/" class="shrink-0">
         <img
@@ -40,7 +40,7 @@ const portalAuthUrl = `${portalBase}/auth`;
           alt="logo Cyber Cover"
           width="250"
           height="39"
-          class="h-[39px] w-auto"
+          class="h-[32px] sm:h-[39px] w-auto"
         />
       </a>
 
@@ -165,7 +165,7 @@ const portalAuthUrl = `${portalBase}/auth`;
   <!-- Mobile menu -->
   <div
     id="mobile-menu"
-    class="lg:hidden hidden fixed inset-0 top-[90px] bg-white z-40 px-6 py-8 overflow-y-auto"
+    class="lg:hidden hidden fixed inset-0 bg-white z-40 px-6 pt-[96px] pb-8 overflow-y-auto"
   >
     <nav class="flex flex-col gap-1">
       {menuItems.map(item => item.children ? (

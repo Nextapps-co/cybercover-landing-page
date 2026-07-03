@@ -50,7 +50,7 @@ export const NipLookupField = forwardRef<HTMLInputElement, Props>(function NipLo
         <label className="block h-5 font-['Plus_Jakarta_Sans',sans-serif] font-semibold text-[13px] text-[#6b6965] uppercase tracking-[0.26px] leading-[1.1]">
           NIP <span className="ml-0.5 text-red-500">*</span>
         </label>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <input
             ref={ref}
             type="text"
