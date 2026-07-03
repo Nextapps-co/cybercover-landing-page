@@ -305,6 +305,13 @@ export function discountAppliesToCycle(
   const afterDiscount =
     billingCycle === 'MONTHLY' ? discount.monthlyPriceAfterDiscount : discount.annualPriceAfterDiscount;
   if (!afterDiscount) return false;
+  // BE oznacza WSZYSTKIE plany eligible:true dla zniżki celowanej w jeden plan
+  // (np. PARTNER_COMPOSITE „10% na Optimum" → Standard/Profesjonalny/Ekspert dostają
+  // priceAfterDiscount == price i discountAmount == 0). Rozróżnienie „realnie obniża cenę"
+  // niesie tylko discountAmount — bez tego karta pokazywałaby przekreślone 295 zł → 295 zł.
+  const discountAmount =
+    billingCycle === 'MONTHLY' ? discount.monthlyDiscountAmount : discount.annualDiscountAmount;
+  if (!discountAmount || discountAmount.amount <= 0) return false;
   if (discount.promotionalDuration) {
     return discount.promotionalDuration.applicableBillingCycle === billingCycle;
   }
@@ -356,7 +363,7 @@ function derivePricing(plan: PlanCatalogEntryDto, billingCycle: BillingCycle): P
 
   // No discount applicable for this billing cycle — show plain price + savings badge if applicable
   let savingsBadge: string | undefined;
-  if (!discount?.eligible && billingCycle === 'ANNUAL') {
+  if (!applies && billingCycle === 'ANNUAL') {
     // Show how much the user saves vs paying monthly: (monthly - annual) * 12
     const savingsGrosze = (monthlyOriginal.amount - annualOriginal.amount) * 12;
     if (savingsGrosze > 0) {
