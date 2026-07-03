@@ -318,6 +318,26 @@ export function discountAppliesToCycle(
   return true;
 }
 
+/**
+ * Który cykl rozliczeniowy powinien być domyślnie zaznaczony na /cennik.
+ *
+ * Gdy zniżka (partnerska/kodowa) realnie obowiązuje dokładnie dla jednego cyklu —
+ * zwraca ten cykl, żeby toggle wskazał od razu na cykl, na którym klient dostaje zniżkę.
+ * Np. TIMEBOUND „0 zł przez 3 mies." (applicableBillingCycle: MONTHLY) → 'MONTHLY'.
+ *
+ * Gdy zniżka obowiązuje na obu cyklach (np. PARTNER_COMPOSITE „10% na Optimum")
+ * albo na żadnym (brak zniżki) → zwraca null, a caller trzyma domyślny 'ANNUAL'.
+ */
+export function discountDrivenBillingCycle(
+  plans: PlanCatalogEntryDto[],
+): BillingCycle | null {
+  const appliesMonthly = plans.some(p => discountAppliesToCycle(p.discount, 'MONTHLY'));
+  const appliesAnnual = plans.some(p => discountAppliesToCycle(p.discount, 'ANNUAL'));
+  if (appliesMonthly && !appliesAnnual) return 'MONTHLY';
+  if (appliesAnnual && !appliesMonthly) return 'ANNUAL';
+  return null;
+}
+
 function derivePricing(plan: PlanCatalogEntryDto, billingCycle: BillingCycle): PricingDisplayProps {
   const monthlyOriginal = plan.monthlyPrice;
   const annualOriginal = plan.annualPrice;
