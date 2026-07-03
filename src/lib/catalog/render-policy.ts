@@ -9,7 +9,7 @@
 // To add a new tier or feature key: extend the contract documented in
 // `docs/pricing-catalog-changes.md` and update SECTIONS to read it.
 
-import type { PlanCatalogEntryDto, FeatureMap, PlanTier, SubscriptionStatus } from '../api/types/catalog';
+import type { PlanCatalogEntryDto, FeatureMap, PlanTier, SubscriptionStatus, DiscountPreviewDto } from '../api/types/catalog';
 import type { BillingCycle, MoneyDto } from '../api/types/money';
 import type { PricingCardProps, PricingCardVariant, FeatureSection, FeatureItem } from '../../components/pricing/PricingCard';
 import { formatMinorUnits } from '../format/money';
@@ -282,6 +282,35 @@ interface PricingDisplayProps {
   savingsBadge?: string;
 }
 
+/**
+ * Czy zniżka z preview katalogu faktycznie obowiązuje dla danego cyklu rozliczeniowego.
+ * WYSIWYG: zwraca `true` dokładnie wtedy, gdy karta pokazuje cenę po zniżce dla tego cyklu.
+ *
+ * - Zniżka time-bound (np. „0 zł przez 3 mies.") obowiązuje tylko dla swojego
+ *   `promotionalDuration.applicableBillingCycle` (dziś zawsze MONTHLY). Wybór ANNUAL → brak zniżki.
+ * - Zniżka bez `promotionalDuration` (FLAT/COMPOSITE) obowiązuje dla cyklu, który ma
+ *   wyliczoną cenę po zniżce.
+ *
+ * Uwaga: BE potrafi wypełniać `annual*`/`monthly*PriceAfterDiscount` dla obu cykli nawet gdy
+ * kod jest ograniczony do jednego cyklu — dlatego jedynym pewnym sygnałem restrykcji jest
+ * `promotionalDuration.applicableBillingCycle`. Używane też przez `PricingCards`, żeby NIE
+ * doklejać do /orders/start kodu, który BE by odrzucił dla niepasującego cyklu
+ * („requires billing cycle MONTHLY, but order has ANNUAL").
+ */
+export function discountAppliesToCycle(
+  discount: DiscountPreviewDto | null | undefined,
+  billingCycle: BillingCycle,
+): boolean {
+  if (!discount?.eligible) return false;
+  const afterDiscount =
+    billingCycle === 'MONTHLY' ? discount.monthlyPriceAfterDiscount : discount.annualPriceAfterDiscount;
+  if (!afterDiscount) return false;
+  if (discount.promotionalDuration) {
+    return discount.promotionalDuration.applicableBillingCycle === billingCycle;
+  }
+  return true;
+}
+
 function derivePricing(plan: PlanCatalogEntryDto, billingCycle: BillingCycle): PricingDisplayProps {
   const monthlyOriginal = plan.monthlyPrice;
   const annualOriginal = plan.annualPrice;
@@ -289,11 +318,6 @@ function derivePricing(plan: PlanCatalogEntryDto, billingCycle: BillingCycle): P
 
   // Choose the rate to display based on billing cycle (price label is always per-month)
   const baseRate: MoneyDto = billingCycle === 'MONTHLY' ? monthlyOriginal : annualOriginal;
-
-  // Discount has a promotional duration that only applies to a specific cycle?
-  const isPromoOnlyForCycle =
-    discount?.eligible &&
-    discount.promotionalDuration?.applicableBillingCycle === billingCycle;
 
   // After-discount monthly amount for the selected cycle (when applicable)
   const afterDiscountMonthly: MoneyDto | null =
@@ -303,8 +327,11 @@ function derivePricing(plan: PlanCatalogEntryDto, billingCycle: BillingCycle): P
         : discount.annualPriceAfterDiscount
       : null;
 
+  // Czy zniżka faktycznie obowiązuje dla wybranego cyklu (WYSIWYG — jedno źródło prawdy).
+  const applies = discountAppliesToCycle(discount, billingCycle);
+
   // Standard discount path: strikethrough original + show after-discount (no promo period)
-  if (discount?.eligible && afterDiscountMonthly && !discount.promotionalDuration) {
+  if (applies && afterDiscountMonthly && !discount?.promotionalDuration) {
     return {
       price: formatMinorUnits(afterDiscountMonthly.amount, afterDiscountMonthly.currency),
       yearlyPrice: formatYearlyTotal(afterDiscountMonthly.amount),
@@ -315,7 +342,7 @@ function derivePricing(plan: PlanCatalogEntryDto, billingCycle: BillingCycle): P
   }
 
   // Promotional period path (e.g. "0 zł przez 3 miesiące" — TIMEBOUND on monthly cycle)
-  if (isPromoOnlyForCycle && discount?.promotionalDuration && afterDiscountMonthly) {
+  if (applies && discount?.promotionalDuration && afterDiscountMonthly) {
     const months = discount.promotionalDuration.months;
     return {
       price: formatMinorUnits(afterDiscountMonthly.amount, afterDiscountMonthly.currency),
