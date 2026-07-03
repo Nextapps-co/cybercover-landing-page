@@ -119,20 +119,6 @@ export function PersonalDataStep() {
     return () => { cancelled = true; };
   }, []);
 
-  const selectAllChecked =
-    consentDefinitions.length > 0 &&
-    consentDefinitions.every(d => consentValues?.[d.id] === true);
-
-  const handleSelectAll = (next: boolean) => {
-    const consents: Record<string, boolean> = {};
-    for (const def of consentDefinitions) consents[def.id] = next;
-    setValue('consents', consents, { shouldValidate: true });
-    // `consents` nie jest register()-owane z rules, więc `shouldValidate` nie czyści
-    // manualnego setError z poprzedniego submit'a. Bez tego handleSubmit gateuje
-    // następny klik "Dalej" na resztkowym errorze i onSubmit się nie odpala.
-    clearErrors('consents');
-  };
-
   const handleConsentChange = (id: string, accepted: boolean) => {
     setValue('consents', { ...consentValues, [id]: accepted }, { shouldValidate: true });
     clearErrors('consents');
@@ -252,15 +238,6 @@ export function PersonalDataStep() {
               </FormStep>
 
               <FormStep title="Zgody">
-                <label className="flex items-center gap-3 border-b border-[#E4E2DF] pb-3 font-['Plus_Jakarta_Sans',sans-serif] text-sm font-semibold text-[#0D0D0D] cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectAllChecked}
-                    onChange={e => handleSelectAll(e.currentTarget.checked)}
-                    className="h-4 w-4 rounded border-[#E4E2DF] accent-[#FED64B] cursor-pointer"
-                  />
-                  Zaznacz wszystkie
-                </label>
                 <div>
                   {consentDefinitions.map(def => (
                     <ConsentCheckbox
