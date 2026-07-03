@@ -13,7 +13,7 @@ import { ResumeOrDiscardModal } from './ResumeOrDiscardModal';
 import { getPartnerFromUrl } from '../../lib/format/partner';
 import { getDiscountCodeFromUrl, clearDiscountCode } from '../../lib/format/discount-code';
 import { translateApiError } from '../../lib/errors/translate';
-import { planToCardProps, discountAppliesToCycle, type AuthContext } from '../../lib/catalog/render-policy';
+import { planToCardProps, discountAppliesToCycle, discountDrivenBillingCycle, type AuthContext } from '../../lib/catalog/render-policy';
 import { ApiError } from '../../lib/api/types/errors';
 import { detectAndExchangeHandoff } from '../../lib/auth/handoff';
 import { redirectToPortal } from '../../lib/auth/portal-redirect';
@@ -125,9 +125,14 @@ export function PricingCards() {
         if (cancelled) return;
         const sorted = [...response.plans].sort((a, b) => a.displayOrder - b.displayOrder);
         // Auto-select toggle na cykl aktualnej subskrypcji (auth-aware) — UX nicety,
-        // żeby klient od razu widział kartę CURRENT na właściwym togglem.
+        // żeby klient od razu widział kartę CURRENT na właściwym togglem. Ma pierwszeństwo
+        // nad zniżką; jeśli brak kontekstu auth, a zniżka wskazuje jeden cykl — zaznacz ten cykl
+        // (np. promo tylko na MONTHLY → toggle „Miesięczna"). Inaczej zostaje domyślny 'ANNUAL'.
+        const discountCycle = discountDrivenBillingCycle(sorted);
         if (response.currentBillingCycle) {
           setBillingCycle(response.currentBillingCycle);
+        } else if (discountCycle) {
+          setBillingCycle(discountCycle);
         }
         setState({
           kind: 'ready',
