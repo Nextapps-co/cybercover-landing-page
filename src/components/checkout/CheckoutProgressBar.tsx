@@ -5,10 +5,12 @@ interface Step {
 }
 
 interface CheckoutProgressBarProps {
-  // Canonical step number (1..5). The bar maps to display position when osSkipped hides step 3.
+  // Canonical step number (1..5). The bar maps to display position when steps are hidden.
   currentStep: number;
-  // §2.6 — when true, the OS step is filtered out and remaining steps are renumbered (4 total).
+  // §2.6 — when true, the OS step (3) is filtered out and remaining steps are renumbered.
   osSkipped?: boolean;
+  // CC-534 — when true, the Payment step (4) is filtered out (0 zł, brak etapu płatności).
+  paymentSkipped?: boolean;
 }
 
 const STEPS: Step[] = [
@@ -19,8 +21,10 @@ const STEPS: Step[] = [
   { number: 5, label: 'Potwierdzenie',       path: '/checkout/confirm' },
 ];
 
-export function CheckoutProgressBar({ currentStep, osSkipped }: CheckoutProgressBarProps) {
-  const visibleSteps = (osSkipped ? STEPS.filter(s => s.number !== 3) : STEPS)
+export function CheckoutProgressBar({ currentStep, osSkipped, paymentSkipped }: CheckoutProgressBarProps) {
+  const visibleSteps = STEPS
+    .filter(s => !(osSkipped && s.number === 3))
+    .filter(s => !(paymentSkipped && s.number === 4))
     .map((s, i) => ({ ...s, displayNumber: i + 1 }));
 
   const currentVisible = visibleSteps.find(s => s.number === currentStep);

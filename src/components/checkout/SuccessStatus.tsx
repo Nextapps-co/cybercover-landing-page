@@ -5,6 +5,7 @@ import { getOrder, markOrderPaidForMock } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
 import { clearOrderSession } from '../../lib/state/order-session';
 import { clearFormState } from '../../lib/state/form-persistence';
+import { isNoPaymentOrder } from '../../lib/state/checkout-recovery';
 import type { OrderResponseDto, OrderStatus } from '../../lib/api/types/order';
 
 const POLL_INTERVAL_MS = 2000;
@@ -33,17 +34,6 @@ function formatPriceMinor(grosze: number | null): string {
 
 function billingCycleLabel(cycle: 'MONTHLY' | 'ANNUAL'): string {
   return cycle === 'ANNUAL' ? 'rozliczenie roczne' : 'rozliczenie miesięczne';
-}
-
-function isPromoZeroOrder(order: OrderResponseDto): boolean {
-  const d = order.discount;
-  if (!d) return false;
-  const isPartner =
-    d.kind === 'PARTNER_FLAT' ||
-    d.kind === 'PARTNER_COMPOSITE' ||
-    d.kind === 'PARTNER_TIMEBOUND' ||
-    d.kind === 'PARTNER_TIMEBOUND_COMPOSITE';
-  return isPartner && d.priceAfterDiscount === 0;
 }
 
 export function SuccessStatus() {
@@ -198,7 +188,7 @@ export function SuccessStatus() {
   const grossGrosze = netGrosze + vatGrosze;
   const customerEmail = order.personalData?.email ?? null;
   const eligible = order.eligibilityResult?.eligible ?? true;
-  const promoZero = isPromoZeroOrder(order);
+  const promoZero = isNoPaymentOrder(order);
 
   return (
     <div className="bg-white py-12 px-4">

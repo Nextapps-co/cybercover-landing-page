@@ -155,6 +155,7 @@ export async function startOrderMock(dto: StartOrderDto): Promise<StartOrderResp
     eligibilityResult: null,
     createdAt: new Date().toISOString(),
   };
+  order.paymentRequired = computePaymentRequired(order);
   ordersById.set(orderId, order);
 
   // Per spec §5.9.2 — decyzja orderType/wizardEntryStep/prefilledFields z mock auth context.
@@ -288,6 +289,7 @@ export async function getOrderMock(orderId: string): Promise<OrderResponseDto> {
     order.status = FULFILLMENT_PROGRESSION[targetIndex];
     ordersById.set(orderId, order);
   }
+  order.paymentRequired = computePaymentRequired(order);
   return order;
 }
 
@@ -580,6 +582,13 @@ const PARTNER_DISCOUNT_KINDS: ReadonlyArray<OrderDiscountDto['kind']> = [
   'PARTNER_TIMEBOUND_COMPOSITE',
 ];
 
+// CC-534 — paymentRequired: false ⟺ 0 zł + promocja partnerska (ścieżka „confirm-as-paid").
+function computePaymentRequired(order: Pick<OrderResponseDto, 'discount'>): boolean {
+  const d = order.discount;
+  const promoZero = !!d && d.priceAfterDiscount === 0 && PARTNER_DISCOUNT_KINDS.includes(d.kind);
+  return !promoZero;
+}
+
 export async function selectPaymentMethodMock(
   orderId: string,
   dto: SelectPaymentMethodDto,
@@ -675,6 +684,7 @@ export async function removeDiscountMock(orderId: string): Promise<OrderResponse
     order.totalPriceNet = base;
     if (order.lines[0]) order.lines[0].priceNet = base;
   }
+  order.paymentRequired = computePaymentRequired(order);
   ordersById.set(orderId, order);
   return order;
 }
@@ -710,6 +720,7 @@ export async function confirmOrderMock(orderId: string): Promise<ConfirmOrderRes
     paymentMethod: order.paymentMethod,
     confirmationToken:
       !isPromoZero && order.paymentMethod === 'BANK_TRANSFER' ? generateMockToken() : null,
+    paymentRequired: !isPromoZero,
   };
 }
 

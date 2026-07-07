@@ -10,7 +10,7 @@ import { changePaymentMethod, cancelOrder } from '@/lib/api/orders';
 import {
   changePaymentToBankTransfer,
   startOverOrder,
-  isPromoZeroOrder,
+  isNoPaymentOrder,
   canSwitchToBankTransfer,
 } from './checkout-recovery';
 
@@ -68,20 +68,16 @@ describe('startOverOrder', () => {
 });
 
 describe('predykaty', () => {
-  it('isPromoZeroOrder — partner + 0 zł', () => {
-    expect(isPromoZeroOrder({ discount: { kind: 'PARTNER_FLAT', priceAfterDiscount: 0 } as any })).toBe(true);
-    expect(isPromoZeroOrder({ discount: { kind: 'CODE_FLAT', priceAfterDiscount: 0 } as any })).toBe(false);
-    expect(isPromoZeroOrder({ discount: null })).toBe(false);
-    expect(isPromoZeroOrder({ discount: { kind: 'PARTNER_COMPOSITE', priceAfterDiscount: 0 } as any })).toBe(true);
-    expect(isPromoZeroOrder({ discount: { kind: 'PARTNER_TIMEBOUND', priceAfterDiscount: 0 } as any })).toBe(true);
-    expect(isPromoZeroOrder({ discount: { kind: 'PARTNER_TIMEBOUND_COMPOSITE', priceAfterDiscount: 0 } as any })).toBe(true);
-    expect(isPromoZeroOrder({ discount: { kind: 'PARTNER_FLAT', priceAfterDiscount: 100 } as any })).toBe(false);
+  it('isNoPaymentOrder — jawne paymentRequired', () => {
+    expect(isNoPaymentOrder({ paymentRequired: false })).toBe(true);
+    expect(isNoPaymentOrder({ paymentRequired: true })).toBe(false);
+    expect(isNoPaymentOrder({})).toBe(false); // brak pola → traktuj jak płatne
   });
 
-  it('canSwitchToBankTransfer — tylko CONFIRMED + STRIPE + nie promo-zero', () => {
-    expect(canSwitchToBankTransfer({ status: 'CONFIRMED', paymentMethod: 'STRIPE_CHECKOUT', discount: null })).toBe(true);
-    expect(canSwitchToBankTransfer({ status: 'CONFIRMED', paymentMethod: 'BANK_TRANSFER', discount: null })).toBe(false);
-    expect(canSwitchToBankTransfer({ status: 'DRAFT', paymentMethod: 'STRIPE_CHECKOUT', discount: null })).toBe(false);
-    expect(canSwitchToBankTransfer({ status: 'CONFIRMED', paymentMethod: 'STRIPE_CHECKOUT', discount: { kind: 'PARTNER_FLAT', priceAfterDiscount: 0 } as any })).toBe(false);
+  it('canSwitchToBankTransfer — tylko CONFIRMED + STRIPE + płatne', () => {
+    expect(canSwitchToBankTransfer({ status: 'CONFIRMED', paymentMethod: 'STRIPE_CHECKOUT', paymentRequired: true })).toBe(true);
+    expect(canSwitchToBankTransfer({ status: 'CONFIRMED', paymentMethod: 'BANK_TRANSFER', paymentRequired: true })).toBe(false);
+    expect(canSwitchToBankTransfer({ status: 'DRAFT', paymentMethod: 'STRIPE_CHECKOUT', paymentRequired: true })).toBe(false);
+    expect(canSwitchToBankTransfer({ status: 'CONFIRMED', paymentMethod: 'STRIPE_CHECKOUT', paymentRequired: false })).toBe(false);
   });
 });

@@ -40,21 +40,18 @@ export async function startOverOrder(orderId: string): Promise<StartOverOutcome>
   }
 }
 
-// Promocyjne zamówienie 0 zł (rabat partnera doprowadził do 0). Dedupe z ConfirmStep/ResumePaymentScreen.
-export function isPromoZeroOrder(order: Pick<OrderResponseDto, 'discount'>): boolean {
-  const d = order.discount;
-  if (!d) return false;
-  const isPartner =
-    d.kind === 'PARTNER_FLAT' || d.kind === 'PARTNER_COMPOSITE' ||
-    d.kind === 'PARTNER_TIMEBOUND' || d.kind === 'PARTNER_TIMEBOUND_COMPOSITE';
-  return isPartner && d.priceAfterDiscount === 0;
+// CC-534 — zamówienie bez etapu płatności (0 zł „confirm-as-paid"). Autorytatywny sygnał BE.
+// Bezpieczna semantyka: tylko jawne `false` znaczy „brak płatności"; brak pola / `true` → płatne
+// (nigdy nie pomijamy Stripe przez przypadek). Działa dla OrderResponseDto i ConfirmOrderResponseDto.
+export function isNoPaymentOrder(o: { paymentRequired?: boolean }): boolean {
+  return o.paymentRequired === false;
 }
 
 // Czy oferować „Zapłać przelewem" (change-method jest jednokierunkowe, tylko CONFIRMED+STRIPE).
 export function canSwitchToBankTransfer(
-  order: Pick<OrderResponseDto, 'status' | 'paymentMethod' | 'discount'>,
+  order: Pick<OrderResponseDto, 'status' | 'paymentMethod' | 'paymentRequired'>,
 ): boolean {
   return order.status === 'CONFIRMED'
     && order.paymentMethod === 'STRIPE_CHECKOUT'
-    && !isPromoZeroOrder(order);
+    && !isNoPaymentOrder(order);
 }

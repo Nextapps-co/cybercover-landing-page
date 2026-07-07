@@ -109,6 +109,10 @@ export interface OrderResponseDto {
   discount: OrderDiscountDto | null;
   // CC-353 — jedyne źródło rozbicia proracji; null dla zamówień nie-upgrade.
   proration: ProrationDto | null;
+  // CC-534 — jawny, autorytatywny sygnał „czy zamówienie wymaga płatności".
+  // false ⟺ ścieżka „confirm-as-paid" (0 zł + promocja partnerska): pomiń Stripe/proformę.
+  // Opcjonalne dla backward-compat; brak/`true` traktujemy jak płatne (patrz isNoPaymentOrder).
+  paymentRequired?: boolean;
   eligibilityResult: EligibilityResultResponseDto | null;
   createdAt: string;
 }
@@ -262,9 +266,11 @@ export interface SelectPaymentMethodDto {
 // §9.1.13 confirm order
 export interface ConfirmOrderResponseDto {
   orderId: string;
-  status: OrderStatus; // 'CONFIRMED'
+  status: OrderStatus; // 'CONFIRMED' (płatny) lub PENDING_ALLOCATION+ (0 zł „confirm-as-paid")
   paymentMethod: PaymentMethod;
   confirmationToken: string | null; // only for BANK_TRANSFER
+  // CC-534 — patrz OrderResponseDto.paymentRequired. false ⟺ nie wołaj Stripe.
+  paymentRequired?: boolean;
 }
 
 // PATCH /orders/:id/change-payment-method — request body
