@@ -16,6 +16,7 @@ import { ApiError } from '../../lib/api/types/errors';
 import { validateCompanyData, type CompanyDataFormValues } from '../../lib/validation/company-data';
 import { companyChanged } from '../../lib/state/checkout-delta';
 import { normalizeNip } from '../../lib/validation/nip';
+import { isNoPaymentOrder } from '../../lib/state/checkout-recovery';
 import { INDUSTRIES } from '../../data/industries';
 import type { CompanyLookupDataDto, OrderResponseDto } from '../../lib/api/types/order';
 
@@ -220,7 +221,7 @@ export function CompanyDataStep() {
   return (
     <div className="bg-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <CheckoutProgressBar currentStep={1} osSkipped={osSkipped} />
+        <CheckoutProgressBar currentStep={1} osSkipped={osSkipped} paymentSkipped={order ? isNoPaymentOrder(order) : false} />
 
         <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-4xl text-black mb-12">
           Dane organizacji
