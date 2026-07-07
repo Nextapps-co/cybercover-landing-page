@@ -545,7 +545,11 @@ export async function validateDiscountCodeMock(
   if (!order) throw new ApiError('ORDER_NOT_FOUND', 404, 'Order not found (mock)');
   const code = dto.discountCode.trim().toUpperCase();
   const discount = MOCK_DISCOUNTS[code];
-  const originalPriceNet = order.totalPriceNet ?? order.lines[0]?.priceNet ?? 0;
+  // CC-533 — dla upgrade rabat liczymy od bazowej ceny planu (proration.fullPrice),
+  // nie od kwoty po proracji (totalPriceNet == amountDueNow).
+  const originalPriceNet = order.proration
+    ? order.proration.fullPrice
+    : (order.totalPriceNet ?? order.lines[0]?.priceNet ?? 0);
   if (!discount) {
     return {
       valid: false,
@@ -587,8 +591,39 @@ export async function selectPaymentMethodMock(
       throw new ApiError('DISCOUNT_SOURCE_CONFLICT', 409, 'Partner discount already applied (mock)');
     }
     const code = dto.discountCode.trim().toUpperCase();
-    if (!MOCK_DISCOUNTS[code]) {
+    const def = MOCK_DISCOUNTS[code];
+    if (!def) {
       throw new ApiError('DISCOUNT_CODE_NOT_FOUND', 400, 'Discount code not found (mock)');
+    }
+    // CC-533 — utrwal rabat CODE_FLAT i przelicz kwoty (realny BE robi to samo w tym kroku).
+    // Baza rabatu = cena bazowa planu: dla upgrade proration.fullPrice; dla ponownego
+    // zastosowania (non-upgrade) oryginał sprzed rabatu; inaczej totalPriceNet.
+    const alreadyApplied = order.discount?.kind === 'CODE_FLAT' && order.discount.code === code;
+    if (!alreadyApplied) {
+      const base = order.proration
+        ? order.proration.fullPrice
+        : order.discount?.kind === 'CODE_FLAT'
+          ? order.discount.originalAmount
+          : (order.totalPriceNet ?? order.lines[0]?.priceNet ?? 0);
+      const priceAfterDiscount = applyDiscount(base, def.type, def.value);
+      const discountAmount = base - priceAfterDiscount;
+      order.discount = {
+        code,
+        kind: 'CODE_FLAT',
+        originalAmount: base,
+        priceAfterDiscount,
+        discountAmount,
+        currency: order.currency,
+      };
+      if (order.proration) {
+        const amountDueNow = Math.max(0, order.proration.fullPrice - order.proration.credit - discountAmount);
+        order.proration = { ...order.proration, amountDueNow };
+        order.totalPriceNet = amountDueNow;
+        if (order.lines[0]) order.lines[0].priceNet = amountDueNow;
+      } else {
+        order.totalPriceNet = priceAfterDiscount;
+        if (order.lines[0]) order.lines[0].priceNet = priceAfterDiscount;
+      }
     }
   }
   order.paymentMethod = dto.paymentMethod;
@@ -597,8 +632,6 @@ export async function selectPaymentMethodMock(
 
   // CC-353 — PATCH /payment-method zwraca tylko checkout-state (bez cen). Proracja/kwoty
   // żyją na GET /orders/:id; ConfirmStep robi świeży getOrder po tym kroku.
-  // (Realny BE przelicza tu amountDueNow z uwzględnieniem kodu rabatowego; mock zostawia
-  //  proracje zaseedowaną przy starcie — wystarcza do demonstracji boksu.)
   return {
     orderId,
     progress: order.checkoutProgress,
@@ -629,10 +662,19 @@ export async function removeDiscountMock(orderId: string): Promise<OrderResponse
   if (PARTNER_DISCOUNT_KINDS.includes(order.discount.kind)) {
     throw new ApiError('DISCOUNT_REMOVAL_NOT_ALLOWED', 409, 'Partner/promotional discount cannot be removed (mock)');
   }
-  const fullPrice = order.discount.originalAmount;
+  const base = order.discount.originalAmount;
   order.discount = null;
-  order.totalPriceNet = fullPrice;
-  if (order.lines[0]) order.lines[0].priceNet = fullPrice;
+  if (order.proration) {
+    // CC-533 — upgrade: po zdjęciu rabatu wracamy do kwoty po proracji (fullPrice − credit),
+    // NIE do samej ceny bazowej (to ignorowałoby kredyt).
+    const amountDueNow = Math.max(0, order.proration.fullPrice - order.proration.credit);
+    order.proration = { ...order.proration, amountDueNow };
+    order.totalPriceNet = amountDueNow;
+    if (order.lines[0]) order.lines[0].priceNet = amountDueNow;
+  } else {
+    order.totalPriceNet = base;
+    if (order.lines[0]) order.lines[0].priceNet = base;
+  }
   ordersById.set(orderId, order);
   return order;
 }
