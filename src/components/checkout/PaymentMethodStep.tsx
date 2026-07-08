@@ -4,6 +4,7 @@ import { OrderSummaryAside } from './OrderSummaryAside';
 import { FormActions } from './FormActions';
 import { FormAlert } from './FormAlert';
 import { PaymentMethodOption } from './PaymentMethodOption';
+import { PAYMENT_METHOD_META } from './payment-method-meta';
 import { DiscountCodeField, type DiscountState } from './DiscountCodeField';
 import { getOrderSession, resolveOsSkipped } from '../../lib/state/order-session';
 import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
@@ -301,9 +302,9 @@ export function PaymentMethodStep() {
                     value="STRIPE_CHECKOUT"
                     selected={paymentMethod === 'STRIPE_CHECKOUT'}
                     onSelect={() => setPaymentMethod('STRIPE_CHECKOUT')}
-                    title="Karta płatnicza"
-                    description="Szybka płatność online kartą kredytową lub debetową"
-                    badges={['VISA', 'Mastercard']}
+                    title={PAYMENT_METHOD_META.STRIPE_CHECKOUT.title}
+                    description={PAYMENT_METHOD_META.STRIPE_CHECKOUT.description}
+                    badges={PAYMENT_METHOD_META.STRIPE_CHECKOUT.badges}
                   />
                   {!isMonthly && (
                     <PaymentMethodOption
@@ -312,8 +313,9 @@ export function PaymentMethodStep() {
                       value="BANK_TRANSFER"
                       selected={paymentMethod === 'BANK_TRANSFER'}
                       onSelect={() => setPaymentMethod('BANK_TRANSFER')}
-                      title="Przelew bankowy"
-                      description="Otrzymasz proformę PDF z numerem konta — opłać w ciągu 14 dni"
+                      title={PAYMENT_METHOD_META.BANK_TRANSFER.title}
+                      description={PAYMENT_METHOD_META.BANK_TRANSFER.description}
+                      badges={PAYMENT_METHOD_META.BANK_TRANSFER.badges}
                     />
                   )}
                 </div>
