@@ -3,6 +3,7 @@ import { CheckoutProgressBar } from './CheckoutProgressBar';
 import { FormActions } from './FormActions';
 import { FormAlert } from './FormAlert';
 import { SummaryDataCard } from './SummaryDataCard';
+import { PaymentMethodSummaryCard } from './PaymentMethodSummaryCard';
 import { OrderSummaryAside } from './OrderSummaryAside';
 import { getOrderSession, resolveOsSkipped } from '../../lib/state/order-session';
 import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
@@ -218,6 +219,9 @@ export function ConfirmStep() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2 space-y-6">
+            {!noPayment && order.paymentMethod && (
+              <PaymentMethodSummaryCard method={order.paymentMethod} />
+            )}
             {company && (
               <SummaryDataCard
                 title="Zamawiający"
