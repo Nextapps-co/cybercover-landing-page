@@ -117,12 +117,12 @@ const SECTIONS: SectionDef[] = [
     title: 'Ocena bezpieczeństwa',
     icon: 'shield',
     items: [
-      { visibleWhen: f => f['feature.securityAssessment.legal'] === 'true', text: 'Zgodność z prawem' },
-      { visibleWhen: f => f['feature.securityAssessment.technical'] === 'true', text: 'Odporność techniczna' },
-      { visibleWhen: f => f['feature.securityAssessment.people'] === 'true', text: 'Świadomi ludzie' },
+      { visibleWhen: f => f['feature.securityAssessment.legal'] === 'true', text: 'Prawo i organizacja' },
+      { visibleWhen: f => f['feature.securityAssessment.technical'] === 'true', text: 'Technologia i sprzęt' },
+      { visibleWhen: f => f['feature.securityAssessment.people'] === 'true', text: 'Ludzie i dostępy' },
       { visibleWhen: f => f['feature.securityAssessment.report'] === 'detailed', text: 'Szczegółowe zalecenia i wytyczne' },
       { visibleWhen: f => f['feature.securityAssessment.report'] === 'general', text: 'Raport ogólny' },
-      // Spacer just for entry tier so card heights line up with mid-tier (which has +1 line for "Świadomi ludzie")
+      // Spacer just for entry tier so card heights line up with mid-tier (which has +1 line for "Ludzie i dostępy")
       { spacer: true, onlyIfTier: ['entry'], text: '' },
     ],
   },
