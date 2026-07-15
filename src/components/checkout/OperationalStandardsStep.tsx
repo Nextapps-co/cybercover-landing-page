@@ -13,6 +13,7 @@ import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
 import { validateOperationalStandards } from '../../lib/validation/operational-standards';
 import { osChanged } from '../../lib/state/checkout-delta';
+import { isNoPaymentOrder } from '../../lib/state/checkout-recovery';
 import type {
   OperationalStandardsSchemaResponseDto,
   EligibilityContributionDto,
@@ -211,7 +212,7 @@ export function OperationalStandardsStep() {
   return (
     <div className="bg-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <CheckoutProgressBar currentStep={3} />
+        <CheckoutProgressBar currentStep={3} paymentSkipped={order ? isNoPaymentOrder(order) : false} />
         <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-4xl text-black mb-12">
           Standardy operacyjne
         </h1>

@@ -9,7 +9,7 @@ import { clearFormState } from '../../lib/state/form-persistence';
 import {
   changePaymentToBankTransfer,
   startOverOrder,
-  isPromoZeroOrder,
+  isNoPaymentOrder,
   canSwitchToBankTransfer,
 } from '../../lib/state/checkout-recovery';
 import type { OrderResponseDto } from '../../lib/api/types/order';
@@ -168,7 +168,7 @@ export function ResumePaymentScreen({ variant }: { variant: Variant }) {
     );
   }
 
-  const promoZero = order ? isPromoZeroOrder(order) : false;
+  const promoZero = order ? isNoPaymentOrder(order) : false;
 
   return (
     <div className="bg-white py-12 px-4">

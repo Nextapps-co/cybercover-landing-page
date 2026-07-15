@@ -3,6 +3,7 @@ import { CheckoutProgressBar } from './CheckoutProgressBar';
 import { FormActions } from './FormActions';
 import { FormAlert } from './FormAlert';
 import { SummaryDataCard } from './SummaryDataCard';
+import { PaymentMethodSummaryCard } from './PaymentMethodSummaryCard';
 import { OrderSummaryAside } from './OrderSummaryAside';
 import { getOrderSession, resolveOsSkipped } from '../../lib/state/order-session';
 import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
@@ -11,7 +12,7 @@ import { classifyOrder } from '../../lib/state/pending-order';
 import { getOrder, confirmOrder, createStripeCheckoutSession } from '../../lib/api/orders';
 import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
-import { isPromoZeroOrder } from '../../lib/state/checkout-recovery';
+import { isNoPaymentOrder } from '../../lib/state/checkout-recovery';
 import type { OrderResponseDto, OrderType } from '../../lib/api/types/order';
 
 // Per spec §5.5.4 — orderType-aware copy.
@@ -131,10 +132,16 @@ export function ConfirmStep() {
     setConfirming(true);
     setSubmitError(null);
     const orderId = order.orderId;
-    const promoZero = isPromoZeroOrder(order);
 
     try {
       const result = await confirmOrder(orderId);
+
+      // CC-534 — 0 zł „confirm-as-paid": brak etapu płatności → prosto na sukces.
+      // Autorytatywnie po `paymentRequired` z odpowiedzi (nie po statusie — pipeline bywa szybki).
+      if (isNoPaymentOrder(result)) {
+        navigateForward(withOrderId('/checkout/success', orderId));
+        return;
+      }
 
       if (result.paymentMethod === 'STRIPE_CHECKOUT') {
         const session = await createStripeCheckoutSession(orderId);
@@ -142,12 +149,7 @@ export function ConfirmStep() {
         return;
       }
 
-      // BANK_TRANSFER
-      if (promoZero) {
-        // Flow C — no ProForma issued. Order already moves to PENDING_ALLOCATION.
-        navigateForward(withOrderId('/checkout/success', orderId));
-        return;
-      }
+      // BANK_TRANSFER (płatny)
       const token = result.confirmationToken ?? '';
       navigateForward(
         `/checkout/bank-transfer?orderId=${encodeURIComponent(orderId)}&token=${encodeURIComponent(token)}`,
@@ -193,11 +195,12 @@ export function ConfirmStep() {
   // Per spec §5.5.4 — orderType-aware copy. Default 'INITIAL_PURCHASE' gdy session nie ma orderType
   // (anonymous flow, lub backward compat).
   const orderType: OrderType = getOrderSession()?.orderType ?? 'INITIAL_PURCHASE';
+  const noPayment = isNoPaymentOrder(order);
 
   return (
     <div className="bg-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <CheckoutProgressBar currentStep={5} osSkipped={osSkipped} />
+        <CheckoutProgressBar currentStep={5} osSkipped={osSkipped} paymentSkipped={noPayment} />
         <h1 className="font-['Plus_Jakarta_Sans',sans-serif] font-bold text-4xl text-black mb-12">
           {HEADER_PER_TYPE[orderType]}
         </h1>
@@ -216,6 +219,9 @@ export function ConfirmStep() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2 space-y-6">
+            {!noPayment && order.paymentMethod && (
+              <PaymentMethodSummaryCard method={order.paymentMethod} />
+            )}
             {company && (
               <SummaryDataCard
                 title="Zamawiający"
@@ -246,8 +252,19 @@ export function ConfirmStep() {
 
         <form onSubmit={(e) => { e.preventDefault(); void handleConfirm(); }}>
           <FormActions
-            onBack={() => navigateBackward(withOrderId('/checkout/payment-method', orderId))}
-            submitLabel={CTA_PER_TYPE[orderType]}
+            onBack={() =>
+              navigateBackward(
+                withOrderId(
+                  noPayment
+                    ? osSkipped
+                      ? '/checkout/personal-data'
+                      : '/checkout/operational-standards'
+                    : '/checkout/payment-method',
+                  orderId,
+                ),
+              )
+            }
+            submitLabel={noPayment ? 'Aktywuj darmowy plan' : CTA_PER_TYPE[orderType]}
             submitting={confirming}
             submittingLabel="Potwierdzanie…"
           />

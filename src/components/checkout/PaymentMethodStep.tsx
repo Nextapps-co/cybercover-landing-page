@@ -4,6 +4,7 @@ import { OrderSummaryAside } from './OrderSummaryAside';
 import { FormActions } from './FormActions';
 import { FormAlert } from './FormAlert';
 import { PaymentMethodOption } from './PaymentMethodOption';
+import { PAYMENT_METHOD_META } from './payment-method-meta';
 import { DiscountCodeField, type DiscountState } from './DiscountCodeField';
 import { getOrderSession, resolveOsSkipped } from '../../lib/state/order-session';
 import { navigateForward, navigateBackward } from '../../lib/state/checkout-transition';
@@ -19,6 +20,7 @@ import { translateApiError } from '../../lib/errors/translate';
 import { ApiError } from '../../lib/api/types/errors';
 import { getDiscountCodeFromUrl, clearDiscountCode } from '../../lib/format/discount-code';
 import { paymentChanged, type PaymentDelta } from '../../lib/state/checkout-delta';
+import { isNoPaymentOrder } from '../../lib/state/checkout-recovery';
 import type { OrderResponseDto, PaymentMethod } from '../../lib/api/types/order';
 
 function readOrderIdFromUrl(): string | null {
@@ -39,6 +41,7 @@ function hasPartnerDiscount(order: OrderResponseDto): boolean {
 export function PaymentMethodStep() {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [hydrating, setHydrating] = useState(true);
+  const [autoAdvancing, setAutoAdvancing] = useState(false);
   const [hydrationError, setHydrationError] = useState<string | null>(null);
   const [order, setOrder] = useState<OrderResponseDto | null>(null);
   const [osSkipped, setOsSkipped] = useState(false);
@@ -80,6 +83,23 @@ export function PaymentMethodStep() {
               ? 'personal-data'
               : 'operational-standards';
           navigateBackward(`/checkout/${next}?orderId=${encodeURIComponent(id)}`);
+          return;
+        }
+        if (isNoPaymentOrder(o)) {
+          // CC-534 — plan 0 zł: krok płatności nie istnieje dla usera.
+          // Ustaw metodę pod spodem (delta-aware) i przejdź na potwierdzenie.
+          setAutoAdvancing(true);
+          try {
+            if (o.paymentMethod !== 'STRIPE_CHECKOUT') {
+              await selectPaymentMethod(id, { paymentMethod: 'STRIPE_CHECKOUT' });
+            }
+            if (cancelled) return;
+            navigateForward(`/checkout/confirm?orderId=${encodeURIComponent(id)}`);
+          } catch (err) {
+            if (cancelled) return;
+            setHydrationError(translateApiError(err).message);
+            setHydrating(false);
+          }
           return;
         }
         setOrder(o);
@@ -238,7 +258,7 @@ export function PaymentMethodStep() {
   if (hydrating) {
     return (
       <div className="min-h-screen flex items-center justify-center font-['Plus_Jakarta_Sans',sans-serif] text-[#6B6965]">
-        Ładowanie zamówienia…
+        {autoAdvancing ? 'Przygotowujemy zamówienie…' : 'Ładowanie zamówienia…'}
       </div>
     );
   }
@@ -282,9 +302,9 @@ export function PaymentMethodStep() {
                     value="STRIPE_CHECKOUT"
                     selected={paymentMethod === 'STRIPE_CHECKOUT'}
                     onSelect={() => setPaymentMethod('STRIPE_CHECKOUT')}
-                    title="Karta płatnicza"
-                    description="Szybka płatność online kartą kredytową lub debetową"
-                    badges={['VISA', 'Mastercard']}
+                    title={PAYMENT_METHOD_META.STRIPE_CHECKOUT.title}
+                    description={PAYMENT_METHOD_META.STRIPE_CHECKOUT.description}
+                    badges={PAYMENT_METHOD_META.STRIPE_CHECKOUT.badges}
                   />
                   {!isMonthly && (
                     <PaymentMethodOption
@@ -293,8 +313,9 @@ export function PaymentMethodStep() {
                       value="BANK_TRANSFER"
                       selected={paymentMethod === 'BANK_TRANSFER'}
                       onSelect={() => setPaymentMethod('BANK_TRANSFER')}
-                      title="Przelew bankowy"
-                      description="Otrzymasz proformę PDF z numerem konta — opłać w ciągu 14 dni"
+                      title={PAYMENT_METHOD_META.BANK_TRANSFER.title}
+                      description={PAYMENT_METHOD_META.BANK_TRANSFER.description}
+                      badges={PAYMENT_METHOD_META.BANK_TRANSFER.badges}
                     />
                   )}
                 </div>

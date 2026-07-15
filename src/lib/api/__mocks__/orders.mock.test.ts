@@ -1,5 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { ApiError } from '../types/errors';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   resetOrdersMock,
   startOrderMock,
@@ -13,7 +12,9 @@ import {
   changePaymentMethodMock,
   cancelOrderMock,
   markOrderPaidMock,
+  validateDiscountCodeMock,
 } from './orders.mock';
+import { consumeMockAuthFromUrl } from '../../auth/mock-auth';
 
 // Buduje zamówienie w stanie CONFIRMED + STRIPE_CHECKOUT (niepłacone).
 async function seedConfirmedStripeOrder(): Promise<string> {
@@ -157,5 +158,103 @@ describe('getOrderMock — kaskada tylko dla opłaconych', () => {
     const orderId = await seedConfirmedStripeOrder();
     markOrderPaidMock(orderId);
     expect((await getOrderMock(orderId)).status).toBe('PENDING_ALLOCATION');
+  });
+});
+
+describe('CODE_FLAT discount on PLAN_UPGRADE (CC-533)', () => {
+  // Upgrade z Optimum (ACTIVE) na Professional → orderType PLAN_UPGRADE, proracja zaseedowana.
+  async function seedUpgradeOrder(): Promise<string> {
+    window.history.replaceState({}, '', '/cennik?mockAuth=optimum-ACTIVE');
+    consumeMockAuthFromUrl();
+    const start = await startOrderMock({
+      catalogEntryId: 'CATALOG-mock-professional',
+      billingCycle: 'MONTHLY',
+    });
+    return start.orderId;
+  }
+
+  beforeEach(() => {
+    resetOrdersMock();
+    window.sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    // Nie zostawiaj mock-auth w sessionStorage — inne describe zakładają INITIAL_PURCHASE.
+    window.sessionStorage.clear();
+    window.history.replaceState({}, '', '/');
+  });
+
+  it('seeds an upgrade order with proration (amountDueNow = fullPrice − credit)', async () => {
+    const orderId = await seedUpgradeOrder();
+    const order = await getOrderMock(orderId);
+    expect(order.proration).not.toBeNull();
+    expect(order.proration!.amountDueNow).toBe(
+      order.proration!.fullPrice - order.proration!.credit,
+    );
+    expect(order.discount).toBeNull();
+  });
+
+  it('validate-discount bases the preview on the plan base price (proration.fullPrice), not amountDueNow', async () => {
+    const orderId = await seedUpgradeOrder();
+    const before = await getOrderMock(orderId);
+    const res = await validateDiscountCodeMock(orderId, { discountCode: 'SAVE100' });
+    expect(res.valid).toBe(true);
+    expect(res.originalPriceNet).toBe(before.proration!.fullPrice);
+    expect(res.discountedPriceNet).toBe(before.proration!.fullPrice - 10000);
+  });
+
+  it('selectPaymentMethod persists CODE_FLAT and recomputes amountDueNow = fullPrice − credit − discount', async () => {
+    const orderId = await seedUpgradeOrder();
+    const before = await getOrderMock(orderId);
+    const { fullPrice, credit } = before.proration!;
+    const preDiscountDue = before.proration!.amountDueNow; // fullPrice − credit
+
+    await selectPaymentMethodMock(orderId, {
+      paymentMethod: 'STRIPE_CHECKOUT',
+      discountCode: 'SAVE100',
+    });
+
+    const after = await getOrderMock(orderId);
+    expect(after.discount).toMatchObject({
+      kind: 'CODE_FLAT',
+      code: 'SAVE100',
+      originalAmount: fullPrice,
+      discountAmount: 10000,
+      priceAfterDiscount: fullPrice - 10000,
+    });
+    expect(after.proration!.fullPrice).toBe(fullPrice);
+    expect(after.proration!.credit).toBe(credit);
+    expect(after.proration!.amountDueNow).toBe(preDiscountDue - 10000);
+    expect(after.totalPriceNet).toBe(preDiscountDue - 10000);
+  });
+
+  it('removeDiscount restores amountDueNow = fullPrice − credit and clears the discount', async () => {
+    const orderId = await seedUpgradeOrder();
+    const before = await getOrderMock(orderId);
+    const preDiscountDue = before.proration!.amountDueNow;
+
+    await selectPaymentMethodMock(orderId, {
+      paymentMethod: 'STRIPE_CHECKOUT',
+      discountCode: 'SAVE100',
+    });
+    const restored = await removeDiscountMock(orderId);
+
+    expect(restored.discount).toBeNull();
+    expect(restored.proration!.amountDueNow).toBe(preDiscountDue);
+    expect(restored.totalPriceNet).toBe(preDiscountDue);
+  });
+
+  it('is idempotent for the same CODE_FLAT — re-applying does not double-subtract', async () => {
+    const orderId = await seedUpgradeOrder();
+    const before = await getOrderMock(orderId);
+    const preDiscountDue = before.proration!.amountDueNow;
+
+    await selectPaymentMethodMock(orderId, { paymentMethod: 'STRIPE_CHECKOUT', discountCode: 'SAVE100' });
+    await selectPaymentMethodMock(orderId, { paymentMethod: 'STRIPE_CHECKOUT', discountCode: 'SAVE100' });
+
+    const after = await getOrderMock(orderId);
+    expect(after.discount!.discountAmount).toBe(10000);
+    expect(after.proration!.amountDueNow).toBe(preDiscountDue - 10000);
+    expect(after.totalPriceNet).toBe(preDiscountDue - 10000);
   });
 });
