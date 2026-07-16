@@ -77,7 +77,8 @@ export interface OrderDiscountDto {
     | 'PARTNER_FLAT'
     | 'PARTNER_COMPOSITE'
     | 'PARTNER_TIMEBOUND'
-    | 'PARTNER_TIMEBOUND_COMPOSITE';
+    | 'PARTNER_TIMEBOUND_COMPOSITE'
+    | 'PARTNER_INTRO_THEN_PERCENT';
   originalAmount: number;       // grosze, before discount
   priceAfterDiscount: number;   // grosze, after discount (== totalPriceNet)
   discountAmount: number;       // grosze, savings

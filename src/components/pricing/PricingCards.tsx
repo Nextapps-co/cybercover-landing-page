@@ -190,7 +190,8 @@ export function PricingCards() {
         previewKind === 'PARTNER_FLAT' ||
         previewKind === 'PARTNER_COMPOSITE' ||
         previewKind === 'PARTNER_TIMEBOUND' ||
-        previewKind === 'PARTNER_TIMEBOUND_COMPOSITE';
+        previewKind === 'PARTNER_TIMEBOUND_COMPOSITE' ||
+        previewKind === 'PARTNER_INTRO_THEN_PERCENT';
       const appliesToCycle = discountAppliesToCycle(plan.discount, billingCycle);
 
       let partnerCode: string | undefined;
