@@ -15,7 +15,8 @@ export type DiscountKind =
   | 'PARTNER_FLAT'
   | 'PARTNER_COMPOSITE'
   | 'PARTNER_TIMEBOUND'
-  | 'PARTNER_TIMEBOUND_COMPOSITE';
+  | 'PARTNER_TIMEBOUND_COMPOSITE'
+  | 'PARTNER_INTRO_THEN_PERCENT';
 
 export type PlanTier = 'entry' | 'mid' | 'high' | 'top';
 

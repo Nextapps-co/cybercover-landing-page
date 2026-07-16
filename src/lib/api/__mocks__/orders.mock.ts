@@ -580,6 +580,7 @@ const PARTNER_DISCOUNT_KINDS: ReadonlyArray<OrderDiscountDto['kind']> = [
   'PARTNER_COMPOSITE',
   'PARTNER_TIMEBOUND',
   'PARTNER_TIMEBOUND_COMPOSITE',
+  'PARTNER_INTRO_THEN_PERCENT',
 ];
 
 // CC-534 — paymentRequired: false ⟺ 0 zł + promocja partnerska (ścieżka „confirm-as-paid").

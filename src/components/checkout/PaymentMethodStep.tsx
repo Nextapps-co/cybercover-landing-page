@@ -34,7 +34,8 @@ function hasPartnerDiscount(order: OrderResponseDto): boolean {
     kind === 'PARTNER_FLAT' ||
     kind === 'PARTNER_COMPOSITE' ||
     kind === 'PARTNER_TIMEBOUND' ||
-    kind === 'PARTNER_TIMEBOUND_COMPOSITE'
+    kind === 'PARTNER_TIMEBOUND_COMPOSITE' ||
+    kind === 'PARTNER_INTRO_THEN_PERCENT'
   );
 }
 
