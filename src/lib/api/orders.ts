@@ -56,21 +56,29 @@ export async function startOrder(dto: StartOrderDto): Promise<StartOrderResponse
   return apiPost<StartOrderDto, StartOrderResponseDto>('/orders/start', dto);
 }
 
-export async function getOrder(orderId: string): Promise<OrderResponseDto> {
+export async function getOrder(orderId: string, options?: { anonymous?: boolean }): Promise<OrderResponseDto> {
   if (useMock()) return getOrderMock(orderId);
-  return apiGet<OrderResponseDto>(`/orders/${encodeURIComponent(orderId)}`);
+  return apiGet<OrderResponseDto>(`/orders/${encodeURIComponent(orderId)}`, options);
 }
 
-export async function getCheckoutState(orderId: string): Promise<CheckoutStateResponseDto> {
+export async function getCheckoutState(
+  orderId: string,
+  options?: { anonymous?: boolean },
+): Promise<CheckoutStateResponseDto> {
   if (useMock()) return getCheckoutStateMock(orderId);
-  return apiGet<CheckoutStateResponseDto>(`/orders/${encodeURIComponent(orderId)}/checkout-state`);
+  return apiGet<CheckoutStateResponseDto>(`/orders/${encodeURIComponent(orderId)}/checkout-state`, options);
 }
 
-export async function submitCompanyData(orderId: string, dto: SubmitCompanyDataDto) {
+export async function submitCompanyData(
+  orderId: string,
+  dto: SubmitCompanyDataDto,
+  options?: { anonymous?: boolean },
+) {
   if (useMock()) return submitCompanyDataMock(orderId, dto);
   return apiPatch<SubmitCompanyDataDto, CheckoutStateResponseDto>(
     `/orders/${encodeURIComponent(orderId)}/company-data`,
     dto,
+    options,
   );
 }
 
@@ -79,18 +87,37 @@ export async function lookupCompany(nip: string): Promise<CompanyLookupResponseD
   return apiGet<CompanyLookupResponseDto>('/orders/company-lookup', { query: { nip } });
 }
 
-export async function fetchConsentDefinitions(): Promise<ConsentDefinitionDto[]> {
+/**
+ * Definicje zgód do wyrenderowania w kroku 2.
+ *
+ * `orderId` jest opcjonalne wyłącznie ze względu na płatny lejek (dziś woła bez niego).
+ * Wariant zaproszeniowy MUSI je przekazać (§5.3): flaga „to jest grant" pochodzi
+ * z zamówienia, a nie od nas, więc dopiero z `orderId` backend dokłada zgody
+ * specyficzne dla zaproszenia (m.in. zgodę na bycie obserwowanym).
+ */
+export async function fetchConsentDefinitions(
+  orderId?: string,
+  options?: { anonymous?: boolean },
+): Promise<ConsentDefinitionDto[]> {
   if (useMock()) return fetchConsentDefinitionsMock();
-  const res = await apiGet<GetConsentDefinitionsResponseDto>('/orders/consent-definitions');
+  const res = await apiGet<GetConsentDefinitionsResponseDto>('/orders/consent-definitions', {
+    ...(orderId ? { query: { orderId } } : {}),
+    ...options,
+  });
   return res.consentDefinitions;
 }
 
-export async function submitPersonalData(orderId: string, dto: SubmitPersonalDataDto) {
+export async function submitPersonalData(
+  orderId: string,
+  dto: SubmitPersonalDataDto,
+  options?: { anonymous?: boolean },
+) {
   if (useMock()) return submitPersonalDataMock(orderId, dto);
   try {
     return await apiPatch<SubmitPersonalDataDto, CheckoutStateResponseDto>(
       `/orders/${encodeURIComponent(orderId)}/personal-data`,
       dto,
+      options,
     );
   } catch (err) {
     // BE zwraca 409 dla zajętego emaila BEZ pola `code` (tylko `message` + `metadata.email`),
@@ -156,11 +183,13 @@ export async function removeDiscount(orderId: string): Promise<OrderResponseDto>
 export async function selectPaymentMethod(
   orderId: string,
   dto: SelectPaymentMethodDto,
+  options?: { anonymous?: boolean },
 ): Promise<CheckoutStateResponseDto> {
   if (useMock()) return selectPaymentMethodMock(orderId, dto);
   return apiPatch<SelectPaymentMethodDto, CheckoutStateResponseDto>(
     `/orders/${encodeURIComponent(orderId)}/payment-method`,
     dto,
+    options,
   );
 }
 
@@ -189,11 +218,15 @@ export function markOrderPaidForMock(orderId: string): void {
   if (useMock()) markOrderPaidMock(orderId);
 }
 
-export async function confirmOrder(orderId: string): Promise<ConfirmOrderResponseDto> {
+export async function confirmOrder(
+  orderId: string,
+  options?: { anonymous?: boolean },
+): Promise<ConfirmOrderResponseDto> {
   if (useMock()) return confirmOrderMock(orderId);
   return apiPost<undefined, ConfirmOrderResponseDto>(
     `/orders/${encodeURIComponent(orderId)}/confirm`,
     undefined,
+    options,
   );
 }
 

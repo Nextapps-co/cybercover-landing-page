@@ -26,7 +26,13 @@ export default defineConfig({
   integrations: [
     // Sitemap tylko dla stron indeksowalnych — checkout i bramka dostępu
     // są `noindex` + zablokowane w robots.txt, więc nie powinny tu trafiać.
-    sitemap({ filter: (page) => !page.includes('/checkout/') && !page.includes('/dostep') }),
+    sitemap({
+      filter: (page) =>
+        !page.includes('/checkout/') &&
+        !page.includes('/dostep') &&
+        !page.includes('/monitoring-invitation') &&
+        !page.includes('/supplier-registration/'),
+    }),
     react(),
   ],
   vite: {

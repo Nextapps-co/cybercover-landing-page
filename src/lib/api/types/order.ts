@@ -11,7 +11,15 @@ export type OrderStatus =
   | 'CLOSED'
   | 'CANCELLED';
 
-export type PaymentMethod = 'STRIPE_CHECKOUT' | 'BANK_TRANSFER';
+export type PaymentMethod = 'STRIPE_CHECKOUT' | 'BANK_TRANSFER' | 'GRANT';
+
+/**
+ * Metody, które użytkownik może wybrać w płatnym kroku 4.
+ * `GRANT` jest nadawana serwerowo dla zamówień grantowych (wariant zaproszeniowy —
+ * dostawca zaproszony przez podmiot wiodący) i NIGDY nie jest wybieralna w UI:
+ * zwykłe zamówienie odrzuci `GRANT`, a grantowe odrzuci każdą inną metodę.
+ */
+export type SelectablePaymentMethod = Exclude<PaymentMethod, 'GRANT'>;
 
 // Per spec §5.5.1 — wizard entry step + prefilled fields + order type.
 export type WizardEntryStep = 'company-data' | 'personal-data' | 'operational-standards' | 'payment-method';
@@ -60,6 +68,13 @@ export interface CheckoutStateResponseDto {
   progress: CheckoutProgressDto;
   isComplete: boolean;
   nextRequiredStep: CheckoutStep | null;
+  /**
+   * Wariant zaproszeniowy (grant). JEDYNY poprawny dyskryminator trybu.
+   * Nie wyprowadzaj go z `paymentRequired` — tamto jest `false` także dla zwykłego
+   * zamówienia z rabatem promocyjnym 100%.
+   * `undefined` = środowisko ze starszym kontraktem → brak informacji, NIE zaprzeczenie.
+   */
+  isGrant?: boolean;
 }
 
 // §9.1.14 order response (fields used in F1; F2-F4 will expand)

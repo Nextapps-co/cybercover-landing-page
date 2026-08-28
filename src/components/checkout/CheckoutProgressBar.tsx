@@ -1,4 +1,4 @@
-interface Step {
+export interface Step {
   number: number;        // canonical (1=CompanyData, 2=PersonalData, 3=OS, 4=Payment, 5=Confirm)
   label: string;
   path: string;
@@ -11,6 +11,12 @@ interface CheckoutProgressBarProps {
   osSkipped?: boolean;
   // CC-534 — when true, the Payment step (4) is filtered out (0 zł, brak etapu płatności).
   paymentSkipped?: boolean;
+  /**
+   * Własny zestaw kroków (lejek zaproszeniowy). Gdy podany, filtry `osSkipped`
+   * i `paymentSkipped` NIE są stosowane — numery należą wtedy do innego lejka
+   * i przypadkowe trafienie w 3 albo 4 usunęłoby niewłaściwy krok.
+   */
+  steps?: Step[];
 }
 
 const STEPS: Step[] = [
@@ -21,11 +27,13 @@ const STEPS: Step[] = [
   { number: 5, label: 'Potwierdzenie',       path: '/checkout/confirm' },
 ];
 
-export function CheckoutProgressBar({ currentStep, osSkipped, paymentSkipped }: CheckoutProgressBarProps) {
-  const visibleSteps = STEPS
-    .filter(s => !(osSkipped && s.number === 3))
-    .filter(s => !(paymentSkipped && s.number === 4))
-    .map((s, i) => ({ ...s, displayNumber: i + 1 }));
+export function CheckoutProgressBar({ currentStep, osSkipped, paymentSkipped, steps }: CheckoutProgressBarProps) {
+  const source = steps
+    ? steps
+    : STEPS
+        .filter(s => !(osSkipped && s.number === 3))
+        .filter(s => !(paymentSkipped && s.number === 4));
+  const visibleSteps = source.map((s, i) => ({ ...s, displayNumber: i + 1 }));
 
   const currentVisible = visibleSteps.find(s => s.number === currentStep);
   const currentDisplay = currentVisible?.displayNumber ?? currentStep;
