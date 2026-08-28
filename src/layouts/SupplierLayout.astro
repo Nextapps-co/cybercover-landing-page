@@ -1,0 +1,67 @@
+---
+import '../styles/global.css'
+import CheckoutHeader from '../components/CheckoutHeader.astro'
+import { ClientRouter } from 'astro:transitions'
+
+interface Props {
+  title: string
+  description?: string
+}
+
+const { title, description = 'Rejestracja dostawcy w monitoringu bezpieczeństwa CyberCover.' } = Astro.props
+---
+
+<!DOCTYPE html>
+<html lang="pl-PL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="robots" content="noindex, nofollow" />
+  <!-- URL tej strony niesie token zaproszenia — nie polegamy na domyślnym zachowaniu przeglądarki i wprost obcinamy ścieżkę z Referer przy przejściach poza naszą domenę. -->
+  <meta name="referrer" content="strict-origin" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" />
+
+  <title>{title}</title>
+  <meta name="description" content={description} />
+
+  <ClientRouter />
+
+  <link rel="icon" href="/img/cropped-favicon-4-32x32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/img/cropped-favicon-4-32x32.png" />
+
+  <!--
+    ŚWIADOMIE bez GTM, bez Consent Mode i bez bannera cookies.
+    Strona powitalna tego lejka nosi w URL-u token zaproszenia (poświadczenie na
+    okaziciela), a kolejne kroki operują na orderId — dokument zakazuje wysyłania
+    tych wartości do narzędzi analitycznych (§9.7). Bez skryptów trzecich stron
+    i bez cookies analitycznych banner zgód nie jest potrzebny.
+    Jeśli marketing będzie potrzebował danych o lejku — zdarzenie serwerowe po
+    POST /register, nie tag na stronie z tokenem.
+  -->
+</head>
+
+<body class="font-['Plus_Jakarta_Sans',sans-serif] text-brand-text bg-white antialiased">
+  <CheckoutHeader showBackButton={false} logoHref="/" logoLabel="CyberCover" />
+  <main class="min-h-screen pt-[100px]" style="view-transition-name: checkout-content;">
+    <slot />
+  </main>
+
+  <!-- Ten sam mechanizm kierunku slajdów co w CheckoutLayout, żeby navigateForward /
+       navigateBackward działały bez zmian. -->
+  <script>
+    document.addEventListener('astro:before-preparation', (event: any) => {
+      const root = document.documentElement;
+      if (root.hasAttribute('data-checkout-direction')) return;
+      const isTraverse = event?.navigationType === 'traverse';
+      root.setAttribute('data-checkout-direction', isTraverse ? 'backward' : 'forward');
+    });
+    document.addEventListener('astro:after-swap', () => {
+      document.documentElement.removeAttribute('data-checkout-direction');
+    });
+  </script>
+</body>
+</html>

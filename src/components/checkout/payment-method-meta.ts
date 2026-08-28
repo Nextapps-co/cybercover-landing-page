@@ -1,4 +1,4 @@
-import type { PaymentMethod } from '../../lib/api/types/order';
+import type { SelectablePaymentMethod } from '../../lib/api/types/order';
 
 export interface PaymentMethodMeta {
   title: string;
@@ -12,7 +12,7 @@ export interface PaymentMethodMeta {
  * (widok tylko-do-odczytu na podsumowaniu). Trzyma tytuł/opis/plakietki
  * spójne między krokiem wyboru a ekranem potwierdzenia.
  */
-export const PAYMENT_METHOD_META: Record<PaymentMethod, PaymentMethodMeta> = {
+export const PAYMENT_METHOD_META: Record<SelectablePaymentMethod, PaymentMethodMeta> = {
   STRIPE_CHECKOUT: {
     title: 'Karta płatnicza',
     description: 'Szybka płatność online kartą kredytową lub debetową',

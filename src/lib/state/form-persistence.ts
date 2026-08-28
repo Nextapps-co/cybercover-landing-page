@@ -6,7 +6,12 @@ export type CheckoutStepKey =
   | 'company-data'
   | 'personal-data'
   | 'operational-standards'
-  | 'payment-method';
+  | 'payment-method'
+  // Wariant zaproszeniowy — osobne klucze, żeby szkice obu lejków się nie zderzały
+  // (nie nadpisywały się nawzajem pod tym samym kluczem). Bezargumentowe clearFormState()
+  // i tak celowo czyści wszystko naraz — patrz lista `allSteps` niżej.
+  | 'supplier-company-data'
+  | 'supplier-personal-data';
 
 const STORAGE_PREFIX = 'cybercover:form-state:';
 
@@ -46,6 +51,8 @@ export function clearFormState(step?: CheckoutStepKey): void {
     'personal-data',
     'operational-standards',
     'payment-method',
+    'supplier-company-data',
+    'supplier-personal-data',
   ];
   for (const s of allSteps) {
     window.sessionStorage.removeItem(key(s));

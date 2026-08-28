@@ -2,9 +2,18 @@
 export interface Props {
   showBackButton?: boolean;
   backHref?: string;
+  /** Dokąd prowadzi logo. Lejek zaproszeniowy podaje '/' — /cennik jest dla dostawcy ślepy. */
+  logoHref?: string;
+  /** aria-label linku z logo. Domyślnie opisuje cel linku płatnego lejka (powrót do cennika). */
+  logoLabel?: string;
 }
 
-const { showBackButton = false, backHref = '/cennik' } = Astro.props;
+const {
+  showBackButton = false,
+  backHref = '/cennik',
+  logoHref = '/cennik',
+  logoLabel = 'Wróć do cennika',
+} = Astro.props;
 ---
 
 <header
@@ -13,7 +22,7 @@ const { showBackButton = false, backHref = '/cennik' } = Astro.props;
 >
   <div class="max-w-[1480px] mx-auto px-5 py-4">
     <div class="flex items-center justify-between gap-3 bg-brand-bg border border-brand-border rounded-full px-4 sm:px-6 h-[70px]">
-      <a href="/cennik" class="shrink-0" aria-label="Wróć do cennika">
+      <a href={logoHref} class="shrink-0" aria-label={logoLabel}>
         <img
           src="/img/logo-cyber-cover.svg"
           alt="logo Cyber Cover"

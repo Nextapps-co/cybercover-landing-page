@@ -162,6 +162,20 @@ describe('orders client', () => {
         expect.objectContaining({ method: 'GET' }),
       );
     });
+
+    it('z orderId dokłada ?orderId= (zgody zaproszeniowe, §5.3)', async () => {
+      (globalThis.fetch as any).mockResolvedValue(
+        new Response(JSON.stringify({ consentDefinitions: [] }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      );
+      await fetchConsentDefinitions('ord_grant_1');
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        'http://localhost:3000/api/orders/consent-definitions?orderId=ord_grant_1',
+        expect.objectContaining({ method: 'GET' }),
+      );
+    });
   });
 
   describe('submitPersonalData', () => {
