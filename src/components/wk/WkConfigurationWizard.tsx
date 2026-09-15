@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { WkCompanyDataScreen } from './WkCompanyDataScreen';
 import { WkLoadError, WkLoading, WkNotice } from './WkNotice';
 import { wkSteps } from './wk-steps';
 import { getWkConfig } from '../../lib/api/wk-config';
@@ -80,7 +81,9 @@ export function WkConfigurationWizard() {
   switch (screen.kind) {
     case 'notice':
       return <WkNotice variant={screen.variant} />;
-    // Ekrany dokładane w zadaniach 9–13. Do tego czasu loader trzyma island w ryzach.
+    case 'company-data':
+      return <WkCompanyDataScreen {...shared} />;
+    // Ekrany dokładane w zadaniach 10–13. Do tego czasu loader trzyma island w ryzach.
     default:
       return <WkLoading label="Ekran w budowie" />;
   }
