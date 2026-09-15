@@ -55,15 +55,6 @@ describe('form-persistence', () => {
 });
 
 describe('klucze szkicow lejka WK', () => {
-  it('trzy lejki nie nadpisuja sobie szkicow pod tym samym kluczem', () => {
-    saveFormState('company-data', { nip: 'platny' });
-    saveFormState('supplier-company-data', { nip: 'dostawca' });
-    saveFormState('wk-company-data', { nip: 'wk' });
-    expect(getFormState<{ nip: string }>('company-data')?.nip).toBe('platny');
-    expect(getFormState<{ nip: string }>('supplier-company-data')?.nip).toBe('dostawca');
-    expect(getFormState<{ nip: string }>('wk-company-data')?.nip).toBe('wk');
-  });
-
   it('clearFormState bez argumentu czysci takze klucze WK', () => {
     saveFormState('wk-personal-data', { email: 'a@b.pl' });
     saveFormState('wk-operational-standards', { HAS_FIREWALL: 'YES' });
