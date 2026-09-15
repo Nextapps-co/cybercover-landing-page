@@ -62,7 +62,15 @@ export function WkSummaryScreen({ orderId, config, steps, osRequired, onAdvance,
       // Trzy 409 z §5 to stany do odzyskania, nie awarie.
       const recovery = recoveryForError(err);
       if (recovery === 'personal-data') { onBack({ kind: 'personal-data' }); return; }
-      if (recovery === 'reload-state') { await onReload(); return; }
+      if (recovery === 'reload-state') {
+        // Inaczej niż pozostałe wczesne wyjścia z tego catch, ten NIE gwarantuje
+        // odmontowania: świeży stan potrafi znowu wylądować na podsumowaniu (wyścig
+        // z WK_CONFIG_CHECKOUT_INCOMPLETE), React pogodzi ten sam komponent w tym
+        // samym miejscu drzewa i `submitting` przeżyje reload, blokując przycisk.
+        setSubmitting(false);
+        await onReload();
+        return;
+      }
 
       const t = translateApiError(err);
       setSubmitError({ title: t.title, message: t.message });
@@ -70,11 +78,16 @@ export function WkSummaryScreen({ orderId, config, steps, osRequired, onAdvance,
     }
   };
 
+  // Puste stringi z kontraktu (§6 reguła 4) liczą się jak `null` — inaczej karta
+  // renderuje się z samymi kreskami, gdy partner nie przekazał żadnej tożsamości.
+  const nonEmpty = (v: string | null | undefined): string => (v && v.trim().length > 0 ? v : '');
   const person = config.prefill;
-  const personRows = person
+  const fullName = person ? [nonEmpty(person.firstName), nonEmpty(person.lastName)].filter(Boolean).join(' ') : '';
+  const email = person ? nonEmpty(person.email) : '';
+  const personRows = fullName || email
     ? [
-        { label: 'Imię i nazwisko', value: [person.firstName, person.lastName].filter(Boolean).join(' ') || '—' },
-        { label: 'E-mail', value: person.email ?? '—' },
+        { label: 'Imię i nazwisko', value: fullName || '—' },
+        { label: 'E-mail', value: email || '—' },
       ]
     : [];
 

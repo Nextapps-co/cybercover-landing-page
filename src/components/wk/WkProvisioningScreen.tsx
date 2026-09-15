@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getWkConfig, wkLoginUrl } from '../../lib/api/wk-config';
 import { nextPollDelayMs } from '../../lib/wk/provisioning';
 import { noticeVariantForError } from '../../lib/wk/guards';
+import { clearFormState } from '../../lib/state/form-persistence';
 import type { WkConfigResponseDto } from '../../lib/api/types/wk-config';
 import type { WkNoticeVariant } from '../../lib/wk/types';
 
@@ -118,6 +119,14 @@ export function WkProvisioningScreen({ orderId, companyName, onAdvance, onNotice
 /** `status: COMPLETED` — ponowne wejście przez bramkę, tym razem znajdzie firmę (§3.8). */
 export function WkExitScreen() {
   useEffect(() => {
+    // Ekran TERMINALNY — jedyne właściwe miejsce na czyszczenie szkiców tego lejka.
+    // Klucze 'wk-*' są per-lejek, nie per-orderId: bez tego szkic osoby A zostaje
+    // w sessionStorage karty i podsuwa się jako wartości startowe osobie B, która
+    // otworzy link partnera w tej samej karcie (współdzielony komputer). Musi być
+    // TU, nie wcześniej — nawigacja „Wstecz" między krokami kreatora czyta te same klucze.
+    clearFormState('wk-company-data');
+    clearFormState('wk-personal-data');
+    clearFormState('wk-operational-standards');
     // Pełna nawigacja, nigdy fetch. Krótka zwłoka, żeby użytkownik zobaczył, że się udało.
     const timer = setTimeout(() => window.location.assign(wkLoginUrl()), 800);
     return () => clearTimeout(timer);

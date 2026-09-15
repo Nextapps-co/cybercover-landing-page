@@ -12,7 +12,7 @@ import { translateApiError } from '../../lib/errors/translate';
 import { getFormState, saveFormState } from '../../lib/state/form-persistence';
 import { noticeVariantForError } from '../../lib/wk/guards';
 import { validateCompanyData, type CompanyDataFormValues } from '../../lib/validation/company-data';
-import { INDUSTRIES } from '../../data/industries';
+import { INDUSTRIES, industryLabelFromValue, industryValueFromLabel } from '../../data/industries';
 import type { WkConfigResponseDto } from '../../lib/api/types/wk-config';
 import type { WkNoticeVariant } from '../../lib/wk/types';
 import type { CompanyLookupDataDto } from '../../lib/api/types/order';
@@ -31,9 +31,8 @@ const INITIAL: CompanyDataFormValues = { nip: '', name: '', street: '', city: ''
 // i lejku dostawcy — obie tamte implementacje wysyłają polską etykietę z listy, nie
 // surowy kod ze selecta. Trzymamy się tego formatu, bo pole `companyData.industry`
 // ma być spójne niezależnie od tego, który z trzech lejków je zapisał (recenzja Task 9).
-function industryLabelFromValue(value: string): string {
-  return INDUSTRIES.find(i => i.value === value)?.label ?? '';
-}
+// `industryLabelFromValue`/`industryValueFromLabel` — patrz `src/data/industries.ts`,
+// współdzielone z `CompanyDataStep.tsx` i `SupplierCompanyDataStep.tsx`.
 
 export function WkCompanyDataScreen({ orderId, config, steps, onReload, onNotice }: Props) {
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
@@ -58,11 +57,17 @@ export function WkCompanyDataScreen({ orderId, config, steps, onReload, onNotice
   }, [config, reset]);
 
   const handleLookup = (data: CompanyLookupDataDto) => {
-    setValue('name', data.name, { shouldValidate: true });
-    setValue('street', data.street, { shouldValidate: true });
-    setValue('city', data.city, { shouldValidate: true });
-    setValue('postalCode', data.postalCode, { shouldValidate: true });
-    if (data.industry) setValue('industry', data.industry, { shouldValidate: true });
+    setValue('name', data.name, { shouldValidate: true, shouldTouch: true });
+    setValue('street', data.street, { shouldValidate: true, shouldTouch: true });
+    setValue('city', data.city, { shouldValidate: true, shouldTouch: true });
+    setValue('postalCode', data.postalCode, { shouldValidate: true, shouldTouch: true });
+    // FormField renderuje <select> kluczowany WARTOŚCIAMI z INDUSTRIES (np. "IT"),
+    // a wyszukiwarka zwraca tekstową etykietę z rejestru — trzeba zmapować z powrotem,
+    // inaczej select nie pokazuje wyboru, mimo że pole „przechodzi" required.
+    const industryValue = data.industry ? industryValueFromLabel(data.industry) : '';
+    if (industryValue) {
+      setValue('industry', industryValue, { shouldValidate: true, shouldTouch: true });
+    }
   };
 
   const onSubmit = async (data: CompanyDataFormValues) => {
@@ -90,12 +95,25 @@ export function WkCompanyDataScreen({ orderId, config, steps, onReload, onNotice
     } catch (err) {
       const variant = noticeVariantForError(err);
       if (variant) { onNotice(variant); return; }
-      // Unikalność NIP-u obowiązuje klienta WK tak samo jak samoobsługowego.
-      // To błąd pola do poprawienia, nie ekran awarii (§3.4).
-      if (err instanceof ApiError && err.code === 'COMPANY_NIP_ALREADY_REGISTERED') {
-        setError('nip', { type: 'manual', message: 'Firma o tym numerze NIP ma już konto w CyberCover.' });
-        setSubmitting(false);
-        return;
+      // Trzy błędy pola do poprawienia, nie ekran awarii (§3.4) — jak w płatnym
+      // checkoucie i lejku dostawcy. NIP wpisywany tu ręcznie (walidacja klienta
+      // celowo wyłączona, patrz validateCompanyData), więc literówka zawsze idzie na serwer.
+      if (err instanceof ApiError) {
+        if (err.code === 'COMPANY_NIP_ALREADY_REGISTERED') {
+          setError('nip', { type: 'manual', message: 'Firma o tym numerze NIP ma już konto w CyberCover.' });
+          setSubmitting(false);
+          return;
+        }
+        if (err.code === 'INVALID_NIP') {
+          setError('nip', { type: 'manual', message: 'Niepoprawny NIP' });
+          setSubmitting(false);
+          return;
+        }
+        if (err.code === 'INVALID_POSTAL_CODE') {
+          setError('postalCode', { type: 'manual', message: 'Niepoprawny kod pocztowy' });
+          setSubmitting(false);
+          return;
+        }
       }
       const t = translateApiError(err);
       setSubmitError({ title: t.title, message: t.message });

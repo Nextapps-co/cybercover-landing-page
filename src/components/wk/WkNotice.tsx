@@ -42,10 +42,13 @@ function copyFor(variant: WkNoticeVariant): { title: string; paragraphs: string[
 
 export function WkNotice({ variant }: { variant: WkNoticeVariant }) {
   const copy = copyFor(variant);
+  // rate-limited to stan przejściowy („poczekaj i spróbuj znów") — status wystarczy.
+  // Pozostałe dwa przerywają przepływ i mają dostać uwagę czytnika ekranu od razu.
+  const role = variant === 'rate-limited' ? 'status' : 'alert';
   return (
     <div className="bg-white px-4 py-12">
       <div className="mx-auto max-w-[34rem]">
-        <div className={`rounded-[12px] border p-6 ${TONE[copy.tone]}`} role="status">
+        <div className={`rounded-[12px] border p-6 ${TONE[copy.tone]}`} role={role}>
           <h1 className="text-xl font-bold">{copy.title}</h1>
           {copy.paragraphs.map((text, i) => (
             <p key={i} className="mt-3 text-sm leading-relaxed">{text}</p>
@@ -66,7 +69,13 @@ export function WkNotice({ variant }: { variant: WkNoticeVariant }) {
 
 export function WkLoading({ label = 'Wczytujemy konfigurację…' }: { label?: string }) {
   return (
-    <div className="flex min-h-[60vh] items-center justify-center text-[#6B6965]">{label}</div>
+    <div
+      className="flex min-h-[60vh] items-center justify-center text-[#6B6965]"
+      role="status"
+      aria-live="polite"
+    >
+      {label}
+    </div>
   );
 }
 
