@@ -27,6 +27,14 @@ interface Props {
 
 const INITIAL: CompanyDataFormValues = { nip: '', name: '', street: '', city: '', postalCode: '', industry: '' };
 
+// `PATCH /orders/:id/company-data` to TEN SAM endpoint i to samo DTO co w checkoucie
+// i lejku dostawcy — obie tamte implementacje wysyłają polską etykietę z listy, nie
+// surowy kod ze selecta. Trzymamy się tego formatu, bo pole `companyData.industry`
+// ma być spójne niezależnie od tego, który z trzech lejków je zapisał (recenzja Task 9).
+function industryLabelFromValue(value: string): string {
+  return INDUSTRIES.find(i => i.value === value)?.label ?? '';
+}
+
 export function WkCompanyDataScreen({ orderId, config, steps, onReload, onNotice }: Props) {
   const [submitError, setSubmitError] = useState<{ title: string; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -75,7 +83,7 @@ export function WkCompanyDataScreen({ orderId, config, steps, onReload, onNotice
         street: data.street.trim(),
         city: data.city.trim(),
         postalCode: data.postalCode.trim(),
-        industry: data.industry,
+        industry: industryLabelFromValue(data.industry) || data.industry,
       }, { anonymous: true });
       // Odpowiedź PATCH-a ma inny kształt niż stan kreatora — odczytujemy go świeżo (§3.4).
       await onReload();
