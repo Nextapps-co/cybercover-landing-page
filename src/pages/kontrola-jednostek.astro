@@ -67,12 +67,39 @@ const kroki = [
   { n: '02', bg: 'bg-[#FDFEDF]', title: 'Dodajemy jednostki', desc: 'Wprowadzamy jednostki do platformy i szkolimy je z obsługi.' },
   { n: '03', bg: 'bg-[#FEF5E0]', title: 'Wyniki widać na bieżąco', desc: 'Stan każdej jednostki jest w panelu. Z tego samego miejsca powstaje raport.' },
 ]
+
+const pageTitle = 'Kontrola jednostek organizacyjnych – NIS2 dla samorządu – CyberCover'
+const pageDescription = 'Stan cyberbezpieczeństwa wszystkich jednostek organizacyjnych na jednym ekranie. Panel dla urzędu, przypomnienia i raport pod obowiązki z ustawy o KSC.'
+const pageUrl = new URL('/kontrola-jednostek', Astro.site ?? Astro.url).href
+const ogImageUrl = new URL(zgodnoscImg.src, Astro.site ?? Astro.url).href
+
+const serviceJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: 'Kontrola jednostek organizacyjnych',
+  serviceType: 'Kontrola cyberbezpieczeństwa jednostek organizacyjnych samorządu',
+  description: pageDescription,
+  url: pageUrl,
+  image: ogImageUrl,
+  areaServed: { '@type': 'Country', name: 'Polska' },
+  audience: { '@type': 'Audience', audienceType: 'Jednostki samorządu terytorialnego i ich jednostki organizacyjne' },
+  provider: { '@type': 'Organization', name: 'Cyber Cover sp. z o.o.', url: 'https://cybercover.pl', email: 'info@cybercover.pl' },
+}
 ---
 
-<BaseLayout
-  title="Kontrola jednostek organizacyjnych — NIS2 dla samorządu | CyberCover"
-  description="Stan cyberbezpieczeństwa wszystkich jednostek organizacyjnych na jednym ekranie. Przyjeżdżamy, ustawiamy platformę i prowadzimy jednostki przez pierwszy krok."
->
+<BaseLayout title={pageTitle} description={pageDescription} ogImage={zgodnoscImg}>
+  <Fragment slot="head-extra">
+    <meta name="keywords" content="kontrola jednostek organizacyjnych, NIS2, KSC, samorząd, cyberbezpieczeństwo jednostek, jednostki samorządowe" />
+    <meta property="og:site_name" content="CyberCover" />
+    <meta property="og:locale" content="pl_PL" />
+    <meta property="og:image:alt" content="Panel urzędu: stan cyberbezpieczeństwa jednostek organizacyjnych" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <script type="application/ld+json" set:html={JSON.stringify(serviceJsonLd)} />
+  </Fragment>
+
   <!-- ======== HERO ======== -->
   <section class="relative overflow-hidden bg-white pt-32 lg:pt-40 pb-12 lg:pb-20">
     <div class="relative max-w-container mx-auto px-6">

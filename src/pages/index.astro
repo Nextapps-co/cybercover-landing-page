@@ -5,6 +5,7 @@ import Hero from '../components/Hero.astro'
 import SectionTag from '../components/SectionTag.astro'
 import ArrowButton from '../components/ArrowButton.astro'
 import Ochrona360 from '../components/Ochrona360.astro'
+import KontrolaJednostekBanner from '../components/KontrolaJednostekBanner.astro'
 
 import heroImg from '../assets/img/ochrona-twojej-firmy-cena.jpg'
 import ocenaImg from '../assets/img/Ocena.jpg'
@@ -12,12 +13,10 @@ import konsultacjeImg from '../assets/img/Konsultacje-portal.jpg'
 import monitoringImg from '../assets/img/Monitoring-zagrozen-portal.jpg'
 import pomocImg from '../assets/img/Natychmiastowa-pomoc-portal.jpg'
 import ubezpieczenieImg from '../assets/img/Ubezpieczenie-portal.jpg'
-import nis2Img from '../assets/img/wymagania-nis2x2.jpg'
 
 import logoWoltersImg from '../assets/img/logo-wolters-kluwer.png'
 import logoCrawfordImg from '../assets/img/logo-crawford.png'
 import logoResiliaImg from '../assets/img/logo-resilia.png'
-import logoSymfoniaImg from '../assets/img/logo-symfonia.png'
 
 const threats = [
   { icon: '/img/ico-kradziez-danych.svg', title: 'Kradzież danych osobowych przez pracownika', desc: 'Nieuczciwy członek zespołu wykradł 700 rekordów z danymi klientów. Incydent wymagał natychmiastowego powiadomienia UODO.' },
@@ -66,7 +65,7 @@ const steps = [
       <img src="/img/price-badge.svg" alt="" aria-hidden="true" width="141" height="158" class="block w-full h-auto" />
       <div class="absolute inset-0 text-black text-center font-['Plus_Jakarta_Sans',sans-serif] select-none">
         <span class="absolute left-1/2 -translate-x-1/2 top-[11%] text-[9px] lg:text-[12px] font-semibold tracking-[-0.04em] whitespace-nowrap">CENA OD</span>
-        <span class="absolute left-1/2 -translate-x-1/2 top-[19%] text-[35px] lg:text-[49px] font-bold leading-none tracking-[-0.04em]">295</span>
+        <span class="absolute left-1/2 -translate-x-1/2 top-[19%] text-[35px] lg:text-[49px] font-bold leading-none tracking-[-0.04em]">395</span>
         <span class="absolute left-1/2 -translate-x-1/2 top-[53%] text-[15px] lg:text-[20px] font-bold leading-none">PLN</span>
         <span class="absolute left-1/2 -translate-x-1/2 top-[72%] text-[9px] lg:text-[12px] font-semibold whitespace-nowrap">za miesiąc</span>
       </div>
@@ -79,12 +78,11 @@ const steps = [
       <p class="text-center text-base lg:text-[19px] leading-[1.4] tracking-[-0.01em] text-brand-text mb-5 lg:mb-7">
         Współpracujemy z liderami prawa, technologii i bezpieczeństwa ludzi
       </p>
-      <div class="bg-brand-bg rounded-[55px] px-8 lg:px-[110px] py-7 lg:py-0 lg:h-[110px] flex flex-wrap items-center justify-center gap-x-10 gap-y-6 lg:gap-x-[70px]">
+      <div class="bg-brand-bg rounded-[55px] px-8 lg:px-[110px] py-7 lg:py-0 lg:h-[110px] flex flex-wrap items-center justify-center gap-x-10 gap-y-6 lg:gap-x-[70px] xl:gap-x-[120px]">
         <Image src={logoWoltersImg} alt="Wolters Kluwer" height={82} format="webp" class="h-[34px] lg:h-[41px] w-auto" loading="lazy" />
         <img src="/img/logo-colonnade.svg" alt="Colonnade" width="323" height="86" class="h-[40px] lg:h-[48px] w-auto" loading="lazy" />
         <Image src={logoResiliaImg} alt="Resilia" height={62} format="webp" class="h-[26px] lg:h-[31px] w-auto" loading="lazy" />
         <Image src={logoCrawfordImg} alt="Crawford" height={80} format="webp" class="h-[33px] lg:h-[40px] w-auto" loading="lazy" />
-        <Image src={logoSymfoniaImg} alt="Symfonia" height={62} format="webp" class="h-[26px] lg:h-[31px] w-auto" loading="lazy" />
       </div>
     </div>
   </section>
@@ -132,33 +130,8 @@ const steps = [
     </div>
   </section>
 
-  <!-- ======== NIS2 ======== -->
-  <section class="bg-black text-white py-16 lg:py-24">
-    <div class="max-w-container mx-auto px-6">
-      <div class="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
-        <div class="lg:w-1/2">
-          <Image src={nis2Img} alt="Wymagania NIS2" width={627} class="w-full rounded-xl" loading="lazy" />
-        </div>
-        <div class="lg:w-1/2">
-          <p class="font-medium uppercase text-sm tracking-wide mb-4">
-            <span class="inline-flex items-center gap-1.5 bg-brand-tag-yellow border border-brand-tag-yellow px-4 py-1 rounded-full text-black">
-              <img src="/img/mini-sygnet.svg" alt="" width="19" height="20" class="w-[19px]" />
-              Dyrektywa
-            </span>
-          </p>
-          <h2 class="text-2xl lg:text-section-title font-semibold leading-tight mb-6">Wymagania NIS2</h2>
-          <p class="text-xl lg:text-2xl font-medium leading-snug text-white/80 mb-6">
-            Organizacje z branż IT, zdrowie, transport, administracja publiczna, bankowość, energetyka muszą spełniać surowe wymogi cyberbezpieczeństwa.
-          </p>
-          <ul class="space-y-2 text-lg text-white/80">
-            <li class="flex items-start gap-2.5"><span class="flex h-7 shrink-0 items-center"><span class="h-1.5 w-1.5 rounded-full bg-brand-yellow"></span></span>zarządzanie ryzykiem cybernetycznym</li>
-            <li class="flex items-start gap-2.5"><span class="flex h-7 shrink-0 items-center"><span class="h-1.5 w-1.5 rounded-full bg-brand-yellow"></span></span>zgłaszanie incydentów 24-72h</li>
-            <li class="flex items-start gap-2.5"><span class="flex h-7 shrink-0 items-center"><span class="h-1.5 w-1.5 rounded-full bg-brand-yellow"></span></span>Kontrola bezpieczeństwa dostawców</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- ======== KONTROLA JEDNOSTEK ORGANIZACYJNYCH (dawniej „Wymagania NIS2") ======== -->
+  <KontrolaJednostekBanner />
 
   <!-- ======== OCHRONA 360 DIAGRAM ======== -->
   <section id="usluga" class="bg-brand-bg overflow-hidden">
