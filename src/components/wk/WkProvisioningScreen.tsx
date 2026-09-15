@@ -11,7 +11,7 @@ const SUPPORT_EMAIL = 'support@cybercover.pl';
 function WorkingBar() {
   return (
     <div
-      className="mt-8 h-1 w-full overflow-hidden rounded-full bg-[#F0EEE9] motion-reduce:bg-[#FED64B]"
+      className="mt-8 h-1 w-full overflow-hidden rounded-full bg-[#E4E2DF] motion-reduce:bg-[#FED64B]"
       role="presentation"
     >
       <div className="h-full w-1/3 animate-[wk-slide_1.6s_ease-in-out_infinite] rounded-full bg-[#FED64B] motion-reduce:hidden" />
