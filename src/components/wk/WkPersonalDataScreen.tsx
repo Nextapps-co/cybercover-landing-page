@@ -35,18 +35,20 @@ const INITIAL: PersonalDataFormValues = { firstName: '', lastName: '', email: ''
  * 9 cyfr i skleja `+48` przy wysyłce. Przy innym prefiksie ZOSTAWIAMY PUSTE —
  * okrojenie cudzego numeru wysłałoby zły numer, a na niego idzie kod SMS.
  *
- * To samo dotyczy ułomnego `+48` — np. gdy po prefiksie jest mniej niż 9 cyfr.
- * Bez sprawdzenia długości obcięty wynik WYGLĄDAŁBY na kompletny numer i
- * zachęcałby do wysłania go bez poprawki. Wolimy puste pole, które użytkownik
- * wypełni sam, niż cudzy, urwany numer z tym samym kodem SMS na końcu.
+ * To samo dotyczy ułomnego `+48` — gdy po prefiksie jest INNA liczba cyfr niż
+ * dokładnie 9: za mało (ucięty numer) ALBO za dużo (zdublowany kierunkowy,
+ * dopisane rozszerzenie, literówka). Dlatego sprawdzamy długość CAŁEGO ciągu
+ * cyfr (48 + 9 = 11) PRZED obcięciem, a nie długość już obciętego wyniku —
+ * `slice(2, 11)` zawsze zwróci 9 znaków, nawet z dłuższego wejścia, więc
+ * sprawdzenie po obcięciu nie wykryłoby nadmiaru. Bez tego obcięty wynik
+ * WYGLĄDAŁBY na kompletny numer i zachęcałby do wysłania go bez poprawki.
+ * Wolimy puste pole, które użytkownik wypełni sam, niż cudzy, urwany numer
+ * z tym samym kodem SMS na końcu.
  */
 function toLocalDigits(phone: string | null): string {
   if (!phone) return '';
   const digits = phone.replace(/\D/g, '');
-  if (phone.startsWith('+48')) {
-    const local = digits.slice(2, 11);
-    return local.length === 9 ? local : '';
-  }
+  if (phone.startsWith('+48')) return digits.length === 11 ? digits.slice(2) : '';
   if (!phone.startsWith('+') && digits.length === 9) return digits;
   return '';
 }
