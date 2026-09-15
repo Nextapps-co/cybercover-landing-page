@@ -1,0 +1,298 @@
+---
+// Kontrola jednostek organizacyjnych — podstrona dla samorządu (NIS2 / KSC).
+// Treść z prototypu Cyber/Landing-kontrola-jednostek/index.html, dokument projektowy:
+// Cyber/docs/design/2026-09-14-landing-kontrola-jednostek.md
+import { Image } from 'astro:assets'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import SectionTag from '../components/SectionTag.astro'
+import ArrowButton from '../components/ArrowButton.astro'
+import Ochrona360 from '../components/Ochrona360.astro'
+
+import zgodnoscImg from '../assets/img/kontrola-jednostek/zrzut-zgodnosc.png'
+import listaImg from '../assets/img/kontrola-jednostek/zrzut-lista.png'
+import szczegolyImg from '../assets/img/kontrola-jednostek/zrzut-szczegoly.png'
+import kategorieImg from '../assets/img/kontrola-jednostek/zrzut-kategorie.png'
+import wymaganiaImg from '../assets/img/kontrola-jednostek/zrzut-wymagania.png'
+import statusImg from '../assets/img/kontrola-jednostek/zrzut-status.png'
+
+const obowiazki = [
+  {
+    title: '1. Sprawdzić, które jednostki są objęte',
+    desc: 'Ustawa obejmuje wiele jednostek samorządowych: jednostki i zakłady budżetowe, instytucje kultury, spółki komunalne, szpitale. To, która jednostka trafia do której kategorii, zależy od jej formy prawnej i wielkości. Część jednostek jest wyłączona.',
+  },
+  {
+    title: '2. Uporządkować bezpieczeństwo w jednostce',
+    desc: 'Każda objęta jednostka ma mieć zasady, role i przegląd ryzyka, czyli system zarządzania bezpieczeństwem informacji. Zakres zależy od kategorii jednostki (art. 8 ustawy).',
+  },
+  {
+    title: '3. Wskazać osoby i przeszkolić kierownictwo',
+    desc: 'Za wykonanie obowiązków odpowiada kierownik jednostki. Także wtedy, gdy powierzy je komuś innemu. Raz w roku przechodzi szkolenie i ma to udokumentować (art. 8c i 8e ustawy).',
+  },
+  {
+    title: '4. Przygotować się na zgłaszanie incydentów',
+    desc: 'Poważny incydent jednostka zgłasza w ciągu 72 godzin. Część podmiotów wysyła wcześniejsze ostrzeżenie już w 24 godziny. W jednostce musi być wiadomo, kto to robi (art. 11 i 12c ustawy).',
+  },
+]
+
+const zagrozenia = [
+  { icon: '/img/ico-wyludzenie-danych-logowania.svg', title: 'Przejęta skrzynka jednostki', desc: 'Ktoś poznaje hasło do poczty szkoły albo muzeum. Z ich adresu wychodzą wiarygodne maile do urzędu i do innych jednostek. Odbiorcy ufają, bo to znany nadawca.' },
+  { icon: '/img/ico-paraliz-dzialania.svg', title: 'Zaszyfrowane dane i żądanie okupu', desc: 'Rano nikt nie może otworzyć plików ani systemu. Praca staje, a na ekranie jest żądanie zapłaty. Powrót do pracy zajmuje dni, czasem tygodnie.' },
+  { icon: '/img/ico-kradziez-danych.svg', title: 'Wyciek danych mieszkańców', desc: 'Na zewnątrz trafiają dane uczniów, pacjentów albo mieszkańców. Jednostka ma wtedy dwa zegary: zgłoszenie incydentu i powiadomienie osób, których dane wyciekły.' },
+  { icon: '/img/ico-podszywanie-sie-pod-prezesa-firmy.svg', title: 'Podmieniony numer konta', desc: 'Do księgowości przychodzi faktura od znanego wykonawcy. Numer konta jest inny niż zwykle, ale reszta się zgadza. Pieniądze idą do przestępców.' },
+]
+
+const wyzwania = [
+  'Kilkadziesiąt jednostek. Jedne mają informatyka, inne nie mają nikogo. Nikt nie widzi całości.',
+  'Nie wiadomo, od czego zacząć. Więc najczęściej nie zaczyna się wcale.',
+  'Termin biegnie, a incydent w jednostce i tak wraca do urzędu.',
+]
+
+const panel = [
+  { title: 'Lista wszystkich jednostek', desc: 'Każda jednostka i jej poziom bezpieczeństwa w jednym miejscu. Od razu wiadomo, kto odpowiedział, a kto milczy.' },
+  { title: 'Wgląd w odpowiedzi jednostki', desc: 'Nie tylko wynik, ale i to, co jednostka odpowiedziała. Widać, gdzie dokładnie jest problem.' },
+  { title: 'Kategorie jednostek', desc: 'Spółka wodociągowa ma inne potrzeby niż biblioteka. Jednostki dzieli się na kategorie, każda z własnym oczekiwanym poziomem.' },
+  { title: 'Przypomnienia', desc: 'Jednostki, które nie odpowiedziały, dostają przypomnienie. Nie trzeba pilnować tego ręcznie.' },
+  { title: 'Raport', desc: 'Jedno kliknięcie i jest zestawienie: ile jednostek, w jakim są stanie, co się zmieniło. Do pokazania u siebie i przed kontrolą.' },
+]
+
+// Podpisy z <br> tylko od lg — na desktopie każdy ma dokładnie 2 wiersze
+const funkcje = [
+  { img: kategorieImg, alt: 'Okno dodawania własnej kategorii jednostek', caption: 'Własne kategorie jednostek,<br class="hidden lg:inline" /> nazwane po swojemu.' },
+  { img: wymaganiaImg, alt: 'Okno ustawiania wymaganego wskaźnika na kwartał dla każdej kategorii', caption: 'Wymagany poziom dla każdej kategorii,<br class="hidden lg:inline" /> kwartał po kwartale.' },
+  { img: statusImg, alt: 'Wykres: jednostki zaproszone, aktywne i z wypełnionym wskaźnikiem w kolejnych kwartałach', caption: 'Śledzenie statusów kwartał po kwartale:<br class="hidden lg:inline" /> kto zaproszony, kto aktywny, kto wypełnił wskaźnik.' },
+]
+
+const kroki = [
+  { n: '01', bg: 'bg-brand-blue-light', title: 'Ustalamy wymagania', desc: 'Wspólnie ustalamy, czego urząd oczekuje od jednostek i jak je podzielić na kategorie.' },
+  { n: '02', bg: 'bg-[#FDFEDF]', title: 'Dodajemy jednostki', desc: 'Wprowadzamy jednostki do platformy i szkolimy je z obsługi.' },
+  { n: '03', bg: 'bg-[#FEF5E0]', title: 'Wyniki widać na bieżąco', desc: 'Stan każdej jednostki jest w panelu. Z tego samego miejsca powstaje raport.' },
+]
+---
+
+<BaseLayout
+  title="Kontrola jednostek organizacyjnych — NIS2 dla samorządu | CyberCover"
+  description="Stan cyberbezpieczeństwa wszystkich jednostek organizacyjnych na jednym ekranie. Przyjeżdżamy, ustawiamy platformę i prowadzimy jednostki przez pierwszy krok."
+>
+  <!-- ======== HERO ======== -->
+  <section class="relative overflow-hidden bg-white pt-32 lg:pt-40 pb-12 lg:pb-20">
+    <div class="relative max-w-container mx-auto px-6">
+      <div class="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+        <div class="lg:w-1/2">
+          <p class="font-medium uppercase text-sm tracking-wide mb-4">
+            <span class="inline-block bg-brand-tag-blue border border-brand-tag-blue px-4 py-1 rounded-full">Kontrola jednostek organizacyjnych</span>
+          </p>
+          <h1 class="text-3xl lg:text-page-title font-semibold leading-tight text-black mb-6">
+            Cyberbezpieczeństwo wszystkich jednostek na jednym ekranie.
+          </h1>
+          <p class="text-xl lg:text-2xl font-medium leading-snug text-brand-text mb-6 lg:mb-8">
+            Jedna platforma zamiast ankiet w Excelu. Widać, która jednostka jest gotowa, a która wymaga uwagi — i co konkretnie ma poprawić.
+          </p>
+          <ArrowButton variant="yellow" label="Zapraszamy do kontaktu" href="#kontakt" />
+        </div>
+        <div class="lg:w-[48%] w-full">
+          <div class="shot">
+            <Image src={zgodnoscImg} alt="Panel urzędu: 87% jednostek spełnia wymagania, rozbicie na kategorie" widths={[640, 1024, 1583]} sizes="(min-width: 1024px) 48vw, 100vw" loading="eager" fetchpriority="high" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== CO JEST DO ZROBIENIA WEDŁUG USTAWY ======== -->
+  <section class="bg-black text-white py-16 lg:py-24">
+    <div class="max-w-container mx-auto px-6">
+      <SectionTag label="Ustawa" class="text-black" />
+      <h2 class="text-center text-2xl lg:text-section-title font-semibold leading-tight mt-4 mb-4">
+        Co jest do zrobienia według ustawy
+      </h2>
+      <p class="text-center text-xl lg:text-2xl font-medium leading-snug text-white/80 max-w-[900px] mx-auto mb-10 lg:mb-16">
+        Cztery rzeczy, które każda objęta jednostka musi mieć zrobione do 3 kwietnia 2027 roku
+        (art. 33 nowelizacji ustawy o Krajowym Systemie Cyberbezpieczeństwa).
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-[1100px] mx-auto">
+        {obowiazki.map((o) => (
+          <div class="border border-white/15 rounded-card p-8">
+            <h3 class="text-xl font-semibold mb-3">{o.title}</h3>
+            <p class="text-body-lg leading-relaxed text-white/80">{o.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <p class="text-center text-sm text-white/50 mt-10 max-w-[900px] mx-auto leading-relaxed">
+        Podstawa: ustawa o krajowym systemie cyberbezpieczeństwa (KSC) w brzmieniu po nowelizacji
+        z 23 stycznia 2026 roku, która wdraża dyrektywę NIS2 — Dz.U. 2026 poz. 252.
+        Stan przepisów sprawdzony 14 września 2026 roku.
+      </p>
+    </div>
+  </section>
+
+  <!-- ======== CO MOŻE SIĘ WYDARZYĆ W JEDNOSTCE ======== -->
+  <section class="py-16 lg:py-24">
+    <div class="max-w-container mx-auto px-6">
+      <SectionTag label="Zagrożenia" />
+      <h2 class="text-center text-2xl lg:text-section-title font-semibold leading-tight text-black mt-4 mb-4">
+        Co może się wydarzyć w jednostce
+      </h2>
+      <p class="text-center text-body-lg text-brand-text mb-10 lg:mb-16">
+        Cztery zagrożenia, na które jednostki mogą być narażone.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+        {zagrozenia.map((z) => (
+          <div class="border border-brand-border rounded-card p-8 pb-6">
+            <img src={z.icon} alt="" width="50" height="51" class="mb-6" loading="lazy" />
+            <h3 class="text-xl font-semibold text-black mb-3">{z.title}</h3>
+            <p class="text-body-lg leading-relaxed">{z.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== Z CZYM MIERZĄ SIĘ URZĘDY ======== -->
+  <section class="bg-brand-blue-light py-16 lg:py-24">
+    <div class="max-w-container mx-auto px-6">
+      <SectionTag label="Wyzwania" />
+      <h2 class="text-center text-2xl lg:text-section-title font-semibold leading-tight text-black mt-4 mb-10 lg:mb-16">
+        Z czym mierzą się urzędy
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {wyzwania.map((w) => (
+          <div class="border border-brand-border rounded-card p-8 min-h-[270px] bg-[url('/img/tlo-box-szersze.svg')] bg-no-repeat bg-right-top bg-[length:60%_auto]">
+            <img src="/img/ico-piorun.svg" alt="" width="49" height="59" class="mb-8" loading="lazy" />
+            <h3 class="text-[22px] font-semibold text-black leading-snug max-w-[87%]">{w}</h3>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== CO DOSTAJE URZĄD ======== -->
+  <section class="py-16 lg:py-24">
+    <div class="max-w-container mx-auto px-6">
+      <SectionTag label="Panel" />
+      <h2 class="text-center text-2xl lg:text-section-title font-semibold leading-tight text-black mt-4 mb-10 lg:mb-16">
+        Co dostaje urząd
+      </h2>
+
+      <div class="flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
+        <div class="lg:w-1/2 space-y-8">
+          {panel.map((p) => (
+            <div>
+              <h3 class="text-2xl font-semibold text-black leading-snug mb-2">{p.title}</h3>
+              <p class="text-body-lg leading-relaxed">{p.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <div class="lg:w-1/2 w-full space-y-8">
+          <figure>
+            <div class="shot">
+              <Image src={listaImg} alt="Lista jednostek z kategorią, wskaźnikiem i statusem" widths={[640, 1024, 1593]} sizes="(min-width: 1024px) 50vw, 100vw" loading="lazy" />
+            </div>
+            <figcaption class="text-sm text-brand-text/70 mt-3">
+              Status mówi, czy jednostka spełnia wymagania ustalone przez urząd dla swojej kategorii.
+            </figcaption>
+          </figure>
+          <figure>
+            <div class="shot">
+              <Image src={szczegolyImg} alt="Szczegóły jednostki: trzy obszary oceny i historia wskaźnika" widths={[640, 1024, 1593]} sizes="(min-width: 1024px) 50vw, 100vw" loading="lazy" />
+            </div>
+            <figcaption class="text-sm text-brand-text/70 mt-3">
+              Widok jednej jednostki: prawo, technologia i ludzie osobno, razem z historią zmian.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mt-12 lg:mt-16">
+        {funkcje.map((f) => (
+          <figure>
+            <div class="shot">
+              <Image src={f.img} alt={f.alt} widths={[420, 840]} sizes="(min-width: 768px) 33vw, 100vw" loading="lazy" />
+            </div>
+            <figcaption class="text-body-lg text-brand-text mt-4 text-center" set:html={f.caption} />
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== CO DOSTAJE KAŻDA JEDNOSTKA ======== -->
+  <section class="bg-brand-bg overflow-hidden pb-16 lg:pb-24">
+    <div class="pt-16 lg:pt-24 max-w-container mx-auto px-6 text-center">
+      <SectionTag label="Jednostki" variant="blue" />
+      <h2 class="text-2xl lg:text-section-title font-semibold leading-tight text-black mt-4 mb-6">
+        Co dostaje każda jednostka
+      </h2>
+      <p class="text-xl lg:text-2xl font-medium leading-snug text-brand-text max-w-[900px] mx-auto">
+        Każda jednostka dostaje ochronę w ramach produktu CyberCover, z której korzysta na co dzień.
+      </p>
+    </div>
+    <Ochrona360 />
+    <div class="max-w-container mx-auto px-6 mt-6 lg:mt-10 flex justify-center">
+      <ArrowButton variant="dark" showArrow={false} label="Zobacz, co zawiera usługa" href="/#rozwiazanie" />
+    </div>
+  </section>
+
+  <!-- ======== JAK URUCHAMIAMY KONTROLĘ JEDNOSTEK ======== -->
+  <section class="bg-brand-navy py-16 lg:py-24">
+    <div class="max-w-[1350px] mx-auto px-6">
+      <SectionTag label="Start" />
+      <h2 class="text-center text-2xl lg:text-section-title font-semibold leading-tight text-white mt-4 mb-10 lg:mb-16">
+        Jak uruchamiamy kontrolę jednostek
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {kroki.map((k) => (
+          <div class:list={['rounded-card overflow-hidden p-8', k.bg]}>
+            <div class="flex items-start justify-between mb-6">
+              <p class="text-2xl font-medium">KROK</p>
+              <p class="text-[58px] font-medium leading-none">{k.n}</p>
+            </div>
+            <h3 class="text-xl font-semibold text-black leading-snug mb-3">{k.title}</h3>
+            <p class="text-body-lg leading-relaxed">{k.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ======== KONTAKT ======== -->
+  <section id="kontakt" class="py-16 lg:py-24 scroll-mt-28">
+    <div class="max-w-[900px] mx-auto px-6 text-center">
+      <SectionTag label="Kontakt" />
+      <h2 class="text-2xl lg:text-section-title font-semibold leading-tight text-black mt-4 mb-6">
+        Zapraszamy do kontaktu
+      </h2>
+      <p class="text-xl lg:text-2xl font-medium leading-snug text-brand-text mb-10">
+        Chętnie odpowiemy na pytania o platformę i o to, jak wygląda wdrożenie w urzędzie.
+        Wystarczy wiadomość na adres mailowy.
+      </p>
+      <div class="flex justify-center">
+        <ArrowButton variant="yellow" showArrow={false} label="info@cybercover.pl" href="mailto:info@cybercover.pl?subject=Kontrola%20jednostek%20organizacyjnych" />
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Ramka zrzutów ekranu wg Figmy (node 4130:28284): jasne tło, 10 px marginesu, styl cienia „shadow - photo" */
+  .shot {
+    background: var(--color-brand-bg);
+    padding: 10px;
+    border-radius: 15px;
+    box-shadow:
+      2px 4px 10px rgba(0, 0, 0, 0.1),
+      7px 17px 19px rgba(0, 0, 0, 0.09),
+      15px 39px 25px rgba(0, 0, 0, 0.05),
+      27px 69px 30px rgba(0, 0, 0, 0.01),
+      43px 108px 32px rgba(0, 0, 0, 0);
+  }
+  .shot :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+  }
+</style>
