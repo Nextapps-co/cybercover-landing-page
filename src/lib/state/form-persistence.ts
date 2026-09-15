@@ -11,7 +11,11 @@ export type CheckoutStepKey =
   // (nie nadpisywały się nawzajem pod tym samym kluczem). Bezargumentowe clearFormState()
   // i tak celowo czyści wszystko naraz — patrz lista `allSteps` niżej.
   | 'supplier-company-data'
-  | 'supplier-personal-data';
+  | 'supplier-personal-data'
+  // Kreator Wolters Kluwer — trzeci lejek, znowu osobne klucze.
+  | 'wk-company-data'
+  | 'wk-personal-data'
+  | 'wk-operational-standards';
 
 const STORAGE_PREFIX = 'cybercover:form-state:';
 
@@ -53,6 +57,9 @@ export function clearFormState(step?: CheckoutStepKey): void {
     'payment-method',
     'supplier-company-data',
     'supplier-personal-data',
+    'wk-company-data',
+    'wk-personal-data',
+    'wk-operational-standards',
   ];
   for (const s of allSteps) {
     window.sessionStorage.removeItem(key(s));
