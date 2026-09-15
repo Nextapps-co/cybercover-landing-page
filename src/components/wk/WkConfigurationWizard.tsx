@@ -3,6 +3,7 @@ import { WkCompanyDataScreen } from './WkCompanyDataScreen';
 import { WkPersonalDataScreen } from './WkPersonalDataScreen';
 import { WkOperationalStandardsScreen } from './WkOperationalStandardsScreen';
 import { WkSummaryScreen } from './WkSummaryScreen';
+import { WkProvisioningScreen, WkExitScreen } from './WkProvisioningScreen';
 import { WkLoadError, WkLoading, WkNotice } from './WkNotice';
 import { wkSteps } from './wk-steps';
 import { getWkConfig } from '../../lib/api/wk-config';
@@ -36,11 +37,16 @@ export function WkConfigurationWizard() {
   const stepsRef = useRef<Step[] | null>(null);
   const osRequiredRef = useRef(false);
 
+  /** Ostatnia znana nazwa firmy z prefill — poza IN_PROGRESS kontrakt zwraca `prefill: null`,
+   *  a ekran zakładania firmy (PROVISIONING) i tak musi ją skądś pokazać. */
+  const lastCompanyName = useRef<string | null>(null);
+
   const apply = useCallback((next: WkConfigResponseDto) => {
     if (stepsRef.current === null) {
       osRequiredRef.current = next.operationalStandardsRequired;
       stepsRef.current = wkSteps(next.operationalStandardsRequired);
     }
+    if (next.prefill?.companyName) lastCompanyName.current = next.prefill.companyName;
     setOverride(null);
     setConfig(next);
   }, []);
@@ -92,8 +98,20 @@ export function WkConfigurationWizard() {
       return <WkOperationalStandardsScreen {...shared} />;
     case 'summary':
       return <WkSummaryScreen {...shared} />;
-    // Ekran zakładania firmy i wyjście dokładane w zadaniu 13.
+    case 'provisioning':
+      return (
+        <WkProvisioningScreen
+          orderId={orderId!}
+          companyName={lastCompanyName.current}
+          onAdvance={apply}
+          onNotice={setNotice}
+        />
+      );
+    case 'exit':
+      return <WkExitScreen />;
+    // Wszystkie warianty Screen są obsłużone powyżej — to zabezpieczenie na wypadek,
+    // gdyby przyszła wartość spoza kontraktu, jakiej jeszcze nie znamy.
     default:
-      return <WkLoading label="Ekran w budowie" />;
+      return <WkNotice variant="unexpected-state" />;
   }
 }
