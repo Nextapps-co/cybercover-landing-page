@@ -63,17 +63,22 @@ describe('kody kreatora Wolters Kluwer', () => {
     expect(t.message).not.toMatch(/po naszej stronie/i);
   });
 
-  it('tłumaczy wszystkie cztery kody WK_CONFIG_*', () => {
-    const codes = [
-      'WK_CONFIG_PERSONAL_DATA_NOT_SUBMITTED',
-      'WK_CONFIG_PERSONAL_DATA_MISMATCH',
-      'WK_CONFIG_CHECKOUT_INCOMPLETE',
-      'WK_CONFIG_NOT_IN_PROGRESS',
+  it('tłumaczy wszystkie cztery kody WK_CONFIG_* na konkretne komunikaty, nie na fallback UNKNOWN', () => {
+    // `length > 0` niczego by tu nie dowodziło — TRANSLATIONS.UNKNOWN (fallback dla nierozpoznanego
+    // kodu) też ma niepuste title/message. Dowodem, że kod ma WŁASNY wpis, jest dokładny tytuł:
+    // różni się od tytułu fallbacku ('Nieznany błąd') tylko wtedy, gdy wpis faktycznie istnieje
+    // w TRANSLATIONS. Zweryfikowane empirycznie: po chwilowym zakomentowaniu dowolnego z czterech
+    // wpisów w translate.ts ten test czerwienieje (patrz task-1-2-report.md, runda poprawek 1).
+    const cases = [
+      ['WK_CONFIG_PERSONAL_DATA_NOT_SUBMITTED', 'Wróćmy na chwilę do Twoich danych'],
+      ['WK_CONFIG_PERSONAL_DATA_MISMATCH', 'Te dane wypełnił ktoś inny'],
+      ['WK_CONFIG_CHECKOUT_INCOMPLETE', 'Został jeszcze jeden krok'],
+      ['WK_CONFIG_NOT_IN_PROGRESS', 'Konfiguracja jest już zakończona'],
     ] as const;
-    for (const code of codes) {
+    for (const [code, expectedTitle] of cases) {
       const t = translateApiError(new ApiError(code, 409, null));
-      expect(t.title.length).toBeGreaterThan(0);
-      expect(t.message.length).toBeGreaterThan(0);
+      expect(t.title).toBe(expectedTitle);
+      expect(t.actionable).toBe(true);
     }
   });
 });
