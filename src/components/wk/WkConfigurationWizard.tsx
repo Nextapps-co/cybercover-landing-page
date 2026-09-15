@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { WkCompanyDataScreen } from './WkCompanyDataScreen';
 import { WkPersonalDataScreen } from './WkPersonalDataScreen';
 import { WkOperationalStandardsScreen } from './WkOperationalStandardsScreen';
+import { WkSummaryScreen } from './WkSummaryScreen';
 import { WkLoadError, WkLoading, WkNotice } from './WkNotice';
 import { wkSteps } from './wk-steps';
 import { getWkConfig } from '../../lib/api/wk-config';
@@ -89,7 +90,9 @@ export function WkConfigurationWizard() {
       return <WkPersonalDataScreen {...shared} />;
     case 'operational-standards':
       return <WkOperationalStandardsScreen {...shared} />;
-    // Ekrany dokładane w zadaniach 12–13. Do tego czasu loader trzyma island w ryzach.
+    case 'summary':
+      return <WkSummaryScreen {...shared} />;
+    // Ekran zakładania firmy i wyjście dokładane w zadaniu 13.
     default:
       return <WkLoading label="Ekran w budowie" />;
   }
