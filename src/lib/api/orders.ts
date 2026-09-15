@@ -82,9 +82,12 @@ export async function submitCompanyData(
   );
 }
 
-export async function lookupCompany(nip: string): Promise<CompanyLookupResponseDto> {
+export async function lookupCompany(
+  nip: string,
+  options?: { anonymous?: boolean },
+): Promise<CompanyLookupResponseDto> {
   if (useMock()) return lookupCompanyMock(nip);
-  return apiGet<CompanyLookupResponseDto>('/orders/company-lookup', { query: { nip } });
+  return apiGet<CompanyLookupResponseDto>('/orders/company-lookup', { query: { nip }, ...options });
 }
 
 /**
@@ -133,18 +136,24 @@ export async function submitPersonalData(
   }
 }
 
-export async function getOperationalStandardsSchema(orderId: string) {
+export async function getOperationalStandardsSchema(orderId: string, options?: { anonymous?: boolean }) {
   if (useMock()) return getOperationalStandardsSchemaMock(orderId);
   return apiGet<OperationalStandardsSchemaResponseDto>(
     `/orders/${encodeURIComponent(orderId)}/operational-standards-schema`,
+    options,
   );
 }
 
-export async function submitOperationalStandards(orderId: string, dto: SubmitOperationalStandardsDto) {
+export async function submitOperationalStandards(
+  orderId: string,
+  dto: SubmitOperationalStandardsDto,
+  options?: { anonymous?: boolean },
+) {
   if (useMock()) return submitOperationalStandardsMock(orderId, dto);
   return apiPatch<SubmitOperationalStandardsDto, SubmitOperationalStandardsResponseDto>(
     `/orders/${encodeURIComponent(orderId)}/operational-standards`,
     dto,
+    options,
   );
 }
 

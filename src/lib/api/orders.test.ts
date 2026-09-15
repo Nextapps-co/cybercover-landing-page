@@ -580,3 +580,70 @@ describe('orders client', () => {
     });
   });
 });
+
+describe('anonymous na trasach wspoldzielonych z lejkiem WK', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+    import.meta.env.PUBLIC_API_BASE_URL = 'http://localhost:3000/api';
+    import.meta.env.PUBLIC_USE_MOCK_ORDERS = 'false';
+    sessionStorage.clear();
+  });
+
+  function jsonResponse(body: unknown, status = 200): Response {
+    return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
+  }
+
+  // Klucz musi być DOKŁADNIE ten, którego używa src/lib/auth/session.ts (`ACCESS_KEY`).
+  // Literówka sprawiłaby, że token w ogóle by się nie zapisał, test przeszedłby
+  // z niewłaściwego powodu i nie chroniłby niczego.
+  const ACCESS_KEY = 'cybercover:auth-access';
+
+  it('lookupCompany z anonymous nie wysyla Authorization mimo tokenu w sesji', async () => {
+    sessionStorage.setItem(ACCESS_KEY, 'jwt-resztka');
+    (globalThis.fetch as any).mockResolvedValue(jsonResponse({ found: false }));
+    await lookupCompany('5241937685', { anonymous: true });
+    const [, init] = (globalThis.fetch as any).mock.calls[0];
+    expect(init.headers).not.toHaveProperty('Authorization');
+  });
+
+  it('bez anonymous token JEDNAK leci — czyli test wyzej naprawde czegos dowodzi', async () => {
+    sessionStorage.setItem(ACCESS_KEY, 'jwt-resztka');
+    (globalThis.fetch as any).mockResolvedValue(jsonResponse({ found: false }));
+    await lookupCompany('5241937685');
+    const [, init] = (globalThis.fetch as any).mock.calls[0];
+    expect(init.headers.Authorization).toBe('Bearer jwt-resztka');
+  });
+
+  // Uzupełnienie spoza briefu (patrz task-1-2-report.md „Rozstrzygnięcie"): NipLookupField.tsx
+  // zawsze woła lookupCompany(normalized, { anonymous }) — w płatnym lejku i lejku dostawcy prop
+  // `anonymous` nie jest ustawiany, więc realnie leci { anonymous: undefined }, NIE brak drugiego
+  // argumentu. To dowodzi, że to rozróżnienie nic nie zmienia — oba lejki mają działać jak dziś.
+  // Testu bezpośrednio na NipLookupField nie da się tu dopisać: orders.test.ts to plik .ts bez
+  // JSX, a repo celowo nie ma jeszcze @vitejs/plugin-react ani React Testing Library (patrz
+  // CLAUDE.md „Testing") — dodanie tej infrastruktury wykracza poza zakres tych dwóch zadań.
+  it('lookupCompany z { anonymous: undefined } (tak woła NipLookupField bez propa) nadal wysyła Authorization', async () => {
+    sessionStorage.setItem(ACCESS_KEY, 'jwt-resztka');
+    (globalThis.fetch as any).mockResolvedValue(jsonResponse({ found: false }));
+    await lookupCompany('5241937685', { anonymous: undefined });
+    const [, init] = (globalThis.fetch as any).mock.calls[0];
+    expect(init.headers.Authorization).toBe('Bearer jwt-resztka');
+  });
+
+  it('getOperationalStandardsSchema przekazuje anonymous dalej', async () => {
+    sessionStorage.setItem(ACCESS_KEY, 'jwt-resztka');
+    (globalThis.fetch as any).mockResolvedValue(
+      jsonResponse({ orderId: 'o1', insurerName: '', questions: [], answerOptions: [] }),
+    );
+    await getOperationalStandardsSchema('o1', { anonymous: true });
+    const [, init] = (globalThis.fetch as any).mock.calls[0];
+    expect(init.headers).not.toHaveProperty('Authorization');
+  });
+
+  it('submitOperationalStandards przekazuje anonymous dalej', async () => {
+    sessionStorage.setItem(ACCESS_KEY, 'jwt-resztka');
+    (globalThis.fetch as any).mockResolvedValue(jsonResponse({ orderId: 'o1' }));
+    await submitOperationalStandards('o1', { answers: { HAS_FIREWALL: 'YES' } }, { anonymous: true });
+    const [, init] = (globalThis.fetch as any).mock.calls[0];
+    expect(init.headers).not.toHaveProperty('Authorization');
+  });
+});
