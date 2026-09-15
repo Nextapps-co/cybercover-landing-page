@@ -55,3 +55,25 @@ describe('translateApiError — auth-aware codes', () => {
     expect(t.actionable).toBe(actionable);
   });
 });
+
+describe('kody kreatora Wolters Kluwer', () => {
+  it('zajęty NIP jest błędem do poprawienia przez użytkownika, nie awarią serwera', () => {
+    const t = translateApiError(new ApiError('COMPANY_NIP_ALREADY_REGISTERED', 409, null));
+    expect(t.actionable).toBe(true);
+    expect(t.message).not.toMatch(/po naszej stronie/i);
+  });
+
+  it('tłumaczy wszystkie cztery kody WK_CONFIG_*', () => {
+    const codes = [
+      'WK_CONFIG_PERSONAL_DATA_NOT_SUBMITTED',
+      'WK_CONFIG_PERSONAL_DATA_MISMATCH',
+      'WK_CONFIG_CHECKOUT_INCOMPLETE',
+      'WK_CONFIG_NOT_IN_PROGRESS',
+    ] as const;
+    for (const code of codes) {
+      const t = translateApiError(new ApiError(code, 409, null));
+      expect(t.title.length).toBeGreaterThan(0);
+      expect(t.message.length).toBeGreaterThan(0);
+    }
+  });
+});

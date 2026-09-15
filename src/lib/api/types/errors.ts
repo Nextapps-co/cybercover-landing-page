@@ -28,7 +28,15 @@ export type BackendApiErrorCode =
   | 'STANDARD_PLAN_NOT_FOUND'
   | 'SALES_ORDER_GRANT_NIP_MISMATCH'
   | 'SALES_ORDER_GRANT_PAYMENT_METHOD_MISMATCH'
-  | 'DISCOUNT_NOT_APPLICABLE';
+  | 'DISCOUNT_NOT_APPLICABLE'
+  // Kreator konfiguracji Wolters Kluwer — patrz docs/marketing-site-wk-integration.md §5
+  | 'WK_CONFIG_PERSONAL_DATA_NOT_SUBMITTED'
+  | 'WK_CONFIG_PERSONAL_DATA_MISMATCH'
+  | 'WK_CONFIG_CHECKOUT_INCOMPLETE'
+  | 'WK_CONFIG_NOT_IN_PROGRESS'
+  // Unikalność NIP-u — dotyczy też płatnego lejka, gdzie do tej pory degradowało się
+  // do INTERNAL_ERROR („Błąd serwera") zamiast błędu przy polu.
+  | 'COMPANY_NIP_ALREADY_REGISTERED';
 
 export type FrontendApiErrorCode = 'NETWORK_ERROR' | 'INTERNAL_ERROR' | 'UNKNOWN';
 

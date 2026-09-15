@@ -177,6 +177,12 @@ export function CompanyDataStep() {
         navigateForward(`/checkout/personal-data?orderId=${encodeURIComponent(orderId)}`);
       }
     } catch (err) {
+      // Unikalność NIP-u to błąd pola, nie awaria — użytkownik ma poprawić wartość.
+      if (err instanceof ApiError && err.code === 'COMPANY_NIP_ALREADY_REGISTERED') {
+        setError('nip', { type: 'manual', message: 'Firma o tym numerze NIP ma już konto w CyberCover.' });
+        setSubmitting(false);
+        return;
+      }
       const t = translateApiError(err);
       if (err instanceof ApiError) {
         if (err.code === 'INVALID_NIP') {
