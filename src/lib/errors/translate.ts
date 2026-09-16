@@ -171,6 +171,15 @@ const TRANSLATIONS: Record<ApiErrorCode, TranslatedError> = {
     message: 'Firma o tym numerze NIP ma już konto w CyberCover. Sprawdź numer albo napisz na support@cybercover.pl.',
     actionable: true,
   },
+  // Generyczny 400 bez własnego kodu z backendu (ciało nie przeszło walidacji kształtu,
+  // np. dziewięć cyfr telefonu bez prefiksu kraju) — występuje w każdym z trzech lejków,
+  // nie tylko w kreatorze WK. Nie wskazujemy pola — metadata.errors[].property nie jest
+  // tu mapowane na formularz (osobne zadanie), więc komunikat musi zostać ogólny.
+  VALIDATION_FAILED_EXCEPTION: {
+    title: 'Niepoprawne dane w formularzu',
+    message: 'Jedno z wypełnionych pól ma niepoprawny format. Sprawdź wpisane dane i spróbuj ponownie.',
+    actionable: true,
+  },
   NETWORK_ERROR: {
     title: 'Brak połączenia',
     message: 'Problem z połączeniem. Sprawdź internet i spróbuj ponownie.',

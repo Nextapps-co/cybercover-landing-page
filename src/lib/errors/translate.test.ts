@@ -82,3 +82,17 @@ describe('kody kreatora Wolters Kluwer', () => {
     }
   });
 });
+
+describe('VALIDATION_FAILED_EXCEPTION — 400 bez kodu, wszędzie (docs/marketing-site-wk-integration.md §5)', () => {
+  it('tłumaczy się na konkretny komunikat do poprawy przez użytkownika, nie na fallback UNKNOWN', () => {
+    // `title.length > 0` niczego by tu nie dowodziło — TRANSLATIONS.UNKNOWN (fallback dla
+    // nierozpoznanego kodu) też ma niepuste title/message. Dowodem własnego wpisu jest
+    // dokładna treść, różna od fallbacku ('Nieznany błąd' / 'Wystąpił nieznany błąd...').
+    // Zweryfikowane empirycznie: po zakomentowaniu wpisu VALIDATION_FAILED_EXCEPTION w
+    // TRANSLATIONS ten test czerwienieje (patrz validation-code-report.md).
+    const t = translateApiError(new ApiError('VALIDATION_FAILED_EXCEPTION', 400, null));
+    expect(t.title).toBe('Niepoprawne dane w formularzu');
+    expect(t.message).toBe('Jedno z wypełnionych pól ma niepoprawny format. Sprawdź wpisane dane i spróbuj ponownie.');
+    expect(t.actionable).toBe(true);
+  });
+});

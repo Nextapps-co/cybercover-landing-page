@@ -36,7 +36,12 @@ export type BackendApiErrorCode =
   | 'WK_CONFIG_NOT_IN_PROGRESS'
   // Unikalność NIP-u — dotyczy też płatnego lejka, gdzie do tej pory degradowało się
   // do INTERNAL_ERROR („Błąd serwera") zamiast błędu przy polu.
-  | 'COMPANY_NIP_ALREADY_REGISTERED';
+  | 'COMPANY_NIP_ALREADY_REGISTERED'
+  // Ciało żądania nie przeszło walidacji kształtu (class-validator) — generyczny 400,
+  // który występuje wszędzie, nie tylko w kreatorze WK. Bez wpisu tutaj degradował się
+  // do INTERNAL_ERROR, czyli winiliśmy siebie za błąd w danych użytkownika. Patrz
+  // docs/marketing-site-wk-integration.md §5 i §3.5 (pomiar z 2026-09-16).
+  | 'VALIDATION_FAILED_EXCEPTION';
 
 export type FrontendApiErrorCode = 'NETWORK_ERROR' | 'INTERNAL_ERROR' | 'UNKNOWN';
 
