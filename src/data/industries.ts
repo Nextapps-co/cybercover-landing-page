@@ -23,3 +23,15 @@ export const INDUSTRIES: IndustryOption[] = [
   { value: 'NON_PROFIT', label: 'Organizacje non-profit' },
   { value: 'OTHER', label: 'Inne' },
 ];
+
+// Wspólne dla trzech lejków (checkout, dostawca, WK) — PATCH /orders/:id/company-data
+// wysyła polską etykietę, nie surowy kod ze selecta, więc każdy formularz musi
+// konwertować w obie strony. Było po jednej kopii w każdym komponencie; scalone tu,
+// żeby trzecia rozbieżna kopia (WK) nie odrodziła się przy najbliższej zmianie.
+export function industryLabelFromValue(value: string): string {
+  return INDUSTRIES.find(i => i.value === value)?.label ?? '';
+}
+
+export function industryValueFromLabel(label: string): string {
+  return INDUSTRIES.find(i => i.label === label)?.value ?? '';
+}

@@ -55,3 +55,44 @@ describe('translateApiError — auth-aware codes', () => {
     expect(t.actionable).toBe(actionable);
   });
 });
+
+describe('kody kreatora Wolters Kluwer', () => {
+  it('zajęty NIP jest błędem do poprawienia przez użytkownika, nie awarią serwera', () => {
+    const t = translateApiError(new ApiError('COMPANY_NIP_ALREADY_REGISTERED', 409, null));
+    expect(t.actionable).toBe(true);
+    expect(t.message).not.toMatch(/po naszej stronie/i);
+  });
+
+  it('tłumaczy wszystkie cztery kody WK_CONFIG_* na konkretne komunikaty, nie na fallback UNKNOWN', () => {
+    // `length > 0` niczego by tu nie dowodziło — TRANSLATIONS.UNKNOWN (fallback dla nierozpoznanego
+    // kodu) też ma niepuste title/message. Dowodem, że kod ma WŁASNY wpis, jest dokładny tytuł:
+    // różni się od tytułu fallbacku ('Nieznany błąd') tylko wtedy, gdy wpis faktycznie istnieje
+    // w TRANSLATIONS. Zweryfikowane empirycznie: po chwilowym zakomentowaniu dowolnego z czterech
+    // wpisów w translate.ts ten test czerwienieje (patrz task-1-2-report.md, runda poprawek 1).
+    const cases = [
+      ['WK_CONFIG_PERSONAL_DATA_NOT_SUBMITTED', 'Wróćmy na chwilę do Twoich danych'],
+      ['WK_CONFIG_PERSONAL_DATA_MISMATCH', 'Te dane wypełnił ktoś inny'],
+      ['WK_CONFIG_CHECKOUT_INCOMPLETE', 'Został jeszcze jeden krok'],
+      ['WK_CONFIG_NOT_IN_PROGRESS', 'Konfiguracja jest już zakończona'],
+    ] as const;
+    for (const [code, expectedTitle] of cases) {
+      const t = translateApiError(new ApiError(code, 409, null));
+      expect(t.title).toBe(expectedTitle);
+      expect(t.actionable).toBe(true);
+    }
+  });
+});
+
+describe('VALIDATION_FAILED_EXCEPTION — 400 bez kodu, wszędzie (docs/marketing-site-wk-integration.md §5)', () => {
+  it('tłumaczy się na konkretny komunikat do poprawy przez użytkownika, nie na fallback UNKNOWN', () => {
+    // `title.length > 0` niczego by tu nie dowodziło — TRANSLATIONS.UNKNOWN (fallback dla
+    // nierozpoznanego kodu) też ma niepuste title/message. Dowodem własnego wpisu jest
+    // dokładna treść, różna od fallbacku ('Nieznany błąd' / 'Wystąpił nieznany błąd...').
+    // Zweryfikowane empirycznie: po zakomentowaniu wpisu VALIDATION_FAILED_EXCEPTION w
+    // TRANSLATIONS ten test czerwienieje (patrz validation-code-report.md).
+    const t = translateApiError(new ApiError('VALIDATION_FAILED_EXCEPTION', 400, null));
+    expect(t.title).toBe('Niepoprawne dane w formularzu');
+    expect(t.message).toBe('Jedno z wypełnionych pól ma niepoprawny format. Sprawdź wpisane dane i spróbuj ponownie.');
+    expect(t.actionable).toBe(true);
+  });
+});

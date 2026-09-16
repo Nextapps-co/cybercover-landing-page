@@ -18,21 +18,13 @@ import { SUPPLIER_STEP_PATHS } from '../../lib/state/supplier-navigation';
 import { noticeVariantForError } from '../../lib/supplier/guards';
 import { validateCompanyData, type CompanyDataFormValues } from '../../lib/validation/company-data';
 import { normalizeNip } from '../../lib/validation/nip';
-import { INDUSTRIES } from '../../data/industries';
+import { INDUSTRIES, industryLabelFromValue, industryValueFromLabel } from '../../data/industries';
 import type { CompanyLookupDataDto } from '../../lib/api/types/order';
 import type { SupplierNoticeVariant } from '../../lib/supplier/types';
 
 const INITIAL_VALUES: CompanyDataFormValues = {
   nip: '', name: '', street: '', city: '', postalCode: '', industry: '',
 };
-
-function industryLabelFromValue(value: string): string {
-  return INDUSTRIES.find(i => i.value === value)?.label ?? '';
-}
-
-function industryValueFromLabel(label: string): string {
-  return INDUSTRIES.find(i => i.label === label)?.value ?? '';
-}
 
 export function SupplierCompanyDataStep() {
   const stepState = useSupplierStep(1);

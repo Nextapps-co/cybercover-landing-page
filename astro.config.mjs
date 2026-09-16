@@ -31,7 +31,8 @@ export default defineConfig({
         !page.includes('/checkout/') &&
         !page.includes('/dostep') &&
         !page.includes('/monitoring-invitation') &&
-        !page.includes('/supplier-registration/'),
+        !page.includes('/supplier-registration/') &&
+        !page.includes('/wk/'),
     }),
     react(),
   ],

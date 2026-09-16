@@ -18,10 +18,15 @@ interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' |
   locked?: boolean;
   /** Zdanie wyjaśniające, dlaczego pole jest zablokowane. */
   lockedHint?: string;
+  /**
+   * Lejek anonimowy (np. kreator konfiguracji WK) — wyszukiwanie NIP-u nie ma wysyłać
+   * tokenu portalu. Domyślnie nieustawione: płatny lejek i lejek dostawcy działają jak dotąd.
+   */
+  anonymous?: boolean;
 }
 
 export const NipLookupField = forwardRef<HTMLInputElement, Props>(function NipLookupField(
-  { currentValue, onLookupSuccess, error, locked, lockedHint, ...inputProps },
+  { currentValue, onLookupSuccess, error, locked, lockedHint, anonymous, ...inputProps },
   ref,
 ) {
   const [lookupLoading, setLookupLoading] = useState(false);
@@ -34,7 +39,7 @@ export const NipLookupField = forwardRef<HTMLInputElement, Props>(function NipLo
     setLookupError(null);
     setLookupLoading(true);
     try {
-      const response = await lookupCompany(normalized);
+      const response = await lookupCompany(normalized, { anonymous });
       if (response.found && response.company) {
         onLookupSuccess(response.company);
       } else {

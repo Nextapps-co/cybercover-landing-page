@@ -580,3 +580,66 @@ describe('orders client', () => {
     });
   });
 });
+
+describe('anonymous na trasach wspoldzielonych z lejkiem WK', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+    import.meta.env.PUBLIC_API_BASE_URL = 'http://localhost:3000/api';
+    import.meta.env.PUBLIC_USE_MOCK_ORDERS = 'false';
+    sessionStorage.clear();
+  });
+
+  function jsonResponse(body: unknown, status = 200): Response {
+    return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
+  }
+
+  // Klucz musi być DOKŁADNIE ten, którego używa src/lib/auth/session.ts (`ACCESS_KEY`).
+  // Literówka sprawiłaby, że token w ogóle by się nie zapisał, test przeszedłby
+  // z niewłaściwego powodu i nie chroniłby niczego.
+  const ACCESS_KEY = 'cybercover:auth-access';
+
+  // Uzupełnienie spoza briefu (patrz task-1-2-report.md „Rozstrzygnięcie"): NipLookupField.tsx
+  // (Task 2, dopisek) przekazuje teraz swój prop `anonymous` do lookupCompany. Na tym poziomie
+  // (plik .ts, bez JSX) możemy sprawdzić tylko, że sama OPCJA jest nośna — te dwa testy razem to
+  // dowodzą: z { anonymous: true } token znika, bez opcji (dokładnie tak jak dziś woła płatny
+  // lejek i lejek dostawcy) dalej leci. Czego to NIE dowodzi: że NipLookupField.tsx faktycznie
+  // przekazuje swój prop dalej — to wymagałoby wyrenderowania komponentu. React Testing Library
+  // JEST w repo (@testing-library/react, @testing-library/jest-dom — patrz vitest.setup.ts), ale
+  // brakuje @vitejs/plugin-react, i to celowo: komentarz w vitest.config.ts ostrzega, że jego
+  // instalacja wymusza vite 8 i psuje kompatybilność z @tailwindcss/vite. Okablowanie samego
+  // komponentu zostaje więc poza zasięgiem testów jednostkowych w tym repo — pokryje je
+  // weryfikacja ręczna w zadaniu, które faktycznie użyje tego propa (T9 wg planu).
+  it('lookupCompany z anonymous nie wysyla Authorization mimo tokenu w sesji', async () => {
+    sessionStorage.setItem(ACCESS_KEY, 'jwt-resztka');
+    (globalThis.fetch as any).mockResolvedValue(jsonResponse({ found: false }));
+    await lookupCompany('5241937685', { anonymous: true });
+    const [, init] = (globalThis.fetch as any).mock.calls[0];
+    expect(init.headers).not.toHaveProperty('Authorization');
+  });
+
+  it('bez anonymous token JEDNAK leci — czyli test wyzej naprawde czegos dowodzi', async () => {
+    sessionStorage.setItem(ACCESS_KEY, 'jwt-resztka');
+    (globalThis.fetch as any).mockResolvedValue(jsonResponse({ found: false }));
+    await lookupCompany('5241937685');
+    const [, init] = (globalThis.fetch as any).mock.calls[0];
+    expect(init.headers.Authorization).toBe('Bearer jwt-resztka');
+  });
+
+  it('getOperationalStandardsSchema przekazuje anonymous dalej', async () => {
+    sessionStorage.setItem(ACCESS_KEY, 'jwt-resztka');
+    (globalThis.fetch as any).mockResolvedValue(
+      jsonResponse({ orderId: 'o1', insurerName: '', questions: [], answerOptions: [] }),
+    );
+    await getOperationalStandardsSchema('o1', { anonymous: true });
+    const [, init] = (globalThis.fetch as any).mock.calls[0];
+    expect(init.headers).not.toHaveProperty('Authorization');
+  });
+
+  it('submitOperationalStandards przekazuje anonymous dalej', async () => {
+    sessionStorage.setItem(ACCESS_KEY, 'jwt-resztka');
+    (globalThis.fetch as any).mockResolvedValue(jsonResponse({ orderId: 'o1' }));
+    await submitOperationalStandards('o1', { answers: { HAS_FIREWALL: 'YES' } }, { anonymous: true });
+    const [, init] = (globalThis.fetch as any).mock.calls[0];
+    expect(init.headers).not.toHaveProperty('Authorization');
+  });
+});

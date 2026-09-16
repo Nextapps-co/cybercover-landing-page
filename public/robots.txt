@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /checkout/
 Disallow: /dostep
+Disallow: /wk/
 
 Sitemap: https://cybercover.pl/sitemap-index.xml

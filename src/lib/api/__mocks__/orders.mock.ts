@@ -828,3 +828,36 @@ export async function createStripeCheckoutSessionMock(
   const url = `/checkout/success?orderId=${encodeURIComponent(orderId)}&sessionId=${sessionId}&mock=true`;
   return { sessionId, url, paymentId: 'pay_mock_' + sessionId.slice(8) };
 }
+
+/**
+ * Zasiewa zamówienie dla lejka Wolters Kluwer — tam zamówienie tworzy bramka,
+ * nie `startOrderMock`, więc bez tego trasy współdzielone nie mają na czym pracować.
+ * Idempotentne: ponowne wywołanie dla tego samego id nic nie zmienia.
+ */
+export function seedWkOrderMock(orderId: string, opts: { hasOperationalStandards: boolean }): void {
+  if (ordersById.has(orderId)) return;
+  ordersById.set(orderId, {
+    orderId,
+    status: 'DRAFT',
+    billingCycle: 'ANNUAL',
+    paymentMethod: null,
+    checkoutProgress: {
+      hasCompanyData: false,
+      hasPersonalData: false,
+      // Krok standardów jest na pakiecie WK pominięty serwerowo — zamówienie rodzi się
+      // z zaliczonym krokiem. Wariant `os` odwraca to, żeby dało się zobaczyć ekran 3.
+      hasOperationalStandards: opts.hasOperationalStandards,
+      hasPaymentMethod: false,
+    },
+    companyData: null,
+    personalData: null,
+    lines: [],
+    totalPriceNet: 0,
+    currency: 'PLN',
+    discount: null,
+    proration: null,
+    paymentRequired: false,
+    eligibilityResult: null,
+    createdAt: new Date().toISOString(),
+  });
+}

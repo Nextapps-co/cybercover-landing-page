@@ -17,7 +17,7 @@ import { validateCompanyData, type CompanyDataFormValues } from '../../lib/valid
 import { companyChanged } from '../../lib/state/checkout-delta';
 import { normalizeNip } from '../../lib/validation/nip';
 import { isNoPaymentOrder } from '../../lib/state/checkout-recovery';
-import { INDUSTRIES } from '../../data/industries';
+import { INDUSTRIES, industryLabelFromValue, industryValueFromLabel } from '../../data/industries';
 import type { CompanyLookupDataDto, OrderResponseDto } from '../../lib/api/types/order';
 
 const INITIAL_VALUES: CompanyDataFormValues = {
@@ -27,14 +27,6 @@ const INITIAL_VALUES: CompanyDataFormValues = {
 function readOrderIdFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search);
   return params.get('orderId');
-}
-
-function industryLabelFromValue(value: string): string {
-  return INDUSTRIES.find(i => i.value === value)?.label ?? '';
-}
-
-function industryValueFromLabel(label: string): string {
-  return INDUSTRIES.find(i => i.label === label)?.value ?? '';
 }
 
 export function CompanyDataStep() {
@@ -177,6 +169,12 @@ export function CompanyDataStep() {
         navigateForward(`/checkout/personal-data?orderId=${encodeURIComponent(orderId)}`);
       }
     } catch (err) {
+      // Unikalność NIP-u to błąd pola, nie awaria — użytkownik ma poprawić wartość.
+      if (err instanceof ApiError && err.code === 'COMPANY_NIP_ALREADY_REGISTERED') {
+        setError('nip', { type: 'manual', message: 'Firma o tym numerze NIP ma już konto w CyberCover.' });
+        setSubmitting(false);
+        return;
+      }
       const t = translateApiError(err);
       if (err instanceof ApiError) {
         if (err.code === 'INVALID_NIP') {
