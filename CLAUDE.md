@@ -36,6 +36,7 @@ Czysty Astro multi-page — **brak React Routera w trakcie checkoutu**. Każda s
 - `src/pages/cennik.astro` — pricing grid (renderuje `<PricingCards client:load />`)
 - `src/pages/checkout/{company-data,personal-data,operational-standards,payment-method,confirm,bank-transfer,success,cancelled}.astro` — każda renderuje odpowiedni React step component
 - `src/pages/{regulamin,polityka-prywatnosci,polityka-plikow-cookies,obowiazek-informacyjny}.astro` — legal
+- `src/pages/monitoring-invitation.astro` + `src/pages/supplier-registration/{company-data,personal-data,confirm,success}.astro` — **wariant zaproszeniowy (grant)**, osobny lejek dla dostawcy zaproszonego do monitoringu NIS2
 
 ### React island per krok
 
@@ -86,6 +87,24 @@ Backend zwraca semantyczne `PlanCatalogEntryDto` (z `tier: 'entry' | 'mid' | 'hi
 ### Operational standards skip
 
 Plany bez `InsuranceCoverage` (np. Standard) auto-pomijają krok 3. Wykrycie: `GET /orders/:id/operational-standards-schema` zwraca `skipped: true`. Wartość cache'owana w `OrderSession.osSkipped` przez `resolveOsSkipped` / `persistOsSkipped`. `CheckoutProgressBar` renderuje 4 lub 3 kroki w zależności od flagi; nawigacja back/forward omija krok OS.
+
+## Wariant zaproszeniowy — rejestracja dostawcy (grant)
+
+Per `docs/checkout-process-integration.md` i `docs/superpowers/specs/2026-08-26-supplier-invitation-checkout-design.md`. **Drugi, osobny lejek** — nie tryb istniejącego wizarda.
+
+Dostawca dostaje mailem link → `/monitoring-invitation?token=` → `POST /supplier-onboarding/register` → trzy kroki pod `/supplier-registration/*` → ekran końcowy. Plan STANDARD nadany przez podmiot wiodący (0 zł), krok ubezpieczeniowy pominięty serwerowo, metoda płatności `GRANT` wysyłana w tle, bez Stripe'a i bez proformy.
+
+**Reguły, które łatwo złamać przy późniejszych zmianach:**
+
+- **`/monitoring-invitation` i `/supplier-registration/*` NIE są w `isGatedPath`** i mają nie być — dostawca przychodzi z produkcyjnego maila i nie zna hasła do bramki. Dopisanie ich zablokuje rejestracje.
+- **Strony tego lejka są prerenderowane** (brak `export const prerender = false`) — dzięki temu nie przechodzą przez middleware w ogóle.
+- **`orderId` nigdy nie trafia do URL-a** — kroki czytają go z `cybercover:supplier-session` w `localStorage`. Ten lejek **nie ma GTM** (`SupplierLayout.astro`), bo strona powitalna nosi w URL-u token zaproszenia.
+- **Tryb rozpoznaje `isGrant`** z `GET /checkout-state`, nigdy `paymentRequired`. `undefined` ≠ `false`.
+- **Rozgałęzienie po `outcome`** (`STARTED` / `RESUMED` / `ALREADY_REGISTERED`), nigdy po `wizardEntryStep`; punkt wejścia z `nextRequiredStep`.
+- **`fetchConsentDefinitions(orderId)` — zawsze z `orderId`** w tym lejku, inaczej zgody zaproszeniowe nie zostaną zapisane.
+- **Mocki nie obsługują tego wariantu** — `/monitoring-invitation` blokuje start przy `PUBLIC_USE_MOCK_ORDERS=true`.
+
+Logika (testowana): `src/lib/api/supplier-onboarding.ts`, `src/lib/state/supplier-session.ts`, `src/lib/state/supplier-navigation.ts`, `src/lib/supplier/{types,guards,registration}.ts`. UI (cienkie): `src/components/supplier/*`, `src/layouts/SupplierLayout.astro`.
 
 ## Styling
 

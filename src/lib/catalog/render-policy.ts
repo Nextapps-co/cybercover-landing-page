@@ -1,18 +1,25 @@
 // Model 3 — single source of truth for mapping backend's semantic
-// PlanCatalogEntryDto into the rich PricingCardProps consumed by the UI.
+// PlanCatalogEntryDto into the rich PricingCardProps consumed by the mini-card
+// on /cennik, and into the ComparisonGridProps consumed by the full
+// feature-comparison table below the cards.
 //
 // Backend owns: WHAT (which plans, semantic feature.* keys, prices, discounts)
-// Frontend owns: HOW (icons, highlight colors per tier, sentence templates,
-//                spacers for layout, plan name translation)
+// Frontend owns: HOW (icons, sentence templates, plan name translation,
+//                card-vs-grid layout)
 //
-// To add/modify what's shown on a card: edit the SECTIONS array below.
+// Section titles, row labels, which feature.* key backs which row, and value
+// formatters all live in `./comparison-content.ts` (`COMPARISON`) — the single
+// source of content for both projections in this file. To add/modify what's
+// shown on the card or in the grid: edit `COMPARISON`, not this file.
 // To add a new tier or feature key: extend the contract documented in
-// `docs/pricing-catalog-changes.md` and update SECTIONS to read it.
+// `docs/pricing-catalog-changes.md` and update `COMPARISON` to read it.
 
 import type { PlanCatalogEntryDto, FeatureMap, PlanTier, SubscriptionStatus, DiscountPreviewDto } from '../api/types/catalog';
 import type { BillingCycle, MoneyDto } from '../api/types/money';
-import type { PricingCardProps, PricingCardVariant, FeatureSection, FeatureItem } from '../../components/pricing/PricingCard';
+import type { PricingCardProps, PricingCardVariant, CardSectionProps } from '../../components/pricing/PricingCard';
 import { formatMinorUnits } from '../format/money';
+import { COMPARISON, resolveCell, isRowKnown, normalizeGroupingSpaces } from './comparison-content';
+import type { CellState, ComparisonSectionDef, SectionIconName } from './comparison-content';
 
 // Per spec §5.4.3 — auth context propagowany przez `planToCardProps` żeby zdecydować
 // czy karta jest klikalna ('available'), zablokowana jako aktualny plan ('current'),
@@ -66,14 +73,6 @@ function deriveVariant(
 
 // ── Tier-driven presentation policy ──────────────────────────────────
 
-// Per-tier emphasis color for "highlighted" feature items
-const TIER_HIGHLIGHT: Record<PlanTier, FeatureItem['highlight'] | null> = {
-  entry: null,
-  mid: 'blue',
-  high: 'yellow',
-  top: 'red',
-};
-
 // CTA button style per tier
 const TIER_CTA_STYLE: Record<PlanTier, NonNullable<PricingCardProps['ctaStyle']>> = {
   entry: 'outline',
@@ -81,6 +80,16 @@ const TIER_CTA_STYLE: Record<PlanTier, NonNullable<PricingCardProps['ctaStyle']>
   high: 'outline',
   top: 'outline',
 };
+
+/**
+ * `Record<PlanTier, …>` opisuje tiery, które znamy dziś — backend może dodać kolejny
+ * (np. 'ultra') bez deploya frontu i wtedy indeksowanie zwróci `undefined` mimo typu.
+ * Bez jawnego fallbacku duża karta i pasek siatki wzięłyby swoje różne defaulty
+ * i ten sam plan miałby dwa różne przyciski.
+ */
+function ctaStyleFor(plan: PlanCatalogEntryDto): NonNullable<PricingCardProps['ctaStyle']> {
+  return TIER_CTA_STYLE[plan.tier ?? 'entry'] ?? 'outline';
+}
 
 // Polish display name. Backend returns English (per pricing-catalog-changes § 4.6 Option B).
 // To add a new plan: just add its English name as a key here. Falls through to backend value if not mapped.
@@ -91,139 +100,7 @@ const PLAN_NAME_PL: Record<string, string> = {
   Expert: 'Ekspert',
 };
 
-// ── Section / item definitions (data-driven from feature.* keys) ────
-
-interface ItemDef {
-  // Show this item only when the predicate returns true for the plan's features
-  visibleWhen?: (f: FeatureMap) => boolean;
-  // Static text or a function that builds text from feature values
-  text: string | ((f: FeatureMap) => string);
-  // If true, this item gets the tier's highlight color (yellow/blue/red)
-  emphasize?: boolean;
-  // Render as a 20px vertical spacer (text and emphasize are ignored)
-  spacer?: boolean;
-  // Spacer/item is only shown for these tiers (used for vertical alignment of cards)
-  onlyIfTier?: PlanTier[];
-}
-
-interface SectionDef {
-  title: string;
-  icon: NonNullable<FeatureSection['icon']>;
-  items: ItemDef[];
-}
-
-const SECTIONS: SectionDef[] = [
-  {
-    title: 'Ocena bezpieczeństwa',
-    icon: 'shield',
-    items: [
-      { visibleWhen: f => f['feature.securityAssessment.legal'] === 'true', text: 'Prawo i organizacja' },
-      { visibleWhen: f => f['feature.securityAssessment.technical'] === 'true', text: 'Technologia i sprzęt' },
-      { visibleWhen: f => f['feature.securityAssessment.people'] === 'true', text: 'Ludzie i dostępy' },
-      { visibleWhen: f => f['feature.securityAssessment.report'] === 'detailed', text: 'Szczegółowe zalecenia i wytyczne' },
-      { visibleWhen: f => f['feature.securityAssessment.report'] === 'general', text: 'Raport ogólny' },
-      // Spacer just for entry tier so card heights line up with mid-tier (which has +1 line for "Ludzie i dostępy")
-      { spacer: true, onlyIfTier: ['entry'], text: '' },
-    ],
-  },
-  {
-    title: 'Monitoring zagrożeń',
-    icon: 'pulse',
-    items: [
-      { visibleWhen: f => f['feature.monitoring.email'] === 'true', text: 'Sprawdzanie adresów e-mail i danych osobistych' },
-      { visibleWhen: f => f['feature.monitoring.web'] === 'true', text: 'Monitoring strony www' },
-    ],
-  },
-  {
-    title: 'Konsultacje z ekspertami',
-    icon: 'chat',
-    items: [
-      {
-        visibleWhen: f => Boolean(f['feature.consultation.timesPerYear']),
-        text: f => {
-          const v = f['feature.consultation.timesPerYear'];
-          return v === 'unlimited' ? '**bez limitu**' : `**${v}x w roku**`;
-        },
-        emphasize: true,
-      },
-    ],
-  },
-  {
-    title: 'Natychmiastowa pomoc 24h',
-    icon: 'alert',
-    items: [
-      { visibleWhen: f => f['feature.incidentResponse'] === 'true', text: 'W razie incydentu lub ataku' },
-      { visibleWhen: f => f['feature.incidentResponse'] === 'true', text: 'Koordynacja działań' },
-      { visibleWhen: f => f['feature.incidentResponse'] === 'true', text: 'Obsługa prawna' },
-      { visibleWhen: f => f['feature.incidentResponse'] === 'true', text: 'Wsparcie PRowe' },
-    ],
-  },
-  {
-    title: 'Ubezpieczenie',
-    icon: 'insurance',
-    items: [
-      {
-        visibleWhen: f => Boolean(f['feature.insurance.coverageAmount']),
-        text: f => `do wysokości: **${formatPLNAmount(f['feature.insurance.coverageAmount'])} zł**`,
-        emphasize: true,
-      },
-      {
-        visibleWhen: f => f['feature.insurance.deductible'] !== undefined,
-        text: f => `udział własny: **${formatPLNAmount(f['feature.insurance.deductible'])} zł**`,
-        emphasize: true,
-      },
-      { visibleWhen: f => f['feature.insurance.includesThirdPartyClaims'] === 'true', text: 'Roszczenia stron trzecich' },
-      { visibleWhen: f => f['feature.insurance.includesAdminProceedings'] === 'true', text: 'Postępowania przed organami nadzoru' },
-      { visibleWhen: f => f['feature.insurance.includesGdprFines'] === 'true', text: 'Kary administracyjne RODO' },
-      { visibleWhen: f => f['feature.insurance.includesRansomCosts'] === 'true', text: 'Koszty okupu i wymuszeń' },
-      { visibleWhen: f => f['feature.insurance.includesLostProfit'] === 'true', text: 'Utracony zysk', emphasize: true },
-    ],
-  },
-  {
-    title: 'Szkolenia z cyberbezpieczeństwa',
-    icon: 'education',
-    items: [
-      {
-        visibleWhen: f => Boolean(f['feature.training.online.timesPerYear']),
-        text: f => `On-line ${f['feature.training.online.timesPerYear']}x w roku`,
-        emphasize: true,
-      },
-      // Tylko Ekspert (tier 'top') — front-only, nie sterowane feature.* z API
-      { onlyIfTier: ['top'], text: 'Dedykowane szkolenie dla VIP/Zarządów', emphasize: true },
-    ],
-  },
-  {
-    title: 'Wielodostęp',
-    icon: 'users',
-    items: [
-      // Nielimitowany wielodostęp (np. Ekspert) — sterowane flagą accountSwitching.
-      { visibleWhen: f => f['feature.multiUser.accountSwitching'] === 'true', text: 'Nielimitowane dodawanie wielu kont użytkowników do konta głównego' },
-      // Limitowany wielodostęp — fallback gdy brak nielimitowanego: pokaż konkretny limit z feature.multiUser.maxUsers.
-      {
-        visibleWhen: f => f['feature.multiUser.accountSwitching'] !== 'true' && Boolean(f['feature.multiUser.maxUsers']),
-        text: f => {
-          const n = Number(f['feature.multiUser.maxUsers']);
-          return `Maksymalnie ${f['feature.multiUser.maxUsers']} ${usersLabel(n)}`;
-        },
-      },
-    ],
-  },
-];
-
 // ── Helpers ──────────────────────────────────────────────────────────
-
-// Backend convention from pricing-catalog-changes § 4.1: insurance amounts are in
-// PLN integers (e.g. "1000000" = 1 000 000 zł), NOT grosze. Format with PL grouping.
-function formatPLNAmount(value: string | undefined): string {
-  if (!value) return '0';
-  const n = Number(value);
-  if (Number.isNaN(n)) return value;
-  return new Intl.NumberFormat('pl-PL', { useGrouping: true })
-    .format(n)
-    // Normalize NBSP (U+00A0) / narrow NBSP (U+202F) that Intl injects between groups
-    .replace(/ /g, ' ')
-    .replace(/ /g, ' ');
-}
 
 // Polish month plural for promotional duration ("3 miesiące", "1 miesiąc", "5 miesięcy")
 function monthsLabel(n: number): string {
@@ -232,47 +109,23 @@ function monthsLabel(n: number): string {
   return 'miesięcy';
 }
 
-// Polish plural for "użytkownik" ("1 użytkownik", "2 użytkowników", "5 użytkowników").
-// Genitive plural od 2 w górę pasuje do frazy "Maksymalnie X użytkowników".
-function usersLabel(n: number): string {
-  return n === 1 ? 'użytkownik' : 'użytkowników';
-}
-
 // Format a yearly total ("3 540 zł netto/rok") from a monthly rate in grosze
 function formatYearlyTotal(monthlyMinorUnits: number): string {
   const yearlyMajor = (monthlyMinorUnits * 12) / 100;
-  const formatted = new Intl.NumberFormat('pl-PL', { useGrouping: true })
-    .format(Math.round(yearlyMajor))
-    .replace(/ /g, ' ')
-    .replace(/ /g, ' ');
+  const formatted = normalizeGroupingSpaces(
+    new Intl.NumberFormat('pl-PL', { useGrouping: true }).format(Math.round(yearlyMajor)),
+  );
   return `${formatted} zł netto/rok`;
-}
-
-function buildSection(
-  def: SectionDef,
-  plan: PlanCatalogEntryDto,
-  tier: PlanTier,
-  highlight: FeatureItem['highlight'] | null,
-): FeatureSection {
-  const items: FeatureItem[] = def.items
-    .filter(item => {
-      if (item.spacer) return !item.onlyIfTier || item.onlyIfTier.includes(tier);
-      if (item.onlyIfTier && !item.onlyIfTier.includes(tier)) return false;
-      return item.visibleWhen ? item.visibleWhen(plan.features) : true;
-    })
-    .map<FeatureItem>(item => {
-      if (item.spacer) return { text: '', spacer: true };
-      const text = typeof item.text === 'function' ? item.text(plan.features) : item.text;
-      const out: FeatureItem = { text };
-      if (item.emphasize && highlight) out.highlight = highlight;
-      return out;
-    });
-
-  return { title: def.title, icon: def.icon, items };
 }
 
 interface PricingDisplayProps {
   price: string;
+  /**
+   * Ta sama kwota co `price`, ale w groszach. Konsument (`AnimatedPrice`) potrzebuje
+   * liczby do animacji — parsowanie sformatowanego stringa gubiło grosze
+   * (336,30 zł → 336), więc surową wartość podaje projekcja, nie komponent.
+   */
+  priceMinorUnits: number;
   yearlyPrice?: string;
   originalPrice?: string;
   originalYearlyPrice?: string;
@@ -361,6 +214,7 @@ function derivePricing(plan: PlanCatalogEntryDto, billingCycle: BillingCycle): P
   if (applies && afterDiscountMonthly && !discount?.promotionalDuration) {
     return {
       price: formatMinorUnits(afterDiscountMonthly.amount, afterDiscountMonthly.currency),
+      priceMinorUnits: afterDiscountMonthly.amount,
       yearlyPrice: formatYearlyTotal(afterDiscountMonthly.amount),
       originalPrice: formatMinorUnits(baseRate.amount, baseRate.currency),
       originalYearlyPrice: formatYearlyTotal(baseRate.amount),
@@ -373,6 +227,7 @@ function derivePricing(plan: PlanCatalogEntryDto, billingCycle: BillingCycle): P
     const months = discount.promotionalDuration.months;
     return {
       price: formatMinorUnits(afterDiscountMonthly.amount, afterDiscountMonthly.currency),
+      priceMinorUnits: afterDiscountMonthly.amount,
       promoHeader: formatMinorUnits(baseRate.amount, baseRate.currency),
       promoSubtext: `przez ${months} ${monthsLabel(months)}`,
       hasDiscount: true,
@@ -388,48 +243,224 @@ function derivePricing(plan: PlanCatalogEntryDto, billingCycle: BillingCycle): P
     const savingsGrosze = (monthlyOriginal.amount - annualOriginal.amount) * 12;
     if (savingsGrosze > 0) {
       const savingsZL = Math.round(savingsGrosze / 100);
-      const formatted = new Intl.NumberFormat('pl-PL', { useGrouping: true })
-        .format(savingsZL)
-        .replace(/ /g, ' ')
-        .replace(/ /g, ' ');
+      const formatted = normalizeGroupingSpaces(
+        new Intl.NumberFormat('pl-PL', { useGrouping: true }).format(savingsZL),
+      );
       savingsBadge = `${formatted} zł`;
     }
   }
 
   return {
     price: formatMinorUnits(baseRate.amount, baseRate.currency),
+    priceMinorUnits: baseRate.amount,
     yearlyPrice: formatYearlyTotal(baseRate.amount),
     savingsBadge,
   };
 }
 
-// ── Public API ───────────────────────────────────────────────────────
+// ── Wspólna projekcja nagłówka planu ─────────────────────────────────
+// Karta i pasek siatki pokazują ten sam nagłówek (nazwa, CTA, wariant auth-aware).
+// Liczony raz — dwie kopie tych samych sześciu linii rozjeżdżały się przy pierwszej
+// zmianie zrobionej tylko w jednym miejscu.
 
-export function planToCardProps(
+interface PlanHeaderProps {
+  title: string; // PL
+  ctaText: string;
+  ctaStyle: NonNullable<PricingCardProps['ctaStyle']>;
+  variant: PricingCardVariant;
+  currentPlanBadge?: string;
+  unavailableReason?: string;
+}
+
+function planHeaderProps(
   plan: PlanCatalogEntryDto,
   billingCycle: BillingCycle,
   authContext?: AuthContext,
-): PricingCardProps {
-  const tier: PlanTier = plan.tier ?? 'entry';
-  const highlight = TIER_HIGHLIGHT[tier];
-
-  const features = SECTIONS
-    .map(s => buildSection(s, plan, tier, highlight))
-    .filter(s => s.items.length > 0);
-
-  const pricing = derivePricing(plan, billingCycle);
+): PlanHeaderProps {
   const { variant, currentPlanBadge, unavailableReason } = deriveVariant(plan, billingCycle, authContext);
-
   return {
     title: PLAN_NAME_PL[plan.planName] ?? plan.planName,
-    description: plan.description,
-    ctaText: plan.ctaLabel ?? plan.features.ctaLabel ?? 'Wybierz plan',
-    ctaStyle: TIER_CTA_STYLE[tier],
-    highlighted: plan.recommended,
-    features,
+    // `||`, nie `??` — katalog potrafi przysłać `ctaLabel: ""` (pusty string nie jest
+    // nullish, więc `??` przepuściłby go dalej i przycisk wyrenderowałby się bez tekstu).
+    // Pusta etykieta jest dla klienta gorsza niż etykieta zastępcza.
+    ctaText: plan.ctaLabel || plan.features.ctaLabel || 'Wybierz plan',
+    ctaStyle: ctaStyleFor(plan),
     variant,
     currentPlanBadge,
     unavailableReason,
+  };
+}
+
+// ── Card projection (mini-karta na /cennik) ────────────────────────────
+
+/**
+ * Karta to zajawka, nie kopia siatki: wymienia nagłówki sekcji, a pod spodem
+ * tylko te wartości, którymi pakiet się różni. Reszta jest w siatce niżej.
+ *
+ * Puste podlinie dobijają sekcję do długości najbogatszego pakietu, żeby
+ * nagłówki sekcji stały w jednej linii we wszystkich czterech kartach.
+ */
+function buildCardSections(plan: PlanCatalogEntryDto, allPlans: PlanCatalogEntryDto[]): CardSectionProps[] {
+  const allFeatures = allPlans.map(p => p.features);
+
+  const subLinesFor = (def: ComparisonSectionDef, features: FeatureMap): string[] =>
+    def.rows
+      .filter(r => r.cardSummary && isRowKnown(r, allFeatures))
+      .map(r => {
+        const cell = resolveCell(r, features);
+        return cell.kind === 'present' && cell.display !== true
+          ? r.cardSummary!(String(cell.display))
+          : null;
+      })
+      .filter((x): x is string => x !== null);
+
+  const maxLines = COMPARISON.map(def =>
+    Math.max(...allFeatures.map(f => subLinesFor(def, f).length), 0));
+
+  return COMPARISON
+    .map((def, i): CardSectionProps | null => {
+      const visible = def.rows.filter(r => isRowKnown(r, allFeatures));
+      if (visible.length === 0) return null;
+      const lines = subLinesFor(def, plan.features);
+      return {
+        title: def.title,
+        icon: def.icon,
+        subtitle: def.subtitle,
+        badge: def.badge,
+        included: visible.some(r => resolveCell(r, plan.features).kind === 'present'),
+        // '' renderuje się jako pusta linia wyrównująca (aria-hidden)
+        subLines: [...lines, ...Array(Math.max(maxLines[i] - lines.length, 0)).fill('')],
+      };
+    })
+    .filter((s): s is CardSectionProps => s !== null);
+}
+
+// ── Public API ───────────────────────────────────────────────────────
+
+/**
+ * To, co karta dostaje z projekcji: `PricingCardProps` plus `priceMinorUnits`.
+ * Pole jest tu wymagane (projekcja zawsze je liczy) i zadeklarowane obok, żeby kontrakt
+ * obowiązywał niezależnie od tego, czy komponent zdążył już dopisać je do swoich propsów.
+ */
+export type PricingCardData = PricingCardProps & { priceMinorUnits: number };
+
+/**
+ * `allPlans` to cały katalog, nie ten jeden plan — i dlatego jest WYMAGANY, bez wartości
+ * domyślnej. Reguła widoczności („klucza nie ma u nikogo → wiersz znika; jest u kogoś,
+ * brak u tego planu → wyszarzenie") da się policzyć tylko znając wszystkie plany.
+ * Domyślka `[plan]` po cichu zamieniała wyszarzenie w zniknięcie i zerowała dobijanie
+ * pustymi podliniami, więc nagłówki sekcji rozjeżdżały się między kartami — a ani typ,
+ * ani test tego nie łapał. Katalog jednoplanowy nadal wolno podać, ale trzeba go napisać.
+ *
+ * `authContext` stoi przed nim i jest opcjonalny semantycznie (tryb anonimowy → `undefined`),
+ * ale pozycyjnie musi być podany — TS nie pozwala na wymagany parametr po opcjonalnym.
+ */
+export function planToCardProps(
+  plan: PlanCatalogEntryDto,
+  billingCycle: BillingCycle,
+  authContext: AuthContext | undefined,
+  allPlans: PlanCatalogEntryDto[],
+): PricingCardData {
+  const features = buildCardSections(plan, allPlans);
+
+  const pricing = derivePricing(plan, billingCycle);
+
+  return {
+    ...planHeaderProps(plan, billingCycle, authContext),
+    description: plan.description,
+    highlighted: plan.recommended,
+    features,
     ...pricing,
+  };
+}
+
+// ── Grid projection (pełna siatka porównania) ──────────────────────────
+
+export interface ComparisonRowProps {
+  label: string;
+  explanation?: string;
+  subItem?: boolean;
+  emphasize?: boolean;
+  cells: CellState[]; // w kolejności planów
+}
+
+export interface ComparisonSectionProps {
+  title: string;
+  subtitle?: string;
+  icon: SectionIconName;
+  badge?: string;
+  footnote?: string;
+  rows: ComparisonRowProps[];
+}
+
+export interface ComparisonPlanProps {
+  code: string;
+  title: string; // PL
+  recommended: boolean;
+  reason: string; // plan.description → „Dlaczego ten pakiet?"
+  ctaText: string;
+  ctaStyle: PricingCardProps['ctaStyle'];
+  variant: PricingCardVariant;
+  /** Rozpakowane `derivePricing` — mini-karta pokazuje cenę tak samo jak duża. */
+  price: string;
+  /** `price` w groszach — dla animacji ceny, bez parsowania sformatowanego tekstu. */
+  priceMinorUnits: number;
+  originalPrice?: string;
+  hasDiscount?: boolean;
+  /** Cena sprzed promocji okresowej (np. „354 zł") — mini-karta pokazuje ją przekreśloną. */
+  promoHeader?: string;
+  /** Czas trwania promocji (np. „przez 3 miesiące") — bez tego „0 zł" myli co do ceny. */
+  promoSubtext?: string;
+  currentPlanBadge?: string;
+  unavailableReason?: string;
+}
+
+export interface ComparisonGridProps {
+  plans: ComparisonPlanProps[];
+  sections: ComparisonSectionProps[];
+}
+
+export function buildComparisonGrid(
+  plans: PlanCatalogEntryDto[],
+  billingCycle: BillingCycle,
+  authContext?: AuthContext,
+): ComparisonGridProps {
+  const allFeatures = plans.map(p => p.features);
+
+  const sections = COMPARISON.map(def => ({
+    title: def.title,
+    subtitle: def.subtitle,
+    icon: def.icon,
+    badge: def.badge,
+    footnote: def.footnote,
+    rows: def.rows
+      // Reguła widoczności: katalog nie zna wiersza → nie pokazujemy go nikomu.
+      .filter(row => isRowKnown(row, allFeatures))
+      .map(row => ({
+        label: row.label,
+        explanation: row.explanation,
+        subItem: row.subItem,
+        emphasize: row.emphasize,
+        cells: plans.map(p => resolveCell(row, p.features)),
+      })),
+  })).filter(s => s.rows.length > 0);
+
+  return {
+    plans: plans.map(plan => {
+      const pricing = derivePricing(plan, billingCycle);
+      return {
+        ...planHeaderProps(plan, billingCycle, authContext),
+        code: plan.code,
+        recommended: plan.recommended,
+        reason: plan.description,
+        price: pricing.price,
+        priceMinorUnits: pricing.priceMinorUnits,
+        originalPrice: pricing.originalPrice,
+        hasDiscount: pricing.hasDiscount,
+        promoHeader: pricing.promoHeader,
+        promoSubtext: pricing.promoSubtext,
+      };
+    }),
+    sections,
   };
 }

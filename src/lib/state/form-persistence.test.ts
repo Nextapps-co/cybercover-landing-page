@@ -53,3 +53,13 @@ describe('form-persistence', () => {
     expect(getFormState('payment-method')).toBeNull();
   });
 });
+
+describe('klucze szkicow lejka WK', () => {
+  it('clearFormState bez argumentu czysci takze klucze WK', () => {
+    saveFormState('wk-personal-data', { email: 'a@b.pl' });
+    saveFormState('wk-operational-standards', { HAS_FIREWALL: 'YES' });
+    clearFormState();
+    expect(getFormState('wk-personal-data')).toBeNull();
+    expect(getFormState('wk-operational-standards')).toBeNull();
+  });
+});

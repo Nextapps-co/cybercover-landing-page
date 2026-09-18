@@ -1,0 +1,53 @@
+---
+import '../styles/global.css'
+import CheckoutHeader from '../components/CheckoutHeader.astro'
+
+interface Props {
+  title: string
+  description?: string
+}
+
+const { title, description = 'Konfiguracja firmy w CyberCover.' } = Astro.props
+---
+
+<!DOCTYPE html>
+<html lang="pl-PL">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="robots" content="noindex, nofollow" />
+  <!--
+    Adres tej strony niesie `orderId` — poświadczenie na okaziciela. Kto je zna,
+    może nadpisać dane firmy i domknąć konfigurację. `no-referrer` zamyka wyciek
+    przez nagłówek Referer do zasobów zewnętrznych.
+  -->
+  <meta name="referrer" content="no-referrer" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" />
+
+  <title>{title}</title>
+  <meta name="description" content={description} />
+
+  <link rel="icon" href="/img/cropped-favicon-4-32x32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/img/cropped-favicon-4-32x32.png" />
+
+  <!--
+    ŚWIADOMIE bez GTM, bez Consent Mode i bez bannera cookies: analityka, piksele
+    i menedżery tagów zbierają pełne adresy, a w tym leży `orderId`.
+    Bez skryptów trzecich stron i bez cookies analitycznych banner zgód jest zbędny.
+
+    ŚWIADOMIE bez <ClientRouter />: ten lejek ma JEDNĄ trasę, ekrany przełączają się
+    wewnątrz komponentu. Nie ma między czym robić przejść.
+  -->
+</head>
+
+<body class="font-['Plus_Jakarta_Sans',sans-serif] text-brand-text bg-white antialiased">
+  <CheckoutHeader showBackButton={false} logoHref="/" logoLabel="CyberCover" />
+  <main class="min-h-screen pt-[100px]">
+    <slot />
+  </main>
+</body>
+</html>

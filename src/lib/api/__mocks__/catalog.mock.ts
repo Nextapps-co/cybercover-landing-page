@@ -16,6 +16,13 @@ import { getMockAuthContext } from '../../auth/mock-auth';
 //
 // Per spec §5.9.1 — gdy mock auth context istnieje (sessionStorage[cybercover:mock-auth-context]),
 // mock injectuje auth-aware fields: `relativeToCurrent` per plan, `currentPlanCode`, `subscriptionStatus`.
+//
+// Mapy `features` niosą komplet 41 kluczy czytanych przez `lib/catalog/comparison-content.ts`,
+// żeby `PUBLIC_USE_MOCK_CATALOG=true` pokazywał ten sam cennik co produkcja, a nie jego wycinek.
+// Kontrakt i przypisanie wartości per plan: `docs/pricing-catalog-v6-required-keys.md`
+// (wartości pochodzą z propozycji klienta — `docs/pricelist32-main/dane.js`, `porownanieV4`).
+// Konwencja: 'true' = ptaszek, brak klucza = brak w pakiecie, listy po '|',
+// kwoty ubezpieczenia w pełnych złotówkach.
 
 const MOCK_PLANS: PlanCatalogEntryDto[] = [
   {
@@ -31,12 +38,46 @@ const MOCK_PLANS: PlanCatalogEntryDto[] = [
     annualPrice: { amount: 29500, currency: 'PLN' },
     monthlyPrice: { amount: 35400, currency: 'PLN' },
     features: {
+      // Wskaźnik cyberbezpieczeństwa
       'feature.securityAssessment.legal': 'true',
       'feature.securityAssessment.technical': 'true',
+      'feature.securityAssessment.people': 'true',
+      'feature.securityAssessment.quarterlyScore': 'true',
       'feature.securityAssessment.report': 'general',
+      'feature.securityAssessment.remediationGuidance': 'true',
+      'feature.securityAssessment.complianceEvidence': 'true',
+      'feature.securityAssessment.legalBasis': 'true',
+      // Monitoring osobisty
       'feature.monitoring.email': 'true',
+      'feature.monitoring.leak.whenWhere': 'true',
+      'feature.monitoring.leak.scale': 'true',
+      'feature.monitoring.leak.dataTypes': 'true',
+      // Monitoring strony
       'feature.monitoring.web': 'true',
-      'feature.multiUser.maxUsers': '5',
+      'feature.monitoring.web.performance': 'true',
+      'feature.monitoring.web.quality': 'true',
+      'feature.monitoring.web.domainExpiry': 'true',
+      'feature.monitoring.web.sslExpiry': 'true',
+      // E-learning (basicHygiene/certificate dopiero od Profesjonalnego)
+      'feature.elearning.selfService': 'true',
+      // Natychmiastowa pomoc 24h
+      'feature.incidentResponse.coordination': 'true',
+      'feature.incidentResponse.forensics': 'true',
+      'feature.incidentResponse.legal': 'true',
+      'feature.incidentResponse.pr': 'true',
+      'feature.incidentResponse.recovery': 'true',
+      'feature.incidentResponse.notification': 'true',
+      // Ubezpieczenie (kwoty w pełnych złotówkach, nie groszach — patrz § 4 kontraktu)
+      'feature.insurance.coverageAmount': '1000000',
+      'feature.insurance.deductible': '5000',
+      'feature.insurance.includesThirdPartyClaims': 'true',
+      'feature.insurance.includesAdminProceedings': 'true',
+      'feature.insurance.includesDataRestoration': 'true',
+      'feature.insurance.includesReputationProtection': 'true',
+      'feature.insurance.includesMultimediaLiability': 'true',
+      'feature.insurance.includesRansomCosts': 'true',
+      // Wielodostęp
+      'feature.multiUser.maxUsers': '10',
     },
     discount: null,
   },
@@ -53,20 +94,55 @@ const MOCK_PLANS: PlanCatalogEntryDto[] = [
     annualPrice: { amount: 49500, currency: 'PLN' },
     monthlyPrice: { amount: 59400, currency: 'PLN' },
     features: {
+      // Wskaźnik cyberbezpieczeństwa
       'feature.securityAssessment.legal': 'true',
       'feature.securityAssessment.technical': 'true',
       'feature.securityAssessment.people': 'true',
+      'feature.securityAssessment.quarterlyScore': 'true',
       'feature.securityAssessment.report': 'detailed',
+      'feature.securityAssessment.remediationGuidance': 'true',
+      'feature.securityAssessment.complianceEvidence': 'true',
+      'feature.securityAssessment.legalBasis': 'true',
+      // Monitoring osobisty
       'feature.monitoring.email': 'true',
+      'feature.monitoring.leak.whenWhere': 'true',
+      'feature.monitoring.leak.scale': 'true',
+      'feature.monitoring.leak.dataTypes': 'true',
+      // Monitoring strony
       'feature.monitoring.web': 'true',
+      'feature.monitoring.web.performance': 'true',
+      'feature.monitoring.web.quality': 'true',
+      'feature.monitoring.web.domainExpiry': 'true',
+      'feature.monitoring.web.sslExpiry': 'true',
+      // E-learning
+      'feature.elearning.selfService': 'true',
+      // Konsultacje (lista tematów rozdzielona pionową kreską)
       'feature.consultation.timesPerYear': '10',
-      'feature.incidentResponse': 'true',
-      'feature.insurance.coverageAmount': '1000000',
-      'feature.insurance.deductible': '5000',
+      'feature.consultation.topics':
+        'Prawo — zgodność i regulacje|IT — technika i infrastruktura|Ludzie — kultura bezpieczeństwa',
+      // Natychmiastowa pomoc 24h
+      'feature.incidentResponse.coordination': 'true',
+      'feature.incidentResponse.forensics': 'true',
+      'feature.incidentResponse.legal': 'true',
+      'feature.incidentResponse.pr': 'true',
+      'feature.incidentResponse.recovery': 'true',
+      'feature.incidentResponse.notification': 'true',
+      // Ubezpieczenie
+      'feature.insurance.coverageAmount': '2500000',
+      'feature.insurance.deductible': '0',
       'feature.insurance.includesThirdPartyClaims': 'true',
       'feature.insurance.includesAdminProceedings': 'true',
-      'feature.insurance.includesGdprFines': 'true',
+      'feature.insurance.includesDataRestoration': 'true',
+      'feature.insurance.includesReputationProtection': 'true',
+      'feature.insurance.includesMultimediaLiability': 'true',
       'feature.insurance.includesRansomCosts': 'true',
+      'feature.insurance.includesLostProfit': 'true',
+      // Wielodostęp
+      'feature.multiUser.maxUsers': '15',
+      // Klucze, których cennik v6 już nie czyta — zostają, bo API je dziś wysyła
+      // (noty migracyjne #1–#2 w docs/pricing-catalog-v6-required-keys.md).
+      'feature.incidentResponse': 'true',
+      'feature.insurance.includesGdprFines': 'true',
     },
     discount: null,
   },
@@ -83,22 +159,58 @@ const MOCK_PLANS: PlanCatalogEntryDto[] = [
     annualPrice: { amount: 89500, currency: 'PLN' },
     monthlyPrice: { amount: 107400, currency: 'PLN' },
     features: {
+      // Wskaźnik cyberbezpieczeństwa
       'feature.securityAssessment.legal': 'true',
       'feature.securityAssessment.technical': 'true',
       'feature.securityAssessment.people': 'true',
+      'feature.securityAssessment.quarterlyScore': 'true',
       'feature.securityAssessment.report': 'detailed',
+      'feature.securityAssessment.remediationGuidance': 'true',
+      'feature.securityAssessment.complianceEvidence': 'true',
+      'feature.securityAssessment.legalBasis': 'true',
+      // Monitoring osobisty
       'feature.monitoring.email': 'true',
+      'feature.monitoring.leak.whenWhere': 'true',
+      'feature.monitoring.leak.scale': 'true',
+      'feature.monitoring.leak.dataTypes': 'true',
+      // Monitoring strony
       'feature.monitoring.web': 'true',
-      'feature.consultation.timesPerYear': '20',
-      'feature.incidentResponse': 'true',
-      'feature.insurance.coverageAmount': '2500000',
+      'feature.monitoring.web.performance': 'true',
+      'feature.monitoring.web.quality': 'true',
+      'feature.monitoring.web.domainExpiry': 'true',
+      'feature.monitoring.web.sslExpiry': 'true',
+      // E-learning
+      'feature.elearning.selfService': 'true',
+      'feature.elearning.basicHygiene': 'true',
+      'feature.elearning.certificate': 'true',
+      // Konsultacje
+      'feature.consultation.timesPerYear': '15',
+      'feature.consultation.topics':
+        'Prawo — zgodność i regulacje|IT — technika i infrastruktura|Ludzie — kultura bezpieczeństwa',
+      // Dedykowane szkolenia
+      'feature.training.online.timesPerYear': '2',
+      // Natychmiastowa pomoc 24h
+      'feature.incidentResponse.coordination': 'true',
+      'feature.incidentResponse.forensics': 'true',
+      'feature.incidentResponse.legal': 'true',
+      'feature.incidentResponse.pr': 'true',
+      'feature.incidentResponse.recovery': 'true',
+      'feature.incidentResponse.notification': 'true',
+      // Ubezpieczenie
+      'feature.insurance.coverageAmount': '5000000',
       'feature.insurance.deductible': '0',
       'feature.insurance.includesThirdPartyClaims': 'true',
       'feature.insurance.includesAdminProceedings': 'true',
-      'feature.insurance.includesGdprFines': 'true',
+      'feature.insurance.includesDataRestoration': 'true',
+      'feature.insurance.includesReputationProtection': 'true',
+      'feature.insurance.includesMultimediaLiability': 'true',
       'feature.insurance.includesRansomCosts': 'true',
       'feature.insurance.includesLostProfit': 'true',
-      'feature.training.online.timesPerYear': '2',
+      // Wielodostęp
+      'feature.multiUser.maxUsers': '25',
+      // Nieczytane przez cennik v6 (noty migracyjne #1–#2)
+      'feature.incidentResponse': 'true',
+      'feature.insurance.includesGdprFines': 'true',
     },
     discount: null,
   },
@@ -115,22 +227,60 @@ const MOCK_PLANS: PlanCatalogEntryDto[] = [
     annualPrice: { amount: 159500, currency: 'PLN' },
     monthlyPrice: { amount: 191400, currency: 'PLN' },
     features: {
+      // Wskaźnik cyberbezpieczeństwa
       'feature.securityAssessment.legal': 'true',
       'feature.securityAssessment.technical': 'true',
       'feature.securityAssessment.people': 'true',
+      'feature.securityAssessment.quarterlyScore': 'true',
       'feature.securityAssessment.report': 'detailed',
+      'feature.securityAssessment.remediationGuidance': 'true',
+      'feature.securityAssessment.complianceEvidence': 'true',
+      'feature.securityAssessment.legalBasis': 'true',
+      // Monitoring osobisty
       'feature.monitoring.email': 'true',
+      'feature.monitoring.leak.whenWhere': 'true',
+      'feature.monitoring.leak.scale': 'true',
+      'feature.monitoring.leak.dataTypes': 'true',
+      // Monitoring strony
       'feature.monitoring.web': 'true',
-      'feature.consultation.timesPerYear': 'unlimited',
-      'feature.incidentResponse': 'true',
-      'feature.insurance.coverageAmount': '5000000',
+      'feature.monitoring.web.performance': 'true',
+      'feature.monitoring.web.quality': 'true',
+      'feature.monitoring.web.domainExpiry': 'true',
+      'feature.monitoring.web.sslExpiry': 'true',
+      // E-learning
+      'feature.elearning.selfService': 'true',
+      'feature.elearning.basicHygiene': 'true',
+      'feature.elearning.certificate': 'true',
+      // Konsultacje
+      'feature.consultation.timesPerYear': '25',
+      'feature.consultation.topics':
+        'Prawo — zgodność i regulacje|IT — technika i infrastruktura|Ludzie — kultura bezpieczeństwa',
+      // Dedykowane szkolenia
+      'feature.training.online.timesPerYear': '4',
+      'feature.training.executive.timesPerYear': '1',
+      'feature.training.attendanceDocument': 'true',
+      // Natychmiastowa pomoc 24h
+      'feature.incidentResponse.coordination': 'true',
+      'feature.incidentResponse.forensics': 'true',
+      'feature.incidentResponse.legal': 'true',
+      'feature.incidentResponse.pr': 'true',
+      'feature.incidentResponse.recovery': 'true',
+      'feature.incidentResponse.notification': 'true',
+      // Ubezpieczenie
+      'feature.insurance.coverageAmount': '10000000',
       'feature.insurance.deductible': '0',
       'feature.insurance.includesThirdPartyClaims': 'true',
       'feature.insurance.includesAdminProceedings': 'true',
-      'feature.insurance.includesGdprFines': 'true',
+      'feature.insurance.includesDataRestoration': 'true',
+      'feature.insurance.includesReputationProtection': 'true',
+      'feature.insurance.includesMultimediaLiability': 'true',
       'feature.insurance.includesRansomCosts': 'true',
       'feature.insurance.includesLostProfit': 'true',
-      'feature.training.online.timesPerYear': '2',
+      // Wielodostęp
+      'feature.multiUser.maxUsers': '50',
+      // Nieczytane przez cennik v6 (noty migracyjne #1–#3)
+      'feature.incidentResponse': 'true',
+      'feature.insurance.includesGdprFines': 'true',
       'feature.multiUser.accountSwitching': 'true',
       'feature.multiUser.partnerDataView': 'true',
     },

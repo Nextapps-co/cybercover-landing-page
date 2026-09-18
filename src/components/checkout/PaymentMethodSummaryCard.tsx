@@ -1,8 +1,8 @@
-import type { PaymentMethod } from '../../lib/api/types/order';
+import type { SelectablePaymentMethod } from '../../lib/api/types/order';
 import { PAYMENT_METHOD_META } from './payment-method-meta';
 
 interface Props {
-  method: PaymentMethod;
+  method: SelectablePaymentMethod;
 }
 
 /**

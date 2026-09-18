@@ -14,10 +14,19 @@ interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' |
   // react-hook-form register output forwards onChange/onBlur as ChangeEvent handlers
   onChange?: ChangeEventHandler<HTMLInputElement>;
   onBlur?: FocusEventHandler<HTMLInputElement>;
+  /** Wariant zaproszeniowy: NIP pochodzi z zaproszenia i nie wolno go zmienić (§5.1). */
+  locked?: boolean;
+  /** Zdanie wyjaśniające, dlaczego pole jest zablokowane. */
+  lockedHint?: string;
+  /**
+   * Lejek anonimowy (np. kreator konfiguracji WK) — wyszukiwanie NIP-u nie ma wysyłać
+   * tokenu portalu. Domyślnie nieustawione: płatny lejek i lejek dostawcy działają jak dotąd.
+   */
+  anonymous?: boolean;
 }
 
 export const NipLookupField = forwardRef<HTMLInputElement, Props>(function NipLookupField(
-  { currentValue, onLookupSuccess, error, ...inputProps },
+  { currentValue, onLookupSuccess, error, locked, lockedHint, anonymous, ...inputProps },
   ref,
 ) {
   const [lookupLoading, setLookupLoading] = useState(false);
@@ -30,7 +39,7 @@ export const NipLookupField = forwardRef<HTMLInputElement, Props>(function NipLo
     setLookupError(null);
     setLookupLoading(true);
     try {
-      const response = await lookupCompany(normalized);
+      const response = await lookupCompany(normalized, { anonymous });
       if (response.found && response.company) {
         onLookupSuccess(response.company);
       } else {
@@ -55,7 +64,9 @@ export const NipLookupField = forwardRef<HTMLInputElement, Props>(function NipLo
             ref={ref}
             type="text"
             placeholder="1234567890"
-            className={`flex-1 px-[16px] py-[12px] bg-white border-[1.2px] rounded-[8px] h-[48px] font-['Plus_Jakarta_Sans',sans-serif] text-[14px] text-[#0D0D0D] placeholder:text-[#A2A09C] focus:outline-none focus:ring-2 focus:ring-[#FED64B] ${error ? 'border-red-400' : 'border-[#E4E2DF]'}`}
+            readOnly={locked}
+            aria-readonly={locked || undefined}
+            className={`flex-1 px-[16px] py-[12px] border-[1.2px] rounded-[8px] h-[48px] font-['Plus_Jakarta_Sans',sans-serif] text-[14px] placeholder:text-[#A2A09C] focus:outline-none focus:ring-2 focus:ring-[#FED64B] ${locked ? 'bg-[#F8F7F4] text-[#6B6965] cursor-not-allowed' : 'bg-white text-[#0D0D0D]'} ${error ? 'border-red-400' : 'border-[#E4E2DF]'}`}
             {...inputProps}
           />
           <button
@@ -68,6 +79,7 @@ export const NipLookupField = forwardRef<HTMLInputElement, Props>(function NipLo
           </button>
         </div>
       </div>
+      {lockedHint && !error && <p className="text-xs text-[#6B6965]">{lockedHint}</p>}
       {error && <p className="text-red-500 text-xs">{error}</p>}
       {lookupError && (
         <p className="text-xs text-orange-700" role="alert">

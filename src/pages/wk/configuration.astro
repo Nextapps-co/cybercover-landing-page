@@ -1,0 +1,10 @@
+---
+// Prerenderowana ŚWIADOMIE — brak `export const prerender = false` oznacza, że
+// middleware (bramka dostępu) nie odpala się dla tej trasy w ogóle. Klient WK
+// przychodzi z przekierowania bramki API i nie zna hasła do /dostep.
+import WkLayout from '../../layouts/WkLayout.astro';
+import { WkConfigurationWizard } from '../../components/wk/WkConfigurationWizard';
+---
+<WkLayout title="Konfiguracja firmy — CyberCover">
+  <WkConfigurationWizard client:load />
+</WkLayout>

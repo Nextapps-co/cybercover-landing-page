@@ -118,6 +118,68 @@ const TRANSLATIONS: Record<ApiErrorCode, TranslatedError> = {
     message: 'Nie udało się wygenerować faktury proforma. Skontaktuj się z pomocą techniczną.',
     actionable: false,
   },
+  // Wariant zaproszeniowy (grant)
+  NOT_FOUND_EXCEPTION: {
+    title: 'Zaproszenie jest nieaktualne',
+    message: 'Ten link stracił ważność. Poproś firmę, która Cię zaprosiła, o wysłanie nowego zaproszenia.',
+    actionable: true,
+  },
+  STANDARD_PLAN_NOT_FOUND: {
+    title: 'Chwilowo nie możemy dokończyć rejestracji',
+    message: 'Po naszej stronie brakuje ustawień potrzebnych do rejestracji. Napisz na support@cybercover.pl — zajmiemy się tym.',
+    actionable: false,
+  },
+  SALES_ORDER_GRANT_NIP_MISMATCH: {
+    title: 'NIP nie zgadza się z zaproszeniem',
+    message: 'Podany NIP jest inny niż ten, na który wystawiono zaproszenie. Skontaktuj się z firmą, która Cię zaprosiła.',
+    actionable: true,
+  },
+  SALES_ORDER_GRANT_PAYMENT_METHOD_MISMATCH: {
+    title: 'Coś jest nie tak z tym zgłoszeniem',
+    message: 'Nie możemy dokończyć rejestracji w tym trybie. Napisz na support@cybercover.pl — sprawdzimy, co się stało.',
+    actionable: false,
+  },
+  DISCOUNT_NOT_APPLICABLE: {
+    title: 'Kod nie działa przy tym zamówieniu',
+    message: 'Do tego zamówienia nie można dodać kodu rabatowego.',
+    actionable: true,
+  },
+  // Kreator Wolters Kluwer — trzy pierwsze to stany przejściowe, przechwytywane przez
+  // wizard zanim trafią na ekran. Tłumaczenia są zabezpieczeniem na ścieżkę nieprzewidzianą.
+  WK_CONFIG_PERSONAL_DATA_NOT_SUBMITTED: {
+    title: 'Wróćmy na chwilę do Twoich danych',
+    message: 'Musimy jeszcze zapisać dane osoby, która będzie zarządzać kontem firmy.',
+    actionable: true,
+  },
+  WK_CONFIG_PERSONAL_DATA_MISMATCH: {
+    title: 'Te dane wypełnił ktoś inny',
+    message: 'Kto inny z Twojej firmy zaczął tę konfigurację. Uzupełnij krok danych osobowych swoimi danymi.',
+    actionable: true,
+  },
+  WK_CONFIG_CHECKOUT_INCOMPLETE: {
+    title: 'Został jeszcze jeden krok',
+    message: 'Nie wszystkie dane są uzupełnione. Przenosimy Cię do brakującego kroku.',
+    actionable: true,
+  },
+  WK_CONFIG_NOT_IN_PROGRESS: {
+    title: 'Konfiguracja jest już zakończona',
+    message: 'Tej konfiguracji nie da się już zmienić. Odśwież stronę, żeby zobaczyć aktualny stan.',
+    actionable: true,
+  },
+  COMPANY_NIP_ALREADY_REGISTERED: {
+    title: 'Ten NIP jest już zarejestrowany',
+    message: 'Firma o tym numerze NIP ma już konto w CyberCover. Sprawdź numer albo napisz na support@cybercover.pl.',
+    actionable: true,
+  },
+  // Generyczny 400 bez własnego kodu z backendu (ciało nie przeszło walidacji kształtu,
+  // np. dziewięć cyfr telefonu bez prefiksu kraju) — występuje w każdym z trzech lejków,
+  // nie tylko w kreatorze WK. Nie wskazujemy pola — metadata.errors[].property nie jest
+  // tu mapowane na formularz (osobne zadanie), więc komunikat musi zostać ogólny.
+  VALIDATION_FAILED_EXCEPTION: {
+    title: 'Niepoprawne dane w formularzu',
+    message: 'Jedno z wypełnionych pól ma niepoprawny format. Sprawdź wpisane dane i spróbuj ponownie.',
+    actionable: true,
+  },
   NETWORK_ERROR: {
     title: 'Brak połączenia',
     message: 'Problem z połączeniem. Sprawdź internet i spróbuj ponownie.',

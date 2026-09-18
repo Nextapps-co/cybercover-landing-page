@@ -21,7 +21,7 @@ import { ApiError } from '../../lib/api/types/errors';
 import { getDiscountCodeFromUrl, clearDiscountCode } from '../../lib/format/discount-code';
 import { paymentChanged, type PaymentDelta } from '../../lib/state/checkout-delta';
 import { isNoPaymentOrder } from '../../lib/state/checkout-recovery';
-import type { OrderResponseDto, PaymentMethod } from '../../lib/api/types/order';
+import type { OrderResponseDto, SelectablePaymentMethod } from '../../lib/api/types/order';
 
 function readOrderIdFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search);
@@ -46,7 +46,7 @@ export function PaymentMethodStep() {
   const [hydrationError, setHydrationError] = useState<string | null>(null);
   const [order, setOrder] = useState<OrderResponseDto | null>(null);
   const [osSkipped, setOsSkipped] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
+  const [paymentMethod, setPaymentMethod] = useState<SelectablePaymentMethod | ''>('');
   const [discountState, setDiscountState] = useState<DiscountState>({ status: 'idle' });
   const [storedDiscountCode, setStoredDiscountCode] = useState<string | null>(null);
   const [discountRemoving, setDiscountRemoving] = useState(false);
@@ -91,7 +91,9 @@ export function PaymentMethodStep() {
           // Ustaw metodę pod spodem (delta-aware) i przejdź na potwierdzenie.
           setAutoAdvancing(true);
           try {
-            if (o.paymentMethod !== 'STRIPE_CHECKOUT') {
+            // Grantowe zamówienie ma już metodę `GRANT` i backend odrzuci każdą inną —
+            // nie próbuj jej nadpisywać (patrz komentarz przy `isGrant` w types/order.ts).
+            if (o.paymentMethod !== 'STRIPE_CHECKOUT' && o.paymentMethod !== 'GRANT') {
               await selectPaymentMethod(id, { paymentMethod: 'STRIPE_CHECKOUT' });
             }
             if (cancelled) return;
@@ -105,8 +107,11 @@ export function PaymentMethodStep() {
         }
         setOrder(o);
         setOsSkipped(skipped);
-        const draft = getFormState<{ paymentMethod: PaymentMethod | '' }>('payment-method');
-        const resolvedMethod = o.paymentMethod ?? draft?.paymentMethod ?? '';
+        const draft = getFormState<{ paymentMethod: SelectablePaymentMethod | '' }>('payment-method');
+        // `o.paymentMethod` może być teraz 'GRANT' (zamówienie zaproszeniowe). Płatny krok
+        // nie potrafi go pokazać i nigdy nie powinien go zobaczyć — traktujemy jak brak wyboru.
+        const resolvedMethod: SelectablePaymentMethod | '' =
+          o.paymentMethod && o.paymentMethod !== 'GRANT' ? o.paymentMethod : (draft?.paymentMethod ?? '');
         // Rozliczenie miesięczne: dostępna tylko karta → auto-wybór (przelew ukryty w renderze).
         setPaymentMethod(o.billingCycle === 'MONTHLY' ? 'STRIPE_CHECKOUT' : resolvedMethod);
         baselineRef.current = { paymentMethod: o.paymentMethod ?? '', discountCode: o.discount?.code ?? null };
@@ -220,7 +225,7 @@ export function PaymentMethodStep() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const dto: { paymentMethod: PaymentMethod; discountCode?: string } = { paymentMethod };
+      const dto: { paymentMethod: SelectablePaymentMethod; discountCode?: string } = { paymentMethod };
       if (discountState.status === 'applied') dto.discountCode = discountState.code;
       // CC-353 — PATCH /payment-method nie zwraca już cen; rozbicie proracji bierze
       // ConfirmStep ze świeżego getOrder (order.proration). Brak snapshotu w sessionStorage.

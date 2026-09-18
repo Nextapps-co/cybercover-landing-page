@@ -1,11 +1,10 @@
 ---
-import { Image } from 'astro:assets'
 import BaseLayout from '../layouts/BaseLayout.astro'
 import Hero from '../components/Hero.astro'
 import Section from '../components/Section.astro'
 import ArrowButton from '../components/ArrowButton.astro'
 import CtaReady from '../components/CtaReady.astro'
-import nis2Img from '../assets/img/wymagania-nis2x2.jpg'
+import KontrolaJednostekBanner from '../components/KontrolaJednostekBanner.astro'
 
 const industries = [
   {
@@ -188,39 +187,8 @@ const reasons = [
     </ul>
   </Section>
 
-  <!-- ======== SEKCJA: NIS2 (full-bleed black) ======== -->
-  <Section bg="bg-black" padding="tight">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-      <div>
-        <Image
-          src={nis2Img}
-          alt="Wymagania NIS2 — schemat obowiązków"
-          width={720}
-          class="w-full block rounded-card"
-          loading="lazy"
-        />
-      </div>
-      <div class="text-white">
-        <p class="font-medium uppercase text-sm tracking-wide mb-6">
-          <span class="inline-flex items-center gap-2 bg-white text-black rounded-full px-4 py-1.5">
-            <img src="/img/mini-sygnet.svg" alt="" aria-hidden="true" class="w-4 h-auto" />
-            Dyrektywa
-          </span>
-        </p>
-        <h2 class="text-3xl lg:text-section-title font-semibold leading-tight mb-6">
-          Wymagania NIS2
-        </h2>
-        <p class="text-lg lg:text-xl font-medium leading-snug text-white/85 mb-6 max-w-[480px]">
-          Organizacje z branż IT, zdrowie, transport, administracja publiczna, bankowość, energetyka muszą spełniać surowe wymogi cyberbezpieczeństwa.
-        </p>
-        <ul class="list-disc ml-6 text-base lg:text-body-lg leading-relaxed text-white space-y-2 marker:text-white">
-          <li>Zarządzanie ryzykiem cybernetycznym</li>
-          <li>Zgłaszanie incydentów 24–72&nbsp;h</li>
-          <li>Kontrola bezpieczeństwa dostawców</li>
-        </ul>
-      </div>
-    </div>
-  </Section>
+  <!-- ======== SEKCJA: Kontrola jednostek organizacyjnych (dawniej „Wymagania NIS2") ======== -->
+  <KontrolaJednostekBanner />
 
   <!-- ======== SEKCJA: Role ======== -->
   <Section padding="tight">
