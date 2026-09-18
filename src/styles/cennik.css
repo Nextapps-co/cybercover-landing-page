@@ -1,0 +1,294 @@
+/* ==========================================================================
+   /cennik styles that Tailwind can't express readably: corner rounding on
+   the fused card block (depends on column count), a CSS-only tooltip,
+   position: sticky, and the :target scroll-in animation.
+   Ported from `docs/pricelist32-main/wersje/v6.js` (the `css:` field).
+
+   Class names (all `cc-` prefixed) are a CONTRACT shared by the /cennik
+   rebuild tasks - see `.superpowers/sdd/2026-09-17-cennik-v6-surf-layout/`.
+   Do not rename them without checking consumers (e.g. Tooltip.tsx already
+   uses `.cc-tooltip` / `.cc-tooltip-body`).
+   ========================================================================== */
+
+/* --- Black band (.cc-band) - v6.js ~40-48 -------------------------------
+   Sits behind the page content, reaching behind the header and the top
+   half of the cards, so the cards visually "emerge" from black onto the
+   page's light background. Needs `position: relative` on its parent
+   (add the Tailwind `relative` class wherever `.cc-band` is dropped in -
+   not handled here). */
+.cc-band {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 560px;
+  background: #0D0D0D;
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+}
+@media (max-width: 1023px) {
+  .cc-band { height: 420px; }
+}
+@media (max-width: 767px) {
+  .cc-band { height: 340px; border-radius: 0 0 28px 28px; }
+}
+
+/* --- Fused card block (.cc-cards / .cc-card) - v6.js ~88-116 -----------
+   Cards sit flush against each other with no gaps, so only the whole
+   block should look rounded - each edge card takes on the slice of that
+   rounding that lands on it, and which corners those are changes with
+   the column count per breakpoint (4 / 2 / 1).
+   No `overflow: hidden` on `.cc-cards` - that would clip a tooltip bubble
+   (`.cc-tooltip-body`) that overflows past the bottom edge of a card. */
+.cc-cards {
+  border-radius: 22px;
+}
+.cc-cards > .cc-card:first-child {
+  border-top-left-radius: 22px;
+  border-bottom-left-radius: 22px;
+}
+.cc-cards > .cc-card:last-child {
+  border-top-right-radius: 22px;
+  border-bottom-right-radius: 22px;
+}
+@media (max-width: 1099px) {
+  /* 2 columns: the four corners land on cards 1, 2, 3, 4 in turn -
+     top-left, top-right, bottom-left, bottom-right. */
+  .cc-cards > .cc-card:first-child { border-radius: 22px 0 0 0; }
+  .cc-cards > .cc-card:nth-child(2) { border-radius: 0 22px 0 0; }
+  .cc-cards > .cc-card:nth-child(3) { border-radius: 0 0 0 22px; }
+  .cc-cards > .cc-card:last-child { border-radius: 0 0 22px 0; }
+}
+@media (max-width: 639px) {
+  /* 1 column: only the first and last card round off, top and bottom. */
+  .cc-cards > .cc-card:first-child { border-radius: 22px 22px 0 0; }
+  .cc-cards > .cc-card:nth-child(2),
+  .cc-cards > .cc-card:nth-child(3) { border-radius: 0; }
+  .cc-cards > .cc-card:last-child { border-radius: 0 0 22px 22px; }
+}
+
+/* --- Tooltip bubble (.cc-tooltip / .cc-tooltip-body) - v6.js ~243-290 --
+   Plain CSS, no JS library - see `src/components/pricing/Tooltip.tsx`,
+   which supplies only the markup (`.cc-tooltip` on the trigger element,
+   `.cc-tooltip-body` as its last CHILD).
+   The bubble hangs off the CONTAINER (the whole `.cc-tooltip`), never off
+   the triggering word by itself - that way it can never spill outside its
+   card or grid column, and is never clipped by an ancestor's overflow.
+   Whatever wraps a `.cc-tooltip-body` needs its own `position: relative`
+   (a plain Tailwind `relative` utility is enough) - that's the consumer's
+   job, not handled here.
+   Opens DOWNWARD by default - `.cc-cell--absent` below is the one case
+   that flips it upward, because down would cover the next grid section. */
+/* Kontener dymka. W v6 to rola `.pozycja` / `.komorka` / `.sek-naglowek`: pokazuje
+   chmurke po najechaniu i NIE ma zadnej ramki. Podkreslenie kropkowane nalezy do
+   osobnej roli `.dymek`, ktora w mockupie doklejana jest wylacznie do pojedynczego
+   slowa (np. "incydent") - patrz `.cc-tooltip--word` nizej. Zlanie obu rol rysowalo
+   kreske pod kazda pozycja listy "W pakiecie:". */
+.cc-tooltip {
+  position: static;
+  cursor: help;
+  font-weight: inherit;
+  color: inherit;
+}
+
+/* Wyzwalacz inline na pojedynczym slowie - to jest `.dymek` z v6.js:246-250. */
+.cc-tooltip--word {
+  border-bottom: 1px dotted currentColor;
+}
+
+/* Optional modifier: force the "blocked" cursor for a trigger that represents an
+   absent/unavailable feature, instead of the default `help` above. Usage:
+   `<Tooltip className="cc-tooltip--blocked">` (same pattern as `.cc-tooltip--center`
+   below). MUST stay declared AFTER `.cc-tooltip`: this file is `@import`ed without
+   `layer()` from `global.css`, so nothing in `@layer utilities` (e.g. Tailwind's
+   `cursor-not-allowed`) can ever beat `.cc-tooltip`'s `cursor: help` when both land on
+   the same trigger element - only another equal-specificity, unlayered rule that comes
+   LATER in this same file wins that tie-break. Consumers: `PricingCard.tsx`
+   (`FeatureSectionRow`, the "not in this package" row) and `ComparisonCell.tsx` (the
+   "absent" grid cell). */
+.cc-tooltip--blocked {
+  cursor: not-allowed;
+}
+
+.cc-tooltip-body {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 40;
+  width: max-content;
+  max-width: min(300px, 100%);
+  margin-top: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #0D0D0D;
+  color: #fff;
+  font-size: 12.5px;
+  line-height: 17px;
+  font-weight: 400;
+  letter-spacing: 0;
+  white-space: normal;
+  text-align: left;
+  text-transform: none;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .22);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity .12s ease, transform .12s ease, visibility .12s;
+  pointer-events: none;
+}
+.cc-tooltip:hover > .cc-tooltip-body,
+.cc-tooltip:focus-visible > .cc-tooltip-body {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* A tooltip nested inside another tooltip's container (e.g. one word
+   inside a row that itself shows its own bubble on hover): hovering the
+   inner one hides the outer's own bubble so the two don't overlap. The
+   child combinator keeps this scoped to the outer's own bubble only - it
+   never touches the inner one's. */
+.cc-tooltip:has(> .cc-tooltip:hover) > .cc-tooltip-body,
+.cc-tooltip:has(> .cc-tooltip:focus-visible) > .cc-tooltip-body {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Optional modifier: center the bubble under its trigger instead of
+   left-aligning it, for triggers that are themselves centered (e.g. the
+   group label above the cards). Usage: `<Tooltip className="cc-tooltip--center">`. */
+.cc-tooltip--center > .cc-tooltip-body {
+  left: 50%;
+  transform: translate(-50%, -4px);
+}
+.cc-tooltip--center:hover > .cc-tooltip-body,
+.cc-tooltip--center:focus-visible > .cc-tooltip-body {
+  transform: translate(-50%, 0);
+}
+
+/* --- Scroll-to-compare entrance (.cc-grid + #porownaj:target) ----------
+   v6.js ~216-241. Smooth scrolling is already global (`html { scroll-
+   behavior: smooth }` in global.css) - this just adds the arrival cue:
+   the heading slides up and the grid gets a brief glow so it's obvious
+   where the reader landed. Scroll target is `#porownaj` (see the "Zobacz
+   pelne porownanie" link on each card) - don't rename this id without
+   updating that link. */
+/* FIXED (task 9): ported from the mockup as 20px / 58px<900px (tuned for the
+   surferseo mockup's own header). This repo's header (`Header.astro`) is
+   `position: fixed` with a real, breakpoint-independent rendered height: the
+   `#header-wrapper` div's `py-4` (16px top + 16px bottom) plus the pill's
+   `h-[70px]` (border-box, so its border is included) = 102px, unconditionally -
+   neither `py-4` nor `h-[70px]` has a responsive variant in Header.astro, so
+   there's no shorter mobile header to account for here (unlike the mockup's).
+   The site's own convention for jump-to-anchor under this same fixed header is
+   `scroll-margin-top: 120px` (see `[id]` in `src/styles/global.css:68`, already
+   ~18px of breathing room past the 102px). An ID selector always outranks the
+   attribute selector `[id]` on specificity regardless of source order, so
+   leaving this at 20px/58px would keep winning over global.css's 120px and
+   hide the "Porownaj pakiety" heading under the header on jump-in. Matching
+   120px here (instead of a bespoke ~102px) keeps #porownaj behaving like every
+   other in-page anchor on the site. */
+#porownaj { scroll-margin-top: 120px; }
+
+@keyframes cc-target-enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes cc-target-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes cc-target-flash {
+  0% { box-shadow: 0 0 0 0 transparent; }
+  30% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--color-brand-yellow) 60%, transparent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+#porownaj:target h2 { animation: cc-target-enter .45s ease-out; }
+/* The grid gets ONLY a box-shadow animation, never a transform - a
+   transform would turn `.cc-grid` into a new containing block for its
+   child `.cc-sticky-bar`, which would break that child's
+   `position: sticky`. */
+#porownaj:target .cc-grid {
+  animation: cc-target-appear .45s ease-out, cc-target-flash 1.2s ease-out .2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Higher specificity than plain `html`, so this reliably wins over the
+     unconditional `html { scroll-behavior: smooth }` in global.css no
+     matter where the bundler places this file's content relative to it. */
+  :root { scroll-behavior: auto; }
+  #porownaj:target h2,
+  #porownaj:target .cc-grid { animation: none; }
+}
+
+/* --- Sticky package bar (.cc-sticky-bar) - v6.js ~300-310 --------------
+   Mini package cards above the comparison grid, pinned to the top while
+   scrolling through it. Background (must be opaque so it covers content
+   scrolling underneath) and border are the consuming component's job via
+   Tailwind - only the sticky mechanics live here.
+   FIXED (task 9): the `top` values were ported 1:1 from the mockup as 0 /
+   46px<900px (tuned for the surferseo mockup's own header, which apparently
+   changes height under 900px). This repo's header (`Header.astro`) is
+   `position: fixed` with a real, breakpoint-independent rendered height:
+   the `#header-wrapper` div's `py-4` (16px top + 16px bottom) plus the
+   pill's `h-[70px]` (border-box, so its border is included) = 102px,
+   unconditionally - neither `py-4` nor `h-[70px]` has a responsive variant
+   in Header.astro, so there's no separate mobile value to account for here.
+   `top: 0` left this bar pinning itself to the very top of the viewport,
+   i.e. sliding UNDER that fixed header once scrolled past it; `top: 102px`
+   stops it flush against the header's own bottom edge instead. (Note this
+   is deliberately NOT the same number as `#porownaj`'s 120px above - that
+   one includes ~18px of jump-in breathing room on top of the same 102px,
+   which would leave an unwanted gap between the header and this bar.) */
+.cc-sticky-bar {
+  position: sticky;
+  top: 102px;
+  z-index: 5;
+}
+
+/* --- Grid cells (.cc-cell / .cc-cell--absent / .cc-cell--sub) ----------
+   v6.js ~386-404. */
+.cc-cell {
+  position: relative;
+}
+
+/* FIXED (code review, cennik v6): #C4C2BC dawal 1.78:1 na bialym tle - daleko pod progiem
+   WCAG AA 4.5:1 dla tekstu tej wielkosci (13.5px, nie "large text"). #6B6965 (juz uzywany w
+   tych plikach jako literal na tekst pomocniczy - np. `explanation`/`reason` w
+   ComparisonCell.tsx/ComparisonGrid.tsx) daje 5.48:1 na bialym i 5.41:1 na tle kolumny
+   polecanej (#FFFEF6, odrobine ciemniejsze od bialego) - oba > 4.5:1, i zostaje wyraznie
+   odrozny od #0D0D0D uzywanego w komorkach z obecna cecha (19.44:1 na bialym). */
+.cc-cell--absent {
+  color: #6B6965;
+  cursor: not-allowed;
+}
+
+/* Sub-item row: indented under the parent row above it. */
+.cc-cell--sub {
+  padding-left: 38px;
+}
+@media (max-width: 767px) {
+  .cc-cell--sub { padding-left: 32px; }
+}
+
+/* The "not available" bubble opens UPWARD - opening down would cover the
+   next section of the grid. Descendant combinator (no `>`) on purpose:
+   the bubble may be a direct child of the cell itself, or nested one
+   level deeper inside a `.cc-tooltip` if the cell reuses the shared
+   `Tooltip` component. */
+.cc-cell--absent .cc-tooltip-body {
+  left: 16px;
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 8px;
+  transform: translateY(4px);
+}
+.cc-cell--sub .cc-tooltip-body {
+  left: 38px;
+}
+.cc-cell--absent:hover .cc-tooltip-body {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
