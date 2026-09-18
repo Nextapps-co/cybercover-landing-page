@@ -4,6 +4,7 @@
 @import 'tw-animate-css';
 @import './fonts.css';
 @import './theme.css';
+@import './cennik.css';
 
 @plugin "@tailwindcss/typography";
 
@@ -16,6 +17,11 @@
   --color-brand-text: #413F3B;
   --color-brand-border: #C9C5BB;
   --color-brand-border-light: #E1E1E8;
+  /* Mockup v6 (docs/pricelist32-main) tokeny --ramka / --ramka-przycisku — dwa
+     odcienie konturu: neutralny do ramek kart i linii sekcji, wyraźnie
+     ciemniejszy do konturu przycisków i podkreśleń. */
+  --color-brand-rule: #EAEAE8;
+  --color-brand-rule-strong: #A2A09C;
   --color-brand-bg: #F8F7F4;
   --color-brand-blue-light: #EDF8FF;
   --color-brand-tag-yellow: #FEFFE0;

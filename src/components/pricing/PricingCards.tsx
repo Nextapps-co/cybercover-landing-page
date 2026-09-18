@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { BillingCycle } from '../../lib/api/types/money';
 import type { PlanCatalogEntryDto, SubscriptionStatus } from '../../lib/api/types/catalog';
 import type { PlanChangePendingMetadata } from '../../lib/api/types/order';
@@ -13,16 +13,18 @@ import { ResumeOrDiscardModal } from './ResumeOrDiscardModal';
 import { getPartnerFromUrl } from '../../lib/format/partner';
 import { getDiscountCodeFromUrl, clearDiscountCode } from '../../lib/format/discount-code';
 import { translateApiError } from '../../lib/errors/translate';
-import { planToCardProps, discountAppliesToCycle, discountDrivenBillingCycle, type AuthContext } from '../../lib/catalog/render-policy';
+import { planToCardProps, buildComparisonGrid, discountAppliesToCycle, discountDrivenBillingCycle, type AuthContext } from '../../lib/catalog/render-policy';
 import { ApiError } from '../../lib/api/types/errors';
 import { detectAndExchangeHandoff } from '../../lib/auth/handoff';
 import { redirectToPortal } from '../../lib/auth/portal-redirect';
 import { consumeMockAuthFromUrl } from '../../lib/auth/mock-auth';
 import { useAuthSession } from '../../lib/auth/use-auth-session';
-import { BillingCycleToggle } from './BillingCycleToggle';
 import { DiscountBanner } from './DiscountBanner';
 import { SubscriptionStatusBanner } from './SubscriptionStatusBanner';
 import { PricingCard } from './PricingCard';
+import { PricingCardBlock } from './PricingCardBlock';
+import { PartnersStrip } from './PartnersStrip';
+import { ComparisonGrid } from './comparison/ComparisonGrid';
 
 type State =
   | { kind: 'loading' }
@@ -34,6 +36,18 @@ type State =
       currentBillingCycle?: BillingCycle;
     }
   | { kind: 'error'; title: string; message: string };
+
+// Stała referencja — wchodzi do zależności `useMemo` zanim katalog się wczyta,
+// więc nowa tablica przy każdym renderze psułaby memoizację.
+const EMPTY_PLANS: PlanCatalogEntryDto[] = [];
+
+/**
+ * Auth-aware: klient rozliczany rocznie nie zejdzie na miesięczny w wizardzie — backend
+ * takiego zamówienia nie przyjmie. Jedno zdanie obsługuje trzy miejsca: `title` przełącznika
+ * w karcie, widoczną notkę pod blokiem kart i komunikat błędu, gdyby mimo to doszło do
+ * wywołania `/orders/start`.
+ */
+const ANNUAL_TO_MONTHLY_BLOCKED = 'Zmiana z rozliczenia rocznego na miesięczne wymaga kontaktu z obsługą.';
 
 export function PricingCards() {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('ANNUAL');
@@ -48,6 +62,22 @@ export function PricingCards() {
   } | null>(null);
   const [pendingPlan, setPendingPlan] = useState<{ plan: PlanCatalogEntryDto; clickedPlanName: string } | null>(null);
   const authSession = useAuthSession();
+  // `null` = klient jeszcze nie wybrał kolumny, więc obowiązuje plan polecany. Wyliczamy to
+  // przy renderze (niżej), nie efektem po zamontowaniu: efekt najpierw pokazywał pakiet #1
+  // i dopiero potem przeskakiwał na polecany.
+  const [mobileIndex, setMobileIndex] = useState<number | null>(null);
+  const ctaErrorRef = useRef<HTMLDivElement>(null);
+
+  // Drugie miejsce, z którego klikalny jest CTA, to mini-karty w przyklejonym pasku siatki —
+  // kilka tysięcy pikseli pod komunikatem. Bez przewinięcia i focusu błąd („sieć padła",
+  // „funkcja niedostępna") byłby dla klikającego tam klienta niewidoczny.
+  useEffect(() => {
+    if (!ctaError) return;
+    const el = ctaErrorRef.current;
+    if (!el) return;
+    el.scrollIntoView({ block: 'center' });
+    el.focus({ preventScroll: true });
+  }, [ctaError]);
 
   useEffect(() => {
     let cancelled = false;
@@ -153,24 +183,48 @@ export function PricingCards() {
     };
   }, []);
 
+  // Rozpakowane ze stanu, żeby wejść do zależności `useMemo` jako proste wartości —
+  // i żeby oba memo liczyły się przed wczesnymi `return` (hooki muszą lecieć bezwarunkowo).
+  const readyPlans = state.kind === 'ready' ? state.plans : EMPTY_PLANS;
+  const currentPlanCode = state.kind === 'ready' ? state.currentPlanCode : undefined;
+  const subscriptionStatus = state.kind === 'ready' ? state.subscriptionStatus : undefined;
+  const currentBillingCycle = state.kind === 'ready' ? state.currentBillingCycle : undefined;
+
+  const authContext = useMemo<AuthContext>(
+    () => ({ currentPlanCode, subscriptionStatus, currentBillingCycle }),
+    [currentPlanCode, subscriptionStatus, currentBillingCycle],
+  );
+
+  // Cała siatka to ~40 wierszy razy 4 pakiety wywołań `resolveCell` plus komplet świeżych
+  // obiektów. Bez memo przeliczała się przy KAŻDYM renderze — także przy tapnięciu strzałki
+  // na telefonie, przy `ctaError` i przy zmianie `loadingPlanId`, które jej nie dotyczą.
+  const comparisonGrid = useMemo(
+    () => buildComparisonGrid(readyPlans, billingCycle, authContext),
+    [readyPlans, billingCycle, authContext],
+  );
+
   const onCtaClick = (plan: PlanCatalogEntryDto) => {
     // Tryb auth-aware ma własną obsługę 409 — modal tylko dla anonimowego pending order.
     if (pendingOrder && !authSession.hasToken) {
-      const authContext: AuthContext | undefined =
-        state.kind === 'ready'
-          ? {
-              currentPlanCode: state.currentPlanCode,
-              subscriptionStatus: state.subscriptionStatus,
-              currentBillingCycle: state.currentBillingCycle,
-            }
-          : undefined;
-      setPendingPlan({ plan, clickedPlanName: planToCardProps(plan, billingCycle, authContext).title });
+      const plans = state.kind === 'ready' ? state.plans : [plan];
+      setPendingPlan({ plan, clickedPlanName: planToCardProps(plan, billingCycle, authContext, plans).title });
       return;
     }
     void proceedStartOrder(plan);
   };
 
   const proceedStartOrder = async (plan: PlanCatalogEntryDto) => {
+    // Pas bezpieczeństwa przy wywołaniu API, nie przy kliknięciu: przełączników cyklu jest
+    // teraz tyle, ile kart, a zablokowany cykl wystarczy wyłapać w jednym miejscu — tuż przed
+    // `/orders/start`, którego backend i tak by nie przyjął.
+    if (currentBillingCycle === 'ANNUAL' && billingCycle === 'MONTHLY') {
+      setCtaError({
+        title: 'Nie można przejść na rozliczenie miesięczne',
+        message: ANNUAL_TO_MONTHLY_BLOCKED,
+      });
+      return;
+    }
+
     setLoadingPlanId(plan.planId);
     setCtaError(null);
 
@@ -221,15 +275,8 @@ export function PricingCards() {
         return;
       }
 
-      const authContext: AuthContext | undefined =
-        state.kind === 'ready'
-          ? {
-              currentPlanCode: state.currentPlanCode,
-              subscriptionStatus: state.subscriptionStatus,
-              currentBillingCycle: state.currentBillingCycle,
-            }
-          : undefined;
-      const cardProps = planToCardProps(plan, billingCycle, authContext);
+      const plans = state.kind === 'ready' ? state.plans : [plan];
+      const cardProps = planToCardProps(plan, billingCycle, authContext, plans);
       const price = billingCycle === 'MONTHLY' ? plan.monthlyPrice : plan.annualPrice;
 
       setFromStartOrderResponse(response, {
@@ -259,15 +306,8 @@ export function PricingCards() {
         if (meta?.existingOrderId && meta.wizardEntryStep) {
           // Resume — populate session z dostępnych danych. checkoutProgress jest
           // re-fetched przez getOrder() w wizard step, więc prefilledFields nie znamy.
-          const authContext: AuthContext | undefined =
-            state.kind === 'ready'
-              ? {
-                  currentPlanCode: state.currentPlanCode,
-                  subscriptionStatus: state.subscriptionStatus,
-                  currentBillingCycle: state.currentBillingCycle,
-                }
-              : undefined;
-          const cardProps = planToCardProps(plan, billingCycle, authContext);
+          const plans = state.kind === 'ready' ? state.plans : [plan];
+          const cardProps = planToCardProps(plan, billingCycle, authContext, plans);
           const price = billingCycle === 'MONTHLY' ? plan.monthlyPrice : plan.annualPrice;
           setFromStartOrderResponse(
             {
@@ -328,11 +368,19 @@ export function PricingCards() {
       }
     : null;
 
-  const authContext: AuthContext = {
-    currentPlanCode: state.currentPlanCode,
-    subscriptionStatus: state.subscriptionStatus,
-    currentBillingCycle: state.currentBillingCycle,
-  };
+  // Auth-aware blokada cyklu. Przełącznik w karcie jest JEDNYM przyciskiem przełączającym,
+  // więc podajemy mu cykl DOCELOWY, którego ma nie wpuścić — nie stan, w którym stoi.
+  const disabledCycle: BillingCycle | undefined = state.currentBillingCycle === 'ANNUAL' ? 'MONTHLY' : undefined;
+  const disabledCycleReason = disabledCycle ? ANNUAL_TO_MONTHLY_BLOCKED : undefined;
+
+  // Kolumna widoczna na telefonie: dopóki klient nie przesunie strzałkami, pokazujemy plan
+  // polecany. Wyliczane przy renderze, więc pierwsze malowanie od razu trafia we właściwą
+  // kolumnę (efekt po zamontowaniu dawał przeskok z pakietu #1).
+  const recommendedIndex = Math.max(
+    state.plans.findIndex((p) => p.recommended),
+    0,
+  );
+  const activeMobileIndex = mobileIndex ?? recommendedIndex;
 
   return (
     <>
@@ -356,24 +404,13 @@ export function PricingCards() {
         />
       )}
 
-      <div className="flex justify-center mb-12">
-        <BillingCycleToggle
-          value={billingCycle}
-          onChange={setBillingCycle}
-          // Klient na rocznym abonamencie nie może przejść na miesięczny w ramach wizard'a
-          // (downgrade cyklu wymaga osobnej operacji po stronie BOK). Blokujemy toggle.
-          disabledCycle={state.currentBillingCycle === 'ANNUAL' ? 'MONTHLY' : undefined}
-          disabledReason={
-            state.currentBillingCycle === 'ANNUAL'
-              ? 'Zmiana z cyklu rocznego na miesięczny jest niedostępna.'
-              : undefined
-          }
-        />
-      </div>
-
+      {/* `tabIndex={-1}` jest po to, żeby dało się tu przestawić focus — komunikat bywa
+          kilka ekranów nad przyciskiem klikniętym w siatce porównania. */}
       {ctaError && (
         <div
+          ref={ctaErrorRef}
           role="alert"
+          tabIndex={-1}
           className="mx-auto mb-8 max-w-md rounded-[12px] border border-red-300 bg-red-50 p-4 text-center font-['Plus_Jakarta_Sans',sans-serif]"
         >
           <h4 className="text-sm font-semibold text-red-700">{ctaError.title}</h4>
@@ -381,9 +418,9 @@ export function PricingCards() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 lg:gap-3">
+      <PricingCardBlock groupLabel="Natychmiastowa pomoc w razie incydentu cyberbezpieczeństwa w każdym pakiecie">
         {state.plans.map((plan) => {
-          const props = planToCardProps(plan, billingCycle, authContext);
+          const props = planToCardProps(plan, billingCycle, authContext, state.plans);
           const isThisLoading = loadingPlanId === plan.planId;
           return (
             <PricingCard
@@ -392,10 +429,37 @@ export function PricingCards() {
               ctaText={isThisLoading ? 'Ładowanie…' : props.ctaText}
               ctaDisabled={isThisLoading}
               onSelect={() => onCtaClick(plan)}
+              billingCycle={billingCycle}
+              onBillingCycleChange={setBillingCycle}
+              disabledCycle={disabledCycle}
+              disabledReason={disabledCycleReason}
             />
           );
         })}
-      </div>
+      </PricingCardBlock>
+
+      {/* Powód blokady cyklu — RAZ pod blokiem kart, nie w każdej z czterech kart. */}
+      {disabledCycleReason && (
+        <p
+          role="note"
+          className="mx-auto -mt-14 mb-14 max-w-2xl text-center font-['Plus_Jakarta_Sans',sans-serif] text-[13px] leading-[18px] text-[#6B6965]"
+        >
+          {disabledCycleReason}
+        </p>
+      )}
+
+      <PartnersStrip />
+
+      <ComparisonGrid
+        grid={comparisonGrid}
+        mobileIndex={activeMobileIndex}
+        onMobileIndexChange={setMobileIndex}
+        onSelectPlan={(code) => {
+          const plan = state.plans.find((p) => p.code === code);
+          if (plan) onCtaClick(plan);
+        }}
+        loadingPlanCode={state.plans.find((p) => p.planId === loadingPlanId)?.code ?? null}
+      />
 
       {pendingPlan && pendingOrder && (
         <ResumeOrDiscardModal
