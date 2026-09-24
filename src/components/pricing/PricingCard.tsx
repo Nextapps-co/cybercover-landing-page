@@ -3,6 +3,7 @@ import type { BillingCycle } from '../../lib/api/types/money';
 import { AnimatedPrice } from './AnimatedPrice';
 import { CardBillingToggle } from './CardBillingToggle';
 import { Tooltip } from './Tooltip';
+import { IncidentText } from './IncidentText';
 
 // Task 4 (cennik v6): karta jest teraz projekcją z `COMPARISON` (patrz
 // `lib/catalog/render-policy.ts#buildCardSections`), nie z lokalnej listy itemów.
@@ -72,18 +73,6 @@ function capitalizeFirst(text: string): string {
   return text.length > 0 ? text.charAt(0).toUpperCase() + text.slice(1) : text;
 }
 
-// Treść dymka na słowie „incydent" w opisie planu — port `DYMEK_INCYDENT` z
-// `docs/pricelist32-main/wersje/v6.js:485-494`. To generyczna wiedza o tym, jak wygląda
-// incydent — nie opisuje konkretnego planu — więc zostaje hardkodowana jak reszta
-// stałego UI copy w tym pliku, a nie ciągnięta z propsów.
-const INCIDENT_TOOLTIP_LINES = [
-  'ktoś zaszyfrował Wasze pliki i żąda okupu',
-  'ktoś przejął skrzynkę e-mail albo konto w banku',
-  'wyciekły dane klientów',
-  'strona przestała działać po ataku',
-  'ktoś podszywa się pod Waszą organizację',
-];
-
 // Port `PTASZEK` / `KRESKA` z `docs/pricelist32-main/wspolne.js:58-64`. `stroke="currentColor"`
 // — kolor (zielony przy `included`, wyszarzony przy braku) idzie z opakowującego `<span>`.
 function CheckIcon() {
@@ -100,10 +89,11 @@ function CheckIcon() {
   );
 }
 
-function DashIcon() {
+// Krzyżyk przy pozycji niedostępnej w pakiecie — samo wyszarzenie było za słabym sygnałem.
+function CrossIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M3 7H11" stroke="currentColor" strokeWidth="1.33333" strokeLinecap="round" />
+      <path d="M4 4L10 10M10 4L4 10" stroke="currentColor" strokeWidth="1.33333" strokeLinecap="round" />
     </svg>
   );
 }
@@ -131,23 +121,9 @@ function RichText({ text }: { text: string }) {
 // (patrz `src/styles/cennik.css`), więc bez najbliższego pozycjonowanego przodka chmurka
 // spozycjonowałaby się względem dalekiego ancestora i wyjechała poza kartę.
 function PlanDescription({ text }: { text: string }) {
-  const match = text.match(/incydent\w*/i);
-  if (!match || match.index === undefined) {
-    return <p className="relative mb-[18px] min-[1100px]:min-h-[96px] text-[14px] leading-[20px] text-[#6B6965]">{text}</p>;
-  }
-  const start = match.index;
-  const end = start + match[0].length;
   return (
     <p className="relative mb-[18px] min-[1100px]:min-h-[96px] text-[14px] leading-[20px] text-[#6B6965]">
-      {text.slice(0, start)}
-      <Tooltip
-        title="Incydent poznasz po tym, że:"
-        lines={INCIDENT_TOOLTIP_LINES}
-        className="cc-tooltip--word"
-      >
-        {match[0]}
-      </Tooltip>
-      {text.slice(end)}
+      <IncidentText text={text} />
     </p>
   );
 }
@@ -166,17 +142,17 @@ function FeatureSectionRow({ section }: { section: CardSectionProps }) {
       <span
         aria-hidden="true"
         className={`mt-[3px] flex h-[14px] w-[14px] flex-none items-center justify-center ${
-          included ? 'text-[#16653C]' : 'text-[#C9C7C1]'
+          included ? 'text-[#16653C]' : 'text-[#B9B7B1]'
         }`}
       >
-        {included ? <CheckIcon /> : <DashIcon />}
+        {included ? <CheckIcon /> : <CrossIcon />}
       </span>
       <span
         className={`block text-[13.5px] leading-[19px] ${
           included ? 'font-semibold text-[#0D0D0D]' : 'font-normal text-[#B9B7B1]'
         }`}
       >
-        {title}
+        <IncidentText text={title} />
         {badge && (
           <span className="ml-2 inline-block whitespace-nowrap rounded-full border border-[#EFDFA6] bg-brand-tag-yellow px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#7A5B00]">
             {badge}

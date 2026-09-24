@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { ComparisonCell } from './ComparisonCell';
+import { IncidentText } from '../IncidentText';
 import type { SectionIconName } from '../../../lib/catalog/comparison-content';
 import type { ComparisonSectionProps } from '../../../lib/catalog/render-policy';
 
@@ -116,13 +117,13 @@ function SectionIcon({ icon }: { icon: SectionIconName }) {
 export function ComparisonSection({ section, planCount, recommendedIndex, mobileIndex }: Props) {
   return (
     <section className="border-t border-brand-rule first-of-type:border-t-0">
-      <h3 className="m-0 flex min-h-[56px] items-center gap-[9px] bg-brand-bg p-4 text-[14px] font-normal leading-[1.25]">
+      <h3 className="relative m-0 flex min-h-[56px] items-center gap-[9px] bg-brand-bg p-4 text-[14px] font-normal leading-[1.25]">
         <span className="mt-[1px] flex-none self-start lg:mt-0 lg:self-center">
           <SectionIcon icon={section.icon} />
         </span>
         <span className="flex flex-col gap-[3px] lg:flex-row lg:flex-wrap lg:items-baseline lg:gap-x-2 lg:gap-y-1">
           <span className="font-semibold text-[#0D0D0D]">
-            {section.title}
+            <IncidentText text={section.title} />
             {section.badge && (
               <span className="ml-2 inline-block whitespace-nowrap rounded-full border border-[#EFDFA6] bg-brand-tag-yellow px-2 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-[0.06em] text-[#7A5B00]">
                 {section.badge}
