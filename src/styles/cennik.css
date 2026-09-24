@@ -27,8 +27,25 @@
 @media (max-width: 1023px) {
   .cc-band { height: 420px; }
 }
+/* Mobile: stała wysokość pasa nie nadąża za zawijanym nagłówkiem (5-7 linii
+   zależnie od szerokości) — tekst wychodził na jasne tło. Pas rysuje wtedy sam
+   nagłówek (.cc-hero::before), więc zawsze obejmuje całą treść + wchodzi pod karty.
+   left/right -16px = px-4 kontenera (na mobile kontener ma pełną szerokość),
+   top -128px = pt-32. */
 @media (max-width: 767px) {
-  .cc-band { height: 340px; border-radius: 0 0 28px 28px; }
+  .cc-band { display: none; }
+  .cc-hero { position: relative; isolation: isolate; }
+  .cc-hero::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: -128px;
+    right: -16px;
+    bottom: -100px;
+    left: -16px;
+    background: #0D0D0D;
+    border-radius: 0 0 28px 28px;
+  }
 }
 
 /* --- Fused card block (.cc-cards / .cc-card) - v6.js ~88-116 -----------
@@ -144,11 +161,13 @@
 
 /* A tooltip nested inside another tooltip's container (e.g. one word
    inside a row that itself shows its own bubble on hover): hovering the
-   inner one hides the outer's own bubble so the two don't overlap. The
-   child combinator keeps this scoped to the outer's own bubble only - it
-   never touches the inner one's. */
-.cc-tooltip:has(> .cc-tooltip:hover) > .cc-tooltip-body,
-.cc-tooltip:has(> .cc-tooltip:focus-visible) > .cc-tooltip-body {
+   inner one hides the outer's own bubble so the two don't overlap. The inner
+   one may sit deeper than a direct child (the "incydent" word inside a card's
+   section row is wrapped in the row's own spans), hence `:has()` without `>`.
+   The final `> .cc-tooltip-body` keeps this scoped to the outer's own bubble
+   only - it never touches the inner one's. */
+.cc-tooltip:has(.cc-tooltip:hover) > .cc-tooltip-body,
+.cc-tooltip:has(.cc-tooltip:focus-visible) > .cc-tooltip-body {
   opacity: 0;
   visibility: hidden;
 }
