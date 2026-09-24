@@ -37,6 +37,16 @@ function DotIcon() {
   );
 }
 
+// Krzyżyk przy cesze niedostępnej w pakiecie — samo wyszarzenie było za słabym sygnałem.
+// Kolor dziedziczy z `.cc-cell--absent` (szary).
+function CrossIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M4 4L10 10M10 4L4 10" stroke="currentColor" strokeWidth="1.33333" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 /**
  * Jedna komórka siatki porównania — port `komorka` z `docs/pricelist32-main/wersje/v6.js:642-665`.
  *
@@ -46,7 +56,7 @@ function DotIcon() {
  *
  * `kind: 'absent'` (`brak` w oryginale) zostaje wyszarzone przez klasę CSS `.cc-cell--absent`
  * (kolor tekstu + `cursor:not-allowed`) — tu dokładamy tylko rzeczy, których czysty CSS nie
- * wyrazi: brak ptaszka, wyłączenie pogrubienia, i owinięcie treści w `<Tooltip>` z dymkiem
+ * wyrazi: krzyżyk zamiast ptaszka, wyłączenie pogrubienia, i owinięcie treści w `<Tooltip>` z dymkiem
  * „Niedostępne w tym pakiecie” (dymek otwiera się w górę dzięki `.cc-cell--absent .cc-tooltip-body`
  * w `cennik.css` — wymaga tylko, żeby `.cc-cell` (ma `position:relative`) było przodkiem `<Tooltip>`,
  * co jest tu zapewnione strukturalnie).
@@ -122,7 +132,7 @@ export function ComparisonCell({ row, cell, hiddenOnMobile, recommended }: Props
   return (
     <div className={cellClassName}>
       <span aria-hidden="true" className={iconClassName}>
-        {!absent && (row.subItem ? <DotIcon /> : <CheckIcon />)}
+        {absent ? <CrossIcon /> : row.subItem ? <DotIcon /> : <CheckIcon />}
       </span>
       {absent ? absentContent : presentContent}
     </div>

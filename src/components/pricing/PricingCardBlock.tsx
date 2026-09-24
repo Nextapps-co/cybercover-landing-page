@@ -1,4 +1,5 @@
 import type { JSX, ReactNode } from 'react';
+import { IncidentText } from './IncidentText';
 
 interface PricingCardBlockProps {
   groupLabel: string;
@@ -21,8 +22,8 @@ interface PricingCardBlockProps {
 export function PricingCardBlock({ groupLabel, children }: PricingCardBlockProps): JSX.Element {
   return (
     <div className="mb-[72px] rounded-[24px] bg-brand-yellow">
-      <p className="px-3 py-[11px] text-center font-['Plus_Jakarta_Sans',sans-serif] text-[13.5px] font-semibold tracking-[-0.01em] text-[#0D0D0D]">
-        {groupLabel}
+      <p className="relative px-3 py-[11px] text-center font-['Plus_Jakarta_Sans',sans-serif] text-[13.5px] font-semibold tracking-[-0.01em] text-[#0D0D0D]">
+        <IncidentText text={groupLabel} center />
       </p>
       <div className="cc-cards grid grid-cols-1 bg-white min-[640px]:grid-cols-2 min-[1100px]:grid-cols-4">
         {children}
