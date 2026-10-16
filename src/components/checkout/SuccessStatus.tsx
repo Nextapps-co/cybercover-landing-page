@@ -109,7 +109,7 @@ export function SuccessStatus() {
           <h2 className="text-lg font-semibold text-amber-800">Brak danych zamówienia</h2>
           <p className="mt-2 text-sm text-amber-800">
             Otwórz link z potwierdzenia email lub skontaktuj się z{' '}
-            <a className="underline" href="mailto:support@cybercover.pl">support@cybercover.pl</a>.
+            <a className="underline" href="mailto:info@cybercover.pl">info@cybercover.pl</a>.
           </p>
           <a
             href="/cennik"
@@ -142,7 +142,7 @@ export function SuccessStatus() {
         <FormAlert variant="error" title="Nie udało się sprawdzić statusu" message={errorMessage ?? ''} />
         <p className="mt-2 text-xs text-[#6B6965] text-center">
           Sprawdź email z potwierdzeniem lub skontaktuj się z{' '}
-          <a className="underline" href="mailto:support@cybercover.pl">support@cybercover.pl</a>.
+          <a className="underline" href="mailto:info@cybercover.pl">info@cybercover.pl</a>.
         </p>
       </div>
     );
@@ -155,7 +155,7 @@ export function SuccessStatus() {
           <h2 className="text-lg font-semibold text-red-800">Zamówienie zostało anulowane</h2>
           <p className="mt-2 text-sm text-red-700">
             Skontaktuj się z{' '}
-            <a className="underline" href="mailto:support@cybercover.pl">support@cybercover.pl</a>{' '}
+            <a className="underline" href="mailto:info@cybercover.pl">info@cybercover.pl</a>{' '}
             — pomożemy ustalić co poszło nie tak.
           </p>
           {order && <OrderRefBlock orderId={order.orderId} sessionId={sessionIdRef.current} />}
@@ -172,7 +172,7 @@ export function SuccessStatus() {
           <p className="mt-2 text-sm text-amber-800">
             Twoje zamówienie nadal jest przetwarzane. Sprawdź skrzynkę email — wyślemy potwierdzenie,
             gdy tylko proces się zakończy. Jeśli nic nie dotrze w ciągu kilku minut, napisz na{' '}
-            <a className="underline" href="mailto:support@cybercover.pl">support@cybercover.pl</a>.
+            <a className="underline" href="mailto:info@cybercover.pl">info@cybercover.pl</a>.
           </p>
           {order && <OrderRefBlock orderId={order.orderId} sessionId={sessionIdRef.current} />}
         </div>
