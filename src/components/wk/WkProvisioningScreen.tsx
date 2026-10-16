@@ -6,7 +6,7 @@ import { clearFormState } from '../../lib/state/form-persistence';
 import type { WkConfigResponseDto } from '../../lib/api/types/wk-config';
 import type { WkNoticeVariant } from '../../lib/wk/types';
 
-const SUPPORT_EMAIL = 'support@cybercover.pl';
+const SUPPORT_EMAIL = 'info@cybercover.pl';
 
 /** Nieokreślony pasek — mówi „pracujemy", nie kłamie o procentach. */
 function WorkingBar() {

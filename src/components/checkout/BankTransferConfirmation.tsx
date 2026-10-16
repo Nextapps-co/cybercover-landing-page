@@ -120,7 +120,7 @@ export function BankTransferConfirmation() {
             Twoja faktura proforma nadal się generuje. Odśwież stronę za chwilę albo sprawdź skrzynkę
             email — wyślemy potwierdzenie z fakturą, gdy tylko będzie gotowa. Jeśli nic nie dotrze w ciągu
             kilku minut, napisz na{' '}
-            <a className="underline" href="mailto:support@cybercover.pl">support@cybercover.pl</a>.
+            <a className="underline" href="mailto:info@cybercover.pl">info@cybercover.pl</a>.
           </p>
           <button
             type="button"
@@ -140,7 +140,7 @@ export function BankTransferConfirmation() {
           <h2 className="text-lg font-semibold text-red-800">Link nieprawidłowy lub wygasł</h2>
           <p className="mt-2 text-sm text-red-700">
             Sprawdź email z potwierdzeniem albo skontaktuj się z nami:{' '}
-            <a className="underline" href="mailto:support@cybercover.pl">support@cybercover.pl</a>.
+            <a className="underline" href="mailto:info@cybercover.pl">info@cybercover.pl</a>.
           </p>
           <a
             href="/cennik"

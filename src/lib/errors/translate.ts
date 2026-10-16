@@ -126,7 +126,7 @@ const TRANSLATIONS: Record<ApiErrorCode, TranslatedError> = {
   },
   STANDARD_PLAN_NOT_FOUND: {
     title: 'Chwilowo nie możemy dokończyć rejestracji',
-    message: 'Po naszej stronie brakuje ustawień potrzebnych do rejestracji. Napisz na support@cybercover.pl — zajmiemy się tym.',
+    message: 'Po naszej stronie brakuje ustawień potrzebnych do rejestracji. Napisz na info@cybercover.pl — zajmiemy się tym.',
     actionable: false,
   },
   SALES_ORDER_GRANT_NIP_MISMATCH: {
@@ -136,7 +136,7 @@ const TRANSLATIONS: Record<ApiErrorCode, TranslatedError> = {
   },
   SALES_ORDER_GRANT_PAYMENT_METHOD_MISMATCH: {
     title: 'Coś jest nie tak z tym zgłoszeniem',
-    message: 'Nie możemy dokończyć rejestracji w tym trybie. Napisz na support@cybercover.pl — sprawdzimy, co się stało.',
+    message: 'Nie możemy dokończyć rejestracji w tym trybie. Napisz na info@cybercover.pl — sprawdzimy, co się stało.',
     actionable: false,
   },
   DISCOUNT_NOT_APPLICABLE: {
@@ -168,7 +168,7 @@ const TRANSLATIONS: Record<ApiErrorCode, TranslatedError> = {
   },
   COMPANY_NIP_ALREADY_REGISTERED: {
     title: 'Ten NIP jest już zarejestrowany',
-    message: 'Firma o tym numerze NIP ma już konto w CyberCover. Sprawdź numer albo napisz na support@cybercover.pl.',
+    message: 'Firma o tym numerze NIP ma już konto w CyberCover. Sprawdź numer albo napisz na info@cybercover.pl.',
     actionable: true,
   },
   // Generyczny 400 bez własnego kodu z backendu (ciało nie przeszło walidacji kształtu,
