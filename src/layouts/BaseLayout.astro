@@ -23,7 +23,9 @@ const jsonLd = {
   "description": "CyberCover dostarcza zalecenia, monitoring zagrożeń i pomoc ekspertów. Ubezpieczenie pokrywa kary RODO, roszczenia i straty.",
   "address": {
     "@type": "PostalAddress",
-    "addressLocality": "Warszawa",
+    "streetAddress": "ul. Gen. Jana Henryka Dąbrowskiego 2",
+    "addressLocality": "Toruń",
+    "postalCode": "87-100",
     "addressCountry": "PL"
   },
   "contactPoint": {
@@ -32,6 +34,16 @@ const jsonLd = {
     "availableLanguage": "Polish"
   }
 }
+
+// Nazwa witryny w wynikach Google (nad adresem) — Google czyta ją ze strony głównej
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "CyberCover",
+  "alternateName": ["Cyber Cover", "cybercover.pl"],
+  "url": "https://cybercover.pl/"
+}
+const isHome = Astro.url.pathname === '/'
 ---
 
 <!DOCTYPE html>
@@ -56,6 +68,7 @@ const jsonLd = {
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="CyberCover" />
   <meta property="og:url" content={Astro.url.href} />
   <meta property="og:image" content={new URL(ogImage.src, Astro.site ?? Astro.url).href} />
 
@@ -112,6 +125,7 @@ const jsonLd = {
   </style>
 
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  {isHome && <script type="application/ld+json" set:html={JSON.stringify(websiteJsonLd)} />}
 
   <!-- Per-page extras (np. dodatkowe JSON-LD, preloads) -->
   <slot name="head-extra" />

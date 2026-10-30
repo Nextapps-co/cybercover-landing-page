@@ -9,7 +9,7 @@ interface Props {
   leadingEntityName?: string | null;
 }
 
-const SUPPORT_EMAIL = 'support@cybercover.pl';
+const SUPPORT_EMAIL = 'info@cybercover.pl';
 
 const TONE_CLASSES: Record<'neutral' | 'warning' | 'error', string> = {
   neutral: 'border-[#E4E2DF] bg-[#F8F7F4] text-[#0D0D0D]',
